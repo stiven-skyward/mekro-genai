@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_1527",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 32,
+    "tope_tokens": 8000,
+    "tope_segundos": 10800
+  },
+  "tareas": [
+    {
+      "id": "larga",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 10,
+      "intervenciones": 1,
+      "tokens_salida": 1365,
+      "tokens_entrada": 44755,
+      "segundos": 2975.7,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-larga-1nqt1jps/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 1365.0,
+    "segundos_media": 2975.7,
+    "intervenciones": 1
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "cuando": "2026-08-27_2300",
+  "nivel": "n1",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400,
+    "pensar_vueltas": 2
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 544,
+      "tokens_entrada": 8875,
+      "segundos": 2098.9,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-ihetbuhj/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 544.0,
+    "segundos_media": 2098.9,
+    "intervenciones": 0
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "ventana": 512,
+  "ventanas": 16,
+  "gamma": 8,
+  "capas": 64,
+  "hilos": 16,
+  "borrador": "/home/forge/modelos/qwen3.5-2b",
+  "grande": "/home/forge/modelos/qwen3.8-27b",
+  "topk": 1024,
+  "segundos": {
+    "grande": 2004.6,
+    "borrador": 609.1,
+    "total": 630.6
+  },
+  "por_dominio": {
+    "codigo": {
+      "tokens": 4088,
+      "acuerdo_greedy": 0.5692,
+      "alfa_t1": 0.5859,
+      "alfa_t1_cota_alta": 0.5977,
+      "ppl_grande": 6.132,
+      "ppl_borrador": 15.524,
+      "tokens_por_pase_g4": 2.113,
+      "iid_g4": 2.183,
+      "tokens_por_pase_g8": 2.259,
+      "iid_g8": 2.307,
+      "tokens_por_pase_g16": 2.311,
+      "iid_g16": 2.321
+    },
+    "espanol": {
+      "tokens": 4088,
+      "acuerdo_greedy": 0.535,
+      "alfa_t1": 0.5493,
+      "alfa_t1_cota_alta": 0.5655,
+      "ppl_grande": 8.997,
+      "ppl_borrador": 24.797,
+      "tokens_por_pase_g4": 2.025,
+      "iid_g4": 2.056,
+      "tokens_por_pase_g8": 2.13,
+      "iid_g8": 2.143,
+      "tokens_por_pase_g16": 2.149,
+      "iid_g16": 2.15
+    }
+  }
+}

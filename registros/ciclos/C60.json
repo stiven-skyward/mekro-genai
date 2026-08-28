@@ -1,0 +1,61 @@
+{
+  "id": "C60",
+  "pregunta": "¿El tope de segundos de 5400 permite completar n0/rastro con menos de 1460 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 03:53",
+  "revision": {
+    "cuando": "2026-08-27 03:53",
+    "texto": "Se midió n0/crear en 549.1s y n0/atomo en 1485.2s. La tarea rastro tiene un baseline de 1270.1s. El suelo de ruido es del 10%, por lo que se fija un umbral con margen de seguridad sobre el baseline para evitar falsos positivos por variabilidad."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 03:53",
+    "metrica": "segundos_media",
+    "espero": "<1460",
+    "porque": "El baseline de n0/rastro es 1270.1 segundos. Aplicando un margen de seguridad del 15% sobre el ruido medido, el umbral se fija en 1460 segundos (1270.1 * 1.15 ≈ 1460.6). Esto garantiza que cualquier mejora real supere el ruido de fondo."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 04:06",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --etiqueta lazo-C60 --tarea rastro --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 750.0,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 460.0,
+      "segundos_media": 748.8,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n0 · cerebro gguf · modo lista · 1 tareas ==\n\n── rastro\n[1] 78 tok · 387.3 s · 2 llamadas\n  ✓ bash({\"comando\": \"find . -type f -name '*.py' | head -30\"})  (0.0 s)\n  ✓ bash({\"comando\": \"ls -la conf/\"})  (0.0 s)\n[2] 115 tok · 142.9 s · 4 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"conf/cache.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"conf/disco.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"conf/red.py\"})  (0.0 s)\n[3] 194 tok · 144.6 s · 1 llamadas\n  El problema está claro: `conf/red.py` tiene `LIMITE = 7` cuando debería ser `100`. Lo corrijo:\n  ✓ editar({\"ruta\": \"conf/red.py\", \"cambios\": [{\"buscar\": \"LIMITE = 7\", \"poner\": \"LIMITE = 100\"}]})  (0.0 s)\n[4] 27 tok · 32.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 46 tok · 39.8 s\n  Corregido. En `conf/red.py` el valor era `LIMITE = 7`; lo puse a `100`. La prueba pasa: **2/2 asertos ✓**.\n   ✓ PASA · fin · 5 vueltas · 460 tok · 748.8 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 460.0\nCIFRA segundos_media 748.8\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-27_0406_lazo-C60.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 04:11",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 748.8,
+    "espero": "<1460"
+  },
+  "leccion": "CONFIRMA. El umbral de 1460 segundos supera la media medida de 748.8 segundos. La diferencia es de 711.2 segundos a favor del umbral. El tope de 5400 segundos no fue el limitante, ya que la ejecución total fue de 750.0 segundos. El 100% de éxito se mantuvo con 0 intervenciones. La causa más probable es que la tarea rastro es de baja complejidad para el modelo gguf. Medir la varianza de segundos_media en 10 repeticiones para validar la estabilidad.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 03:53",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 03:53",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 03:53",
+      "que": "predicho segundos_media <1460"
+    },
+    {
+      "cuando": "2026-08-27 04:06",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 04:11",
+      "que": "veredicto: CONFIRMA (segundos_media=748.8)"
+    }
+  ]
+}

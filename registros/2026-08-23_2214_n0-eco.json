@@ -1,0 +1,84 @@
+{
+  "cuando": "2026-08-23_2214",
+  "nivel": "n0",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "atomo",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 124,
+      "tokens_entrada": 5318,
+      "segundos": 0.0,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-atomo-jlhy_v2p"
+    },
+    {
+      "id": "crear",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 153,
+      "tokens_entrada": 5344,
+      "segundos": 0.0,
+      "verificador": "4/4 asertos ✓",
+      "trabajo": "/tmp/banco-crear-tf13m3y3"
+    },
+    {
+      "id": "humo",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 134,
+      "tokens_entrada": 6697,
+      "segundos": 0.1,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-humo-ztrz8v16"
+    },
+    {
+      "id": "rastro",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 102,
+      "tokens_entrada": 5130,
+      "segundos": 0.0,
+      "verificador": "2/2 asertos ✓",
+      "trabajo": "/tmp/banco-rastro-f2ebqbzx"
+    },
+    {
+      "id": "simbolo",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 133,
+      "tokens_entrada": 6618,
+      "segundos": 0.0,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-simbolo-_7s03kbg"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 129.2,
+    "segundos_media": 0.0,
+    "intervenciones": 0
+  }
+}

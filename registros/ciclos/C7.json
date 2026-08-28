@@ -1,0 +1,68 @@
+{
+  "id": "C7",
+  "pregunta": "¿llega algún borrador pequeño de la familia Qwen3.5 a α ≥ 0,821, que es lo que D2 exige (≥1 tok/s)?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 07:02",
+  "revision": {
+    "cuando": "2026-08-23 07:02",
+    "texto": "C4 midio que el campeon a 2 bits da alfa=0,5631 y 2,227 tokens/pase = 0,40 tok/s, y que gamma no es palanca (techo 1/(1-alfa)). Para D2 (>=1 tok/s con el pase de 5,6 s de C3) hacen falta 5,6 tokens/pase, o sea alfa >= 0,821; para D3 (>=2 tok/s), alfa >= 0,911. El plan escrito en holos/H8.md era usar un Qwen3 pequeno de HF, y hoy se ha comprobado gratis que ESO NO VALE: Qwen3-0.6B y Qwen3-1.7B tienen vocabulario 151936 y el grande 248320, no comparten tokenizador. Pero SI existe familia con el mismo vocabulario y la misma arquitectura hibrida (Qwen3_5ForConditionalGeneration, linear_attention + full_attention): Qwen3.5-0.8B (24 capas, hidden 1024), -2B (24 capas, hidden 2048) y -4B (32 capas, hidden 2560), los tres con vocab 248320. Ya descargados en /home/forge/modelos/qwen3.5-0.8b (1,7 GB) y qwen3.5-2b (4,3 GB). Traen tie_word_embeddings=true, o sea que su lm_head es la tabla de embeddings: el medidor ya lo detecta. Ademas el pase caro del BF16 se cachea (topk de p + masa de cola), asi que el primer candidato paga los ~26 min y los siguientes solo su propio pase."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 07:02",
+    "metrica": "acuerdo_greedy_codigo",
+    "espero": ">=0.65",
+    "porque": "El Qwen3.5-0.8B es un modelo entrenado de verdad, no un modelo grande roto: sus errores estan en las decisiones dificiles, mientras que el campeon a 2 bits tiene ruido repartido por TODAS las posiciones, incluidas las faciles. Como el codigo es mayoritariamente tokens forzados, espero que el 0,8B supere claramente el 0,5631 del campeon pese a tener 35 veces menos parametros. Predigo 0,65 y no mas porque un salto de 0,8B a 27,8B son cinco duplicaciones de tamano y la literatura de especulativa con esa razon se mueve en 0,6-0,7. AVISO EXPLICITO de lo que NO predigo: 0,821 es la barra de D2 y NO espero alcanzarla con el 0,8B. Los tres desenlaces y lo que implica cada uno: por debajo de 0,5631 el borrador pequeno es peor que el campeon y la via densa se queda en 0,40 tok/s; entre 0,5631 y 0,821 la via densa mejora pero NO llega a D2 con este candidato y hay que probar el 2B y el 4B; por encima de 0,821 D2 existe y hay que escribir H8."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-23 07:47",
+    "comando": "python3 scripts/medir_aceptacion.py --ventana 512 --ventanas 8 --gamma 8 --borrador /home/forge/modelos/qwen3.5-0.8b --cache registros/cache-grande-C4corpus.pt --salida registros/2026-08-23_C7-0.8b.json",
+    "codigo": 0,
+    "segundos": 2650.6,
+    "cifras": {
+      "acuerdo_greedy_codigo": 0.5401,
+      "alfa_t1_codigo": 0.5415,
+      "tokens_por_pase_codigo": 2.129,
+      "ppl_grande_codigo": 6.132,
+      "ppl_borrador_codigo": 20.363,
+      "acuerdo_greedy_espanol": 0.4939,
+      "alfa_t1_espanol": 0.5064,
+      "tokens_por_pase_espanol": 1.962,
+      "ppl_grande_espanol": 8.997,
+      "ppl_borrador_espanol": 31.812,
+      "segundos_pase_grande": 2004.6
+    },
+    "salida_cola": "    \"acuerdo_greedy\": 0.5401,\n    \"alfa_t1\": 0.5415,\n    \"alfa_t1_cota_alta\": 0.5533,\n    \"ppl_grande\": 6.132,\n    \"ppl_borrador\": 20.363,\n    \"tokens_por_pase_g4\": 2.014,\n    \"iid_g4\": 2.075,\n    \"tokens_por_pase_g8\": 2.129,\n    \"iid_g8\": 2.166,\n    \"tokens_por_pase_g16\": 2.166,\n    \"iid_g16\": 2.174\n  },\n  \"espanol\": {\n    \"tokens\": 4088,\n    \"acuerdo_greedy\": 0.4939,\n    \"alfa_t1\": 0.5064,\n    \"alfa_t1_cota_alta\": 0.5225,\n    \"ppl_grande\": 8.997,\n    \"ppl_borrador\": 31.812,\n    \"tokens_por_pase_g4\": 1.894,\n    \"iid_g4\": 1.918,\n    \"tokens_por_pase_g8\": 1.962,\n    \"iid_g8\": 1.972,\n    \"tokens_por_pase_g16\": 1.975,\n    \"iid_g16\": 1.976\n  }\n}\nCIFRA acuerdo_greedy_codigo 0.5401\nCIFRA alfa_t1_codigo 0.5415\nCIFRA tokens_por_pase_codigo 2.129\nCIFRA ppl_grande_codigo 6.132\nCIFRA ppl_borrador_codigo 20.363\nCIFRA acuerdo_greedy_espanol 0.4939\nCIFRA alfa_t1_espanol 0.5064\nCIFRA tokens_por_pase_espanol 1.962\nCIFRA ppl_grande_espanol 8.997\nCIFRA ppl_borrador_espanol 31.812\nCIFRA segundos_pase_grande 2004.6\n\nregistro: registros/2026-08-23_C7-0.8b.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 07:48",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "acuerdo_greedy_codigo",
+    "valor": 0.5401,
+    "espero": ">=0.65"
+  },
+  "leccion": "REFUTADO, y por el lado que no esperaba: el Qwen3.5-0.8B da acuerdo_greedy 0,5401 en codigo y 0,4939 en espanol (predicho >=0,65), o sea PEOR que el campeon a 2 bits (0,5631 / 0,5230). Dos modelos que no se parecen en nada —uno de 27,8 G parametros destrozado a 2 bits, otro de 0,8 G entrenado limpio y 35 veces mas pequeno— aciertan el argmax del BF16 casi con la misma frecuencia. Eso apunta a que lo que limita alfa no es el tamano ni la calidad del borrador dentro de este rango, sino la distancia irreducible entre el objetivo y CUALQUIER modelo que no sea el, y por tanto que subir de 0,8B a 2B o 4B comprara poco. Es la hipotesis de C9 y hay que medirla, no suponerla. PERO el 0,8B GANA como borrador aunque acepte menos, y esta es la cifra util del ciclo: lo que cuesta proponer un token es leer los pesos del borrador, y el ancho de banda de RAM de esta maquina esta medido hoy en 24,6 GB/s de trafico (copia de 1 GB en 81 ms, 16 hilos). El campeon residente son ~8 GB por token propuesto (0,40 s); el 0,8B son 1,6 GB (0,08 s). Con el pase grande de 5,6 s: el campeon rinde como mucho 0,29 tok/s (optimo en gamma=4) y el 0,8B rinde 0,34 tok/s (optimo en gamma=4-8). El borrador barato gana un 17% pese a aceptar menos, porque en especulativa el coste del borrador NO es despreciable cuando el borrador es un modelo grande comprimido. Queda enterrada la idea que abria docs/densa-en-cpu.md: 'las dos vias encajan, el campeon de 2 bits es el borrador ideal'. No lo es ni por acuerdo ni por coste. TERCERA cifra, de regalo y con aviso: la PPL del BF16 sobre las 8 ventanas por dominio es 6,132 en codigo y 8,997 en espanol, frente a 5,764 y 4,839 que dio la sonda de UNA ventana. No es contradiccion, es muestra: las ventanas posteriores del corpus en espanol son mas dificiles. Al citar PPL hay que decir cuantas ventanas la produjeron, porque con una sola el numero se mueve casi el doble. Y el 0,8B da 20,363 y 31,812 sobre ese mismo corpus. LECCION DE INSTRUMENTO: el pase del modelo grande ya se cachea (top-1024 de p mas masa de cola, 100 MB en registros/cache-grande-C4corpus.pt). Costo 2004 s pagarlo una vez; el 0,8B costo 595 s. El siguiente candidato solo paga su propio pase, asi que comparar borradores dejo de ser una decision cara. Ademas Sigma min(p,q) queda ACOTADA y no estimada: la cota alta y la baja difieren 0,012 con K=1024.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 07:02",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 07:02",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 07:02",
+      "que": "predicho acuerdo_greedy_codigo >=0.65"
+    },
+    {
+      "cuando": "2026-08-23 07:47",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 07:48",
+      "que": "veredicto: REFUTA (acuerdo_greedy_codigo=0.5401)"
+    }
+  ]
+}

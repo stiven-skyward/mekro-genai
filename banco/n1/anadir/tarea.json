@@ -1,0 +1,17 @@
+{
+ "id": "anadir",
+ "nivel": "n1",
+ "encargo": "A `inventario.py` le falta el método `sale(nombre, cantidad)`, que descuenta existencias. La prueba `prueba.py` dice exactamente qué debe hacer y hoy falla. Escríbelo. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "El contrato vive en la prueba, no en el encargo: hay que LEERLA para saber qué tres ValueError se esperan. Mide escribir código nuevo dentro de un fichero existente respetando su estilo y sin romper lo que ya pasa.",
+ "guion": [
+  "<think>El contrato está en la prueba: la leo antes que el módulo.</think>\n<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"inventario.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"inventario.py\", \"cambios\": [{\"buscar\": \"    def hay(self, nombre):\", \"poner\": \"    def sale(self, nombre, cantidad):\\n        if cantidad <= 0:\\n            raise ValueError(\\\"la cantidad que sale debe ser positiva\\\")\\n        if self._piezas.get(nombre, 0) < cantidad:\\n            raise ValueError(f\\\"no hay {cantidad} de {nombre}\\\")\\n        self._piezas[nombre] -= cantidad\\n\\n    def hay(self, nombre):\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "`sale` valida cantidad positiva y existencias suficientes (ValueError en ambos casos, sin descontar nada) y solo entonces descuenta. La prueba pasa 5/5."
+ ]
+}

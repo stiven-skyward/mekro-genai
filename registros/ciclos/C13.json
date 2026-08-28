@@ -1,0 +1,75 @@
+{
+  "id": "C13",
+  "pregunta": "con β ya recuperada, ¿se hunde el residuo del ajuste C1+C2 muy por debajo del 0,36 que da cualquier nube, o sea: se recuperan los libros?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 13:16",
+  "revision": {
+    "cuando": "2026-08-23 13:16",
+    "texto": "C12 recupero beta_fila leyendola de los puentes de duplicados, con cierre de ciclos 0,0034-0,0040 en cinco matrices contra 0,33-0,52 del control barajado, y el 100% de las filas conectadas. C11 probo que el libro tiene 15,73 M = 0,938 x 4096^2 entradas, o sea k1*k2 de HERMETIC2.json. Queda el ultimo paso de la salida (a): separar el sumset. Lo que hay que tener presente para no repetir el error de C1 es la aritmetica de la cota tasa-distorsion que la propia leccion de C1 cita: en 16 dimensiones con 4096 codigos el residuo de UNA etapa es ~0,60 sobre cualquier nube, luego DOS etapas dan ~0,36 sobre cualquier nube. Ese 0,36 es el suelo del azar, no una senal. C1 midio err_relativo 0,2480 con alfa equivocada, que ya estaba por debajo de 0,36 y aun asi no significaba nada. Por eso esta vez la cifra va con control: el mismo ajuste, mismo k, mismas iteraciones, sobre la MISMA matriz del BF16 sin cuantizar, donde no hay reticulo que encontrar. El ajuste es el mismo que uso el cuantizador original: RVQ codicioso de dos etapas, C1 por k-means, residuos por k-means, y alternancia reasignando y reestimando. Sabemos ademas algo que el cuantizador no sabia: existe una solucion con error EXACTAMENTE cero."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 13:16",
+    "metrica": "err_relativo",
+    "espero": "<0.10",
+    "porque": "Con beta recuperada, los grupos desescalados de TODAS las filas viven en el MISMO reticulo de 16,8 M puntos, no en 17.408 reticulos distintos escalados. Eso convierte el ajuste en un problema con solucion de error exactamente cero, y un k-means alternante que arranca cerca deberia caer hacia ella. Predigo err_relativo < 0,10 y el umbral esta puesto donde decide: 0,36 es lo que da el mismo ajuste sobre CUALQUIER nube de 16 dimensiones con dos etapas de 4096 codigos —cota tasa-distorsion 0,60 al cuadrado— y 0,248 fue lo que saco C1 con la escala equivocada, o sea que cualquier cosa entre 0,2 y 0,4 NO seria senal. Por debajo de 0,10 solo se puede llegar si los grupos comparten reticulo de verdad. Lo que decide: si sale <0,10 los libros son recuperables y H1 se termina afinando hasta el bit; si sale entre 0,10 y 0,36 el reticulo esta pero el ajuste codicioso no lo encuentra, y hay que cambiar de algoritmo —no de hipotesis— atacando el sumset por su estructura de traslaciones en vez de por k-means; si sale ~0,36 igual que el control, algo falla en la desescalada y hay que volver a C12."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 13:18",
+    "comando": "python3 scripts/recuperar_libros.py --capa 45 --tensor mlp.up_proj --n 60000 --iters 4 --salida registros/2026-08-23_C13-sonda-libros.json",
+    "codigo": 0,
+    "segundos": 88.6,
+    "cifras": {
+      "err_relativo": 0.28765,
+      "err_relativo_control": 0.32998,
+      "err_fuera_de_muestra": 0.36853
+    },
+    "salida_cola": "[campeon] β leída de los puentes · cierre 0.00888 · 17408/17408 filas · 12s\n[campeon] ajustando k=4096 sobre 60,000 grupos\n    iter 1/4 · err_relativo 0.29440\n    iter 2/4 · err_relativo 0.29181\n    iter 3/4 · err_relativo 0.28952\n    iter 4/4 · err_relativo 0.28765\n[campeon] err_relativo 0.28765 · fuera de muestra 0.36853\n\n[bf16] control · β = RMS de fila (la ventaja se la doy yo)\n[bf16] ajustando k=4096 sobre 60,000 grupos\n    iter 1/4 · err_relativo 0.33205\n    iter 2/4 · err_relativo 0.33128\n    iter 3/4 · err_relativo 0.33056\n    iter 4/4 · err_relativo 0.32998\n[bf16] err_relativo 0.32998 · fuera de muestra 0.43090\n\nCIFRA err_relativo 0.28765\nCIFRA err_relativo_control 0.32998\nCIFRA err_fuera_de_muestra 0.36853\n\nregistro: registros/2026-08-23_C13-sonda-libros.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-23 13:32",
+    "comando": "python3 scripts/recuperar_libros.py --capa 45 --tensor mlp.up_proj --n 600000 --iters 8 --salida registros/2026-08-23_C13-libros.json",
+    "codigo": 0,
+    "segundos": 803.6,
+    "cifras": {
+      "err_relativo": 0.12275,
+      "err_relativo_control": 0.39906,
+      "err_fuera_de_muestra": 0.12372
+    },
+    "salida_cola": "[campeon] β leída de los puentes · cierre 0.00888 · 17408/17408 filas · 12s\n[campeon] ajustando k=4096 sobre 600,000 grupos\n    iter 1/8 · err_relativo 0.16208\n    iter 2/8 · err_relativo 0.14468\n    iter 3/8 · err_relativo 0.13707\n    iter 4/8 · err_relativo 0.13233\n    iter 5/8 · err_relativo 0.12909\n    iter 6/8 · err_relativo 0.12646\n    iter 7/8 · err_relativo 0.12434\n    iter 8/8 · err_relativo 0.12275\n[campeon] err_relativo 0.12275 · fuera de muestra 0.12372\n\n[bf16] control · β = RMS de fila (la ventaja se la doy yo)\n[bf16] ajustando k=4096 sobre 600,000 grupos\n    iter 1/8 · err_relativo 0.40188\n    iter 2/8 · err_relativo 0.40122\n    iter 3/8 · err_relativo 0.40068\n    iter 4/8 · err_relativo 0.40026\n    iter 5/8 · err_relativo 0.39988\n    iter 6/8 · err_relativo 0.39958\n    iter 7/8 · err_relativo 0.39930\n    iter 8/8 · err_relativo 0.39906\n[bf16] err_relativo 0.39906 · fuera de muestra 0.41961\n\nCIFRA err_relativo 0.12275\nCIFRA err_relativo_control 0.39906\nCIFRA err_fuera_de_muestra 0.12372\n\nregistro: registros/2026-08-23_C13-libros.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 13:35",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "err_relativo",
+    "valor": 0.12275,
+    "espero": "<0.10"
+  },
+  "leccion": "REFUTADO por poco —0,12275 frente a <0,10— y cae justo en el tercer desenlace que la prediccion dejo escrito: el reticulo esta pero el ajuste codicioso no lo encuentra, luego lo que hay que cambiar es el ALGORITMO, no la hipotesis. Las cifras: campeon 0,12275 dentro de muestra y 0,12372 FUERA, o sea sin sobreajuste; control BF16 0,39906 y 0,41961, clavado en el suelo del azar que predice la cota tasa-distorsion (0,60 al cuadrado = 0,36) y sin moverse en ocho iteraciones (0,40188 -> 0,39906). El campeon esta un factor 3,25 por debajo del control: el reticulo se nota, y mucho, pero no se ha separado. PRIMERA LECCION, y es de metodo: NO CERRAR CON LA SONDA FUE LO CORRECTO. La sonda de 60.000 grupos dio 0,28765 dentro y 0,36853 fuera, o sea que habria refutado por un motivo FALSO —sobreajuste con 15 puntos por codigo—, y habria repetido exactamente el error de C1. Al decimo aumentar la muestra, el error real cayo a la mitad y el hueco entre dentro y fuera desaparecio. Con k=4096 hacen falta cientos de puntos por codigo, no quince: una sonda mas barata que su propia resolucion no es barata, es engañosa. SEGUNDA, y es la que decide el siguiente paso: la traza sigue BAJANDO en la octava iteracion (0,16208 0,14468 0,13707 0,13233 0,12909 0,12646 0,12434 0,12275), asi que con mas vueltas bajaria mas. Y aun asi no serviria, porque H1 no necesita 0,05: necesita CERO, bit a bit. El k-means alternante esta convergiendo a un RVQ VALIDO PERO DISTINTO del original —hay muchas factorizaciones de la misma nube y el descenso por coordenadas cae en la mas cercana a su inicializacion aleatoria, no en la que genero estos pesos—. Insistir con mas iteraciones es escalar computo contra un metodo que no puede acertar. TERCERA: la desescalada esta bien, y esto descarta el tercer desenlace. El cierre de ciclos de beta en esta matriz salio 0,00888 y el control, al que le REGALE una beta por RMS de fila para no hacerme trampa, se quedo en 0,399. Si la beta estuviera mal, el campeon estaria donde el control. LO QUE VIENE, ya escrito en holos/H1.md: atacar el sumset por su estructura de TRASLACIONES. Para un i fijo, el conjunto {C1[i]+C2[j]} es un trasladado de C2, luego dos cumulos verdaderos son trasladados el uno del otro y la diferencia entre ellos se REPITE cientos de veces, mientras que entre dos nubes cualesquiera cada diferencia aparece una vez. Es la misma palanca que funciono en C11 y C12: contar coincidencias en vez de reconstruir.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 13:16",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 13:16",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 13:16",
+      "que": "predicho err_relativo <0.10"
+    },
+    {
+      "cuando": "2026-08-23 13:18",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 13:32",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 13:35",
+      "que": "veredicto: REFUTA (err_relativo=0.12275)"
+    }
+  ]
+}

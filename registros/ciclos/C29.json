@@ -1,0 +1,77 @@
+{
+  "id": "C29",
+  "pregunta": "¿construye el cerebro de trabajo un proyecto ENTERO desde un encargo en prosa —dos ficheros, CLI y persistencia entre procesos— con el presupuesto apretado del §muro (3.000 tokens)?",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 19:20",
+  "revision": {
+    "cuando": "2026-08-25 19:20",
+    "texto": "C28 refutó mi diseño del borde y dejó el mapa: n3 (proyecto desde cero, la misión literal del arnés) y presupuesto de verdad. n3/lista junta ambos: la semilla contiene SOLO la prueba (el rojo es ModuleNotFoundError: no hay nada), el encargo pide lista.py + orden.py con persistencia en lista.jsonl que debe CRUZAR el salto de proceso (la prueba lanza el CLI con subprocess), y la medición baja tope_tokens de 8.000 a 3.000 —el presupuesto que META §muro declara realista—. Referencias: C27 (cupones) escribió UN fichero de ~10 líneas en un turno de 620 tokens limpio; aquí son DOS ficheros de ~40 y ~25 líneas, la generación más larga que el banco haya pedido, y el punto exacto donde C24 vio romperse los saltos de línea en JSON. eco pasa 1/1 con exigir-todo aplicando su propio guion (registro 2026-08-25_1919). El gasto de eco con este guion: ~700 tokens de salida; el modelo real con sus think gastará 2-4×."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 19:20",
+    "metrica": "tareas_pct",
+    "espero": "==100",
+    "porque": "Sostengo el pleno una vez mas, pero esta es la prediccion mas incierta desde C24: la doy a ~60-70%, no a >90 como las anteriores. A favor: 16/16 historico, el escribir largo ya salio limpio una vez, y el diseño que la prueba exige (releer el fichero en cada operacion para cruzar procesos) es el mismo patron que bitacora y version ya demostraron entender. En contra, los dos ejes que ahora aprietan DE VERDAD: (1) presupuesto — 3.000 tokens de salida con dos ficheros enteros mas los think; si el modelo gasta ~600 tokens por vuelta como en sus turnos largos, el tope llega en ~5 vueltas y el motivo de parada sera tope_tokens con la tarea a medias; (2) forma — dos contenidos multilinea dentro de JSON en el mismo turno. Lo que decide: 100 con parada fin dice que el arnes YA construye proyectos pequeños de principio a fin con 2,83 bits y presupuesto de muro — la frase de la mision, medida; 0 por tope_tokens acota el presupuesto minimo de un n3 y el gradiente de M3 pasa a ser tokens-por-tarea (comprimir think, H5 para ahorrar reintentos); 0 por forma reabre H5 con el dato exacto. Secundario: espero 4-7 vueltas, 1.800-2.900 tokens de salida, 1.500-3.000 s crudos."
+  },
+  "sonda": {
+    "cuando": "2026-08-25 19:20",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n3 --cerebro eco --modo lista --callado --exigir-todo --etiqueta n3-eco-sonda-C29",
+    "codigo": 0,
+    "segundos": 0.5,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 621.0,
+      "segundos_media": 0.2,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n3 · cerebro eco · modo lista · 1 tareas ==\n\n── lista\n   ✓ PASA · fin · 5 vueltas · 621 tok · 0.2 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 621.0\nCIFRA segundos_media 0.2\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-25_1920_n3-eco-sonda-C29.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-25 20:06",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400 --etiqueta n3-gguf-primera",
+    "codigo": 0,
+    "segundos": 1852.1,
+    "cifras": {
+      "tareas_pct": 0.0,
+      "tokens_media": 1215.0,
+      "segundos_media": 1850.9,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n3 · cerebro gguf · modo lista · 1 tareas ==\n\n── lista\n[1] 165 tok · 571.7 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 61.3 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 1213.6 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(x)` - adds an item to the list\n     - `pendientes()` - returns a list of pending items\n     - `tachar(x)` - marks an item as done (removes from pending)\n     - Data is persisted in `lista.jsonl`\n  \n  2. `orden.py` is a CLI script:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds an item\n     - `tachar <x>`\n   ✗ FALLA · fin · 3 vueltas · 1215 tok · 1850.9 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 0.0\nCIFRA tokens_media 1215.0\nCIFRA segundos_media 1850.9\nCIFRA intervenciones 0\n\n0/1 tareas · registro → registros/2026-08-25_2006_n3-gguf-primera.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 20:07",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 0.0,
+    "espero": "==100"
+  },
+  "leccion": "REFUTADO —tareas_pct 0 frente a ==100— y EL BORDE POR FIN TIENE CARA, pero no es la que predije: no cayo por presupuesto (gasto 1.215 de 3.000) ni por forma (ninguna llamada malformada). Cayo por una ESQUINA DEL ARNES: la vuelta 3 gasto los 1.024 tokens del turno en puro think de diseño —en ingles, primera vez; el diseño desde cero dispara un razonamiento mas largo que cualquier arreglo— y se corto ANTES de emitir ninguna llamada; el bucle trata un turno sin llamadas como respuesta final (motivo fin), asi que dio la tarea por acabada a medio pensar. Tres piezas: (1) el 1024 de C24 basta para arreglos pero NO para el turno de diseño de un n3; (2) el fallo exacto esta en bucle.py: motivo_parada==tope_tokens sin llamadas NO es una respuesta final y tratarlo como tal es adivinar que termino — la politica de no adivinar de plantilla.py, aplicada al reves; (3) con el contexto append-exacto el reintento es BARATO: el think cortado ya esta en la cache, pedir continuar cuesta solo el sufijo. El arreglo va a bucle.py (pedir continuar una vez por vuelta cortada, con tope_vueltas/tope_tokens como frenos) y C30 mide si n3 pasa con el; la pregunta del presupuesto minimo de un n3 queda viva —1.215 gastados a medio diseño sugieren que 3.000 esta JUSTO—. Y una miga para el horizonte: el modelo penso en ingles justo cuando la tarea se volvio de diseño puro; el idioma del think parece correlacionar con la carga cognitiva, y si el think en ingles es mas eficiente en tokens, forzarlo podria ser una palanca de presupuesto medible.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 19:20",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 19:20",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 19:20",
+      "que": "predicho tareas_pct ==100"
+    },
+    {
+      "cuando": "2026-08-25 19:20",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-25 20:06",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 20:07",
+      "que": "veredicto: REFUTA (tareas_pct=0.0)"
+    }
+  ]
+}

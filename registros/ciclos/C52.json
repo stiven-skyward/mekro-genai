@@ -1,0 +1,61 @@
+{
+  "id": "C52",
+  "pregunta": "¿El tope de tokens de 3000 permite completar n1/fuga con menos de 650 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 19:58",
+  "revision": {
+    "cuando": "2026-08-26 19:58",
+    "texto": "C51 refutó que cadena (<600) es barata; C50 refutó bitacora (<900s). Fuga tiene baseline de 563 tokens. No se ha medido tokens_media en fuga. El margen del 15% sobre 563 es 647.45."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 19:58",
+    "metrica": "tokens_media",
+    "espero": "<650",
+    "porque": "Baseline n1/fuga es 563 tokens. Umbral 650 representa un 15.8% de margen sobre la línea base, superando el ruido del 10%. La tarea es de complejidad media-baja, similar a anadir (493) pero con más contexto que migrar (489)."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 20:14",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --etiqueta lazo-C52 --tarea fuga --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 940.5,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 506.0,
+      "segundos_media": 939.4,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── fuga\n[1] 109 tok · 467.7 s · 2 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n  ✓ grep({\"patron\": \"cesta\", \"glob\": \"*.py\"})  (0.0 s)\n[2] 49 tok · 148.2 s · 2 llamadas\n  ✓ leer({\"ruta\": \"cesta.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 200 tok · 207.1 s · 1 llamadas\n  El bug es clásico: `grupos={}` es un argumento mutable por defecto. El diccionario se crea una sola vez al definir la función y se comparte entre todas las llamadas. La segunda cesta arranca con los restos de la primera.\n  ✓ editar({\"ruta\": \"cesta.py\", \"cambios\": [{\"buscar\": \"def agrupar(palabras, grupos={}):\\n    for p in palabras:\", \"poner\": \"def a…)  (0.0 s)\n[4] 27 tok · 41.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 121 tok · 71.6 s\n  Corregido. El problema era el argumento por defecto mutable `grupos={}`: Python evalúa ese `{}` una sola vez al definir la función, así que todas las llamadas compartían el mismo diccionario. La segunda llamada a `agrupar` arrancaba con los grupos de la primera.\n  \n  La solución: `grupos=None` como valor por defecto y, dentro de la función, `if grupos is None: grupos = {}`. Cada llamada crea su propio\n   ✓ PASA · fin · 5 vueltas · 506 tok · 939.4 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 506.0\nCIFRA segundos_media 939.4\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_2014_lazo-C52.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 20:20",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 506.0,
+    "espero": "<650"
+  },
+  "leccion": "CONFIRMA.\nEl umbral de 650 tokens se supera con un margen de 144 tokens.\nLa media medida fue de 506 tokens, quedando 144 por debajo del límite.\nEl éxito se mantuvo al 100% sin intervenciones.\nLa causa es la eficiencia del modelo gguf en la tarea n1.\nEl tope de 3000 tokens no fue un cuello de botella.\nLa ejecución duró 939.4 segundos con 5 vueltas.\nMedir la varianza de tokens en 10 repeticiones.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 19:58",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 19:58",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 19:58",
+      "que": "predicho tokens_media <650"
+    },
+    {
+      "cuando": "2026-08-26 20:14",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 20:20",
+      "que": "veredicto: CONFIRMA (tokens_media=506.0)"
+    }
+  ]
+}

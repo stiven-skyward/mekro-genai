@@ -1,0 +1,61 @@
+{
+  "id": "C45",
+  "pregunta": "¿El tope de tokens de 1200 permite completar n2/version con menos de 900 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 13:19",
+  "revision": {
+    "cuando": "2026-08-26 13:19",
+    "texto": "C42 confirmó n2/aguña (686 tokens). C43 refutó n2/cupones (957 tokens). C44 confirmó n2/tres (881 tokens). Falta medir n2/version para completar el perfil de eficiencia n2."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 13:19",
+    "metrica": "tokens_media",
+    "espero": "<900",
+    "porque": "n2/version implica gestión de estado que suele ser más ligera que cupones (957) pero más compleja que aguja (686). Se predice <900 con margen de seguridad sobre el ruido del 10%."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 13:38",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --etiqueta lazo-C45 --tarea version --tope-vueltas 16 --tope-tokens 1200 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1160.2,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 1215.0,
+      "segundos_media": 1159.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── version\n[1] 103 tok · 404.0 s · 1 llamadas\n  ✓ bash({\"comando\": \"find . -name \\\"migrador*\\\" -o -name \\\"test*migrador*\\\" -o -name \\\"*migrador*test*\\\" | head -20\"})  (0.0 s)\n[2] 45 tok · 45.2 s · 1 llamadas\n  ✓ bash({\"comando\": \"find . -name \\\"test*\\\" -o -name \\\"*_test*\\\" | head -20\"})  (0.0 s)\n[3] 26 tok · 32.8 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[4] 50 tok · 63.0 s · 2 llamadas\n  ✓ leer({\"ruta\": \"migrador.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[5] 991 tok · 610.8 s · 1 llamadas\n  El problema es claro: `migrar()` no es idempotente. Al relanzarla, vuelve a multiplicar `puntos` por 100 y recalcula `nivel` sobre el valor ya migrado. La solución: saltar las fichas que ya llevan `\"v\": 2`.\n  ✓ editar({\"ruta\": \"migrador.py\", \"cambios\": [{\"buscar\": \"    fichas = []\\n    for ficha in cargar():\\n        ficha[\\\"v\\\"] = 2\\n …)  (0.0 s)\n   ✓ PASA · tope_tokens · 5 vueltas · 1215 tok · 1159.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 1215.0\nCIFRA segundos_media 1159.1\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1338_lazo-C45.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 13:43",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 1215.0,
+    "espero": "<900"
+  },
+  "leccion": "REFUTA.\nEl umbral era 900 tokens y se midieron 1215.\nLa diferencia es de 315 tokens por encima del límite.\nEl 100% de éxito se mantuvo, pero el coste superó la predicción.\nLa causa probable es la edición masiva de 991 tokens en la vuelta 5.\nEsa acción de reescritura completa agotó el margen previsto.\nEl tope de 1200 tokens no impidió el éxito, pero no garantizó la ligereza.\nMedir la longitud de la edición en `migrador.py` para aislar el coste.\nRepetir el ciclo con una instrucción de edición incremental.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 13:19",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 13:19",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 13:19",
+      "que": "predicho tokens_media <900"
+    },
+    {
+      "cuando": "2026-08-26 13:38",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 13:43",
+      "que": "veredicto: REFUTA (tokens_media=1215.0)"
+    }
+  ]
+}

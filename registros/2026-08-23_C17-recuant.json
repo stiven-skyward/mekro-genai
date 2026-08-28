@@ -1,0 +1,16 @@
+{
+  "capas_recuantizadas": [
+    20,
+    30,
+    40,
+    50
+  ],
+  "err_rvq_medio": 0.3765,
+  "nll_control": 2.81685,
+  "nll_recuantizado": 2.90389,
+  "ppl_control": 16.7241,
+  "ppl_recuantizado": 18.2451,
+  "delta_nats_por_capa": 0.02176,
+  "razon_ppl_extrapolada_64": 4.0255,
+  "segundos": 3464.4
+}

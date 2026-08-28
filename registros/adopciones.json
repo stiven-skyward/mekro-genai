@@ -1,0 +1,40 @@
+{
+ "vigentes": {},
+ "historial": [
+  {
+   "accion": "adoptar",
+   "tarea": "n3/lista",
+   "mandos": {
+    "tope_vueltas": 16,
+    "tope_tokens": 1600,
+    "tope_segundos": 5400
+   },
+   "metrica": "tokens_media",
+   "valor": 1732.0,
+   "linea_base": 2118,
+   "mejora_pct": 18.2,
+   "ciclo": "C40",
+   "cuando": "2026-08-27T16:57:39"
+  },
+  {
+   "accion": "revertir",
+   "tarea": "n3/lista",
+   "adopcion_caida": {
+    "tarea": "n3/lista",
+    "mandos": {
+     "tope_vueltas": 16,
+     "tope_tokens": 1600,
+     "tope_segundos": 5400
+    },
+    "metrica": "tokens_media",
+    "valor": 1732.0,
+    "linea_base": 2118,
+    "mejora_pct": 18.2,
+    "ciclo": "C40",
+    "cuando": "2026-08-27T16:57:39"
+   },
+   "tareas_pct_observado": 0.0,
+   "cuando": "2026-08-27T17:21:12"
+  }
+ ]
+}

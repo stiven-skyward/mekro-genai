@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_2323",
+  "nivel": "n1",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "cadena",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 953,
+      "tokens_entrada": 10409,
+      "segundos": 1059.1,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-cadena-d9upuu_c/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 953.0,
+    "segundos_media": 1059.1,
+    "intervenciones": 0
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "C66",
+  "pregunta": "¿El tope de tokens de 3000 permite completar n0/crear con menos de 320 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 07:47",
+  "revision": {
+    "cuando": "2026-08-27 07:47",
+    "texto": "Se midió n0/crear en C62 con tokens_media de 278 y segundos_media de 549.1. El banco n0/crear es una tarea de creación simple. La línea base actual es 278 tokens. No se ha medido tokens_media para esta tarea específica en el registro de 'YA MEDIDO' (solo segundos_media)."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 07:47",
+    "metrica": "tokens_media",
+    "espero": "<320",
+    "porque": "La línea base de n0/crear es 278 tokens. El suelo de ruido es ~10%. Para asegurar un umbral medible y no trivial, se fija un umbral de 320 tokens, que representa un aumento del 15% sobre la base (278 * 1.15 = 319.7). Esto permite verificar si la tarea se mantiene eficiente bajo el tope de 3000 tokens sin degradación significativa."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 07:56",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --etiqueta lazo-C66 --tarea crear --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 539.8,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 278.0,
+      "segundos_media": 538.6,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n0 · cerebro gguf · modo lista · 1 tareas ==\n\n── crear\n[1] 41 tok · 367.7 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[2] 161 tok · 102.6 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"pila.py\", \"contenido\": \"class Pila:\\n    def __init__(self):\\n        self._datos = []\\n\\n    def apilar(self,…)  (0.0 s)\n[3] 27 tok · 27.9 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[4] 49 tok · 37.8 s\n  Listo. `pila.py` creado con la clase `Pila` (métodos `apilar`, `desapilar`, `vacia`) y la prueba pasa: **4/4 asertos ✓**.\n   ✓ PASA · fin · 4 vueltas · 278 tok · 538.6 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 278.0\nCIFRA segundos_media 538.6\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-27_0756_lazo-C66.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 08:01",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 278.0,
+    "espero": "<320"
+  },
+  "leccion": "CONFIRMA.\nEl umbral de 320 tokens se supera con un margen de 42 tokens.\nLa media medida es de 278 tokens, por debajo del límite.\nEl éxito se mantiene al 100% sin degradación.\nLa causa probable es la eficiencia intrínseca de la tarea n0.\nNo hay intervenciones ni sobrecostos por el tope de 3000.\nEl tiempo medio de 538.6 segundos es estable.\nMedir la varianza de tokens en 10 repeticiones.\nVerificar si el tope de 3000 limita otras tareas complejas.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 07:47",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 07:47",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 07:47",
+      "que": "predicho tokens_media <320"
+    },
+    {
+      "cuando": "2026-08-27 07:56",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 08:01",
+      "que": "veredicto: CONFIRMA (tokens_media=278.0)"
+    }
+  ]
+}

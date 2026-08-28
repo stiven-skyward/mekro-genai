@@ -1,0 +1,61 @@
+{
+  "id": "C32",
+  "pregunta": "¿Reduce `foco` los tokens de n3/lista por debajo del baseline de 2118 medido en C30?",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 22:37",
+  "revision": {
+    "cuando": "2026-08-25 22:37",
+    "texto": "C30 midio 2118 tokens sin foco y 0 intervenciones; C31 cerró la cota (1500,2118] y fijó el tope operativo n3 en 3000. El horizonte §2 marca el A/B con/sin foco como la siguiente medición barata una vez hay cerebro."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 22:37",
+    "metrica": "tokens_media",
+    "espero": "<1900",
+    "porque": "C30 gastó 2118; las lecturas de fichero del proyecto pequeño (lista.py ~80 líneas) cuestan ~250-350 tokens de contenido; foco los sustituye por un resumen holográfico de ~50-100 tokens, neta ~200-250 de ahorro → 2118−250≈1870, redondeo conservador a 1900"
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-25 23:05",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --etiqueta lazo-C32 --tarea lista --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1686.2,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 1933.0,
+      "segundos_media": 1685.0,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "[1] 165 tok · 460.2 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 48.8 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 731.7 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(item)` - adds an item to the list\n     - `pendientes()` - returns a list of pending (not yet checked) items\n     - `tachar(item)` - marks an item as done (checked)\n  \n     Data is persisted in `lista.jsonl`.\n  \n  2. `orden.py` is a CLI script:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds item x\n     - `t\n  ·· turno cortado sin llamadas: se le pide continuar\n[4] 296 tok · 142.8 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"lista.py\", \"contenido\": \"import json\\nimport os\\n\\nRUTA = \\\"lista.jsonl\\\"\\n\\n\\ndef _leer():\\n    if not os.pat…)  (0.0 s)\n[5] 221 tok · 131.2 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"orden.py\", \"contenido\": \"import sys\\nfrom lista import anadir, pendientes, tachar\\n\\n\\ndef main():\\n    if len…)  (0.0 s)\n[6] 27 tok · 53.8 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.1 s)\n[7] 174 tok · 112.5 s\n  Los 6 asertos pasan. Resumen de lo construido:\n  \n  - **`lista.py`** — módulo con `anadir`, `pendientes`, `tachar`; persiste en `lista.jsonl` (una línea JSON por elemento: `{\"nombre\": …, \"hecho\": bool}`). `tachar` lanza `ValueError` si el elemento no está pendiente.\n  - **`orden.py`** — CLI (`python3 orden.py <cmd> [arg]`): `ver` imprime pendientes una por línea; `anadir <x>` añade; `tachar <x>` marca y\n   ✓ PASA · fin · 7 vueltas · 1933 tok · 1685.0 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 1933.0\nCIFRA segundos_media 1685.0\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-25_2305_lazo-C32.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 23:16",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 1933.0,
+    "espero": "<1900"
+  },
+  "leccion": "<think>\nThe user wants me to write a research cycle lesson. Let me analyze the data:\n\n**Prediction:**\n- Metric: tokens_media\n- Expected: <1900\n- Reasoning: C30 spent 2118 tokens; file reads cost ~250-350 tokens; `foco` replaces them with a holographic summary of ~50-100 tokens, net savings ~200-250 → 2118−250≈1870, conservative rounding to 1900.\n\n**Measurement:**\n- tokens_media: 1933.0\n- The threshold was <1900\n- 1933 > 1900, so it does NOT go below the threshold.\n\nWait, let me re-read the question: \"¿Reduce `foco` los tokens de n3/lista por debajo del baseline de 2118 medido en C30?\"\n\nThe question is whether `foco` reduces tokens below the baseline of 2118. The prediction was <1900.\n\nThe measurement shows 1933 tokens.\n\n- 1933 < 2118 (baseline) → YES, it does reduce below baseline\n- 1933 > 1900 (prediction threshold) → NO, it does NOT meet the predicted threshold\n\nSo the prediction of <1900 is REFUTED. The actual is 1933, which is 33 tokens above the 1900 threshold.\n\nBut the broader question \"does it reduce below 2118?\" is CONFIRMED (1933 < 2118).\n\nWait, I need to be more careful. The prediction says \"espero: <1900\". The measurement is 1933. So 1933 is NOT < 1900. The prediction is REFUTED.\n\nThe number against the threshold: 1933 vs 1900 → 33 tokens over.\n\nMost probable cause: The prediction assumed file reads cost 250-350 tokens and `foco` summary costs 50-100, netting 200-250 savings. But looking at the trace, the actual savings were",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 22:37",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 22:37",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 22:37",
+      "que": "predicho tokens_media <1900"
+    },
+    {
+      "cuando": "2026-08-25 23:05",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 23:16",
+      "que": "veredicto: REFUTA (tokens_media=1933.0)"
+    }
+  ]
+}

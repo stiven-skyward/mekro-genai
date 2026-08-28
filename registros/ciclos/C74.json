@@ -1,0 +1,61 @@
+{
+  "id": "C74",
+  "pregunta": "¿Un tope_tokens de 1.200 fuerza al modelo a ser más eficiente en la tarea larga, manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 18:02",
+  "revision": {
+    "cuando": "2026-08-27 18:02",
+    "texto": "C72 midió n3/larga con contexto 8000 y tope_tokens 8000, logrando 100% con 1365 tokens. C73 mostró que los topes pueden ser adoptados si muerden la línea base. La línea base de tokens para n3/larga es 1365."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 18:02",
+    "metrica": "tokens_media",
+    "espero": "<1200",
+    "porque": "El umbral 1200 es un 12% menor que la línea base de 1365 tokens. Al fijar tope_tokens en 1200, se fuerza al modelo a optimizar su uso de tokens para no exceder el límite, manteniendo la viabilidad de la tarea (100% éxito) mientras se reduce el consumo."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 18:40",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --etiqueta lazo-C74 --tarea larga --tope-vueltas 32 --tope-tokens 1200 --tope-segundos 7200",
+    "codigo": 0,
+    "segundos": 2255.7,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 1242.0,
+      "segundos_media": 2254.4,
+      "intervenciones": 1.0
+    },
+    "salida_cola": "== banco n3 · cerebro gguf · modo lista · 1 tareas ==\n\n── larga\n[1] 78 tok · 486.6 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls app/\"})  (0.0 s)\n[2] 64 tok · 52.6 s · 1 llamadas\n  ✓ bash({\"comando\": \"cat app/m0.py app/m1.py app/m2.py app/m3.py app/m4.py app/m5.py app/m6.py app/m7.py app/m8.py app/m9.py\"})  (0.0 s)\n[3] 108 tok · 1059.7 s · 1 llamadas\n  ✓ bash({\"comando\": \"grep -n \\\"calcula\\\" app/m*.py | head -20\"})  (0.0 s)\n[4] 43 tok · 126.8 s · 1 llamadas\n  ✗ bash({\"comando\": \"grep -n \\\"return\\\" app/m*.py | grep \\\"calcula\\\\|x +\\\"\"}) → modo «lista»: «x +\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[5] 74 tok · 54.0 s · 1 llamadas\n  ✓ bash({\"comando\": \"grep -n \\\"return\\\" app/m0.py app/m1.py app/m2.py app/m3.py app/m4.py app/m5.py app/m6.py app/m7.py app/m8.p…)  (0.0 s)\n[6] 109 tok · 110.5 s · 1 llamadas\n  ✓ bash({\"comando\": \"find . -name \\\"*test*\\\" -o -name \\\"*prueba*\\\" | head -10\"})  (0.0 s)\n[7] 26 tok · 34.3 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[8] 740 tok · 326.4 s · 10 llamadas\n  La prueba espera `calcula(5) == 5 + i`, es decir, `x + i` sin negación. Corrijo los diez módulos:\n  ✓ editar({\"ruta\": \"app/m0.py\", \"cambios\": [{\"buscar\": \"    return -(x + 0)\", \"poner\": \"    return x + 0\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m1.py\", \"cambios\": [{\"buscar\": \"    return -(x + 1)\", \"poner\": \"    return x + 1\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m2.py\", \"cambios\": [{\"buscar\": \"    return -(x + 2)\", \"poner\": \"    return x + 2\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m3.py\", \"cambios\": [{\"buscar\": \"    return -(x + 3)\", \"poner\": \"    return x + 3\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m4.py\", \"cambios\": [{\"buscar\": \"    return -(x + 4)\", \"poner\": \"    return x + 4\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m5.py\", \"cambios\": [{\"buscar\": \"    return -(x + 5)\", \"poner\": \"    return x + 5\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m6.py\", \"cambios\": [{\"buscar\": \"    return -(x + 6)\", \"poner\": \"    return x + 6\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m7.py\", \"cambios\": [{\"buscar\": \"    return -(x + 7)\", \"poner\": \"    return x + 7\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m8.py\", \"cambios\": [{\"buscar\": \"    return -(x + 8)\", \"poner\": \"    return x + 8\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m9.py\", \"cambios\": [{\"buscar\": \"    return -(x + 9)\", \"poner\": \"    return x + 9\"}]})  (0.0 s)\n   ✓ PASA · tope_tokens · 8 vueltas · 1242 tok · 2254.4 s · 1 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 1242.0\nCIFRA segundos_media 2254.4\nCIFRA intervenciones 1\n\n1/1 tareas · registro → registros/2026-08-27_1840_lazo-C74.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 18:49",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 1242.0,
+    "espero": "<1200"
+  },
+  "leccion": "REFUTA.\nEl umbral de 1200 tokens no se cumplió, registrando 1242 tokens de media.\nEl modelo superó el tope en 42 tokens, un 3,5% por encima del límite.\nLa causa probable es que la tarea exige 10 ediciones masivas que saturan el contexto.\nEl éxito se mantuvo al 100%, pero la eficiencia se rompió al exceder el tope.\nLa restricción de tokens no forzó la compresión, sino que se ignoró parcialmente.\nDebes medir el conteo de tokens por llamada para aislar el pico de consumo.\nRepite el ciclo con un tope de 1100 para forzar una compresión real.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 18:02",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 18:02",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 18:02",
+      "que": "predicho tokens_media <1200"
+    },
+    {
+      "cuando": "2026-08-27 18:40",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 18:49",
+      "que": "veredicto: REFUTA (tokens_media=1242.0)"
+    }
+  ]
+}

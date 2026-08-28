@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_0945",
+  "nivel": "n0",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "rastro",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 460,
+      "tokens_entrada": 9759,
+      "segundos": 697.4,
+      "verificador": "2/2 asertos ✓",
+      "trabajo": "/tmp/banco-rastro-clqdeonf/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 460.0,
+    "segundos_media": 697.4,
+    "intervenciones": 0
+  }
+}

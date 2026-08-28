@@ -1,0 +1,61 @@
+{
+  "id": "C57",
+  "pregunta": "¿El tope de segundos de 5400 permite completar n1/fuga con menos de 1090 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 23:44",
+  "revision": {
+    "cuando": "2026-08-26 23:44",
+    "texto": "C54-C56 midieron segundos en n1. C55 confirmó anadir (757.8s). C56 confirmó cadena (1059.1s). C54 refutó rojo (1356s). La línea base de fuga es 939.4s. No se ha medido segundos_media para n1/fuga."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 23:44",
+    "metrica": "segundos_media",
+    "espero": "<1090",
+    "porque": "La línea base de n1/fuga es 939.4 segundos. El suelo de ruido es ~10%. Para un umbral robusto con margen ≥15% sobre el baseline: 939.4 * 1.15 = 1080.31. Redondeo a 1090 para asegurar el margen y evitar falsos positivos por variabilidad. El tope de 5400s es amplio, no limitante."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 23:57",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --etiqueta lazo-C57 --tarea fuga --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 761.0,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 506.0,
+      "segundos_media": 759.9,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── fuga\n[1] 109 tok · 395.9 s · 2 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n  ✓ grep({\"patron\": \"cesta\", \"glob\": \"*.py\"})  (0.0 s)\n[2] 49 tok · 113.8 s · 2 llamadas\n  ✓ leer({\"ruta\": \"cesta.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 200 tok · 148.1 s · 1 llamadas\n  El bug es clásico: `grupos={}` es un argumento mutable por defecto. El diccionario se crea una sola vez al definir la función y se comparte entre todas las llamadas. La segunda cesta arranca con los restos de la primera.\n  ✓ editar({\"ruta\": \"cesta.py\", \"cambios\": [{\"buscar\": \"def agrupar(palabras, grupos={}):\\n    for p in palabras:\", \"poner\": \"def a…)  (0.0 s)\n[4] 27 tok · 34.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 121 tok · 64.6 s\n  Corregido. El problema era el argumento por defecto mutable `grupos={}`: Python evalúa ese `{}` una sola vez al definir la función, así que todas las llamadas compartían el mismo diccionario. La segunda llamada a `agrupar` arrancaba con los grupos de la primera.\n  \n  La solución: `grupos=None` como valor por defecto y, dentro de la función, `if grupos is None: grupos = {}`. Cada llamada crea su propio\n   ✓ PASA · fin · 5 vueltas · 506 tok · 759.9 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 506.0\nCIFRA segundos_media 759.9\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_2357_lazo-C57.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 00:03",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 759.9,
+    "espero": "<1090"
+  },
+  "leccion": "CONFIRMA.\nEl valor medido de 759.9 segundos está por debajo del umbral de 1090.\nLa diferencia es de 330.1 segundos a favor del objetivo.\nEl tope de 5400 segundos no fue el factor limitante.\nEl éxito se mantuvo al 100% sin intervenciones.\nLa causa más probable es la eficiencia del modelo gguf en la tarea.\nMedir la varianza de segundos_media en las siguientes 5 ejecuciones.\nVerificar si el margen de 330.1 segundos se mantiene estable.\nRegistrar el tiempo de latencia de las llamadas de herramientas.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 23:44",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 23:44",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 23:44",
+      "que": "predicho segundos_media <1090"
+    },
+    {
+      "cuando": "2026-08-26 23:57",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 00:03",
+      "que": "veredicto: CONFIRMA (segundos_media=759.9)"
+    }
+  ]
+}

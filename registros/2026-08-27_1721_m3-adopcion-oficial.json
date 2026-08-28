@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_1721",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "lista",
+      "paso": false,
+      "motivo": "tope_tokens",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 1614,
+      "tokens_entrada": 9424,
+      "segundos": 1356.3,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-lista-j9icfava/caja/prueba.py\", line 28, in <module>\n    assert codigo == 0 and salida == \"leche\"; ok += 1\nAssertionError",
+      "trabajo": "/tmp/banco-lista-j9icfava/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 0.0,
+    "tokens_media": 1614.0,
+    "segundos_media": 1356.3,
+    "intervenciones": 0
+  }
+}

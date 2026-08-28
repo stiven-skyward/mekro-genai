@@ -1,0 +1,16 @@
+{
+  "id": "crear",
+  "nivel": "n0",
+  "encargo": "Falta el módulo `pila.py`. Escríbelo para que `prueba.py` pase: una clase `Pila` con `apilar`, `desapilar` y `vacia`. No toques la prueba.",
+  "verificar": "python3 prueba.py",
+  "verificar_intacto": [
+    "prueba.py"
+  ],
+  "porque": "Es la única tarea de n0 que crea un fichero desde cero en vez de arreglar uno. Ejercita `escribir`, que el resto del banco no toca porque siempre hay algo que editar.",
+  "guion": [
+    "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"prueba.py\"}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"escribir\", \"arguments\": {\"ruta\": \"pila.py\", \"contenido\": \"\\\"\\\"\\\"Una pila de andar por casa.\\\"\\\"\\\"\\n\\n\\nclass Pila:\\n    def __init__(self):\\n        self._items = []\\n\\n    def apilar(self, x):\\n        self._items.append(x)\\n\\n    def desapilar(self):\\n        return self._items.pop()\\n\\n    def vacia(self):\\n        return not self._items\\n\"}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+    "Escrito `pila.py` con las tres operaciones. Verificado: 4/4 asertos."
+  ]
+}

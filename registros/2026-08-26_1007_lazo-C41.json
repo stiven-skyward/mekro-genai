@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_1007",
+  "nivel": "n2",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 8,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "aguja",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 686,
+      "tokens_entrada": 37187,
+      "segundos": 2290.3,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-aguja-8bxp_jjh/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 686.0,
+    "segundos_media": 2290.3,
+    "intervenciones": 0
+  }
+}

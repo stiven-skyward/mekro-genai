@@ -1,0 +1,60 @@
+{
+  "id": "C1",
+  "pregunta": "¿sigue estando la estructura RVQ (C1+C2 sobre grupos de 16) dentro de los pesos deshechos de qwen38-h13b?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 01:48",
+  "revision": {
+    "cuando": "2026-08-23 01:48",
+    "texto": "hermetic3.py:134-135 permuta GRUPOS enteros (orden_g*g+arange(g)), no columnas sueltas: los grupos son 16 columnas contiguas del orden original. cuantizar_v2.py no persiste idx/C1/C2/alfa, solo pesos bf16 (51 GB). alfa se inicializo al RMS de fila y --afinar 60 la movio. La capa 30 usa g=16; las capas 0-3 y 58-63 usan g=8."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 01:48",
+    "metrica": "frac_exacta",
+    "espero": ">=0.95",
+    "porque": "si la estructura RVQ sigue legible, k-means k=4096 sobre los grupos normalizados debe recuperar C1 y el residuo debe colapsar en otros 4096 codigos, reconstruyendo dentro de la resolucion de bf16 salvo el 1% de columnas salientes (frac_saliente=0.01) que no esta en el reticulo"
+  },
+  "sonda": {
+    "cuando": "2026-08-23 01:49",
+    "comando": "python3 scripts/sondear_estructura.py --capa 30 --muestra 120000 --k 4096",
+    "codigo": 0,
+    "segundos": 70.1,
+    "cifras": {
+      "razon_residuo": 0.543148,
+      "err_relativo": 0.248014,
+      "frac_exacta": 0.000325
+    },
+    "salida_cola": "tensor model.language_model.layers.30.mlp.up_proj.weight  (17408, 5120)  g=16  (0.4 s de disco)\n5570560 grupos en la matriz · 120000 muestreados\netapa 1: 37 s · razón del residuo 0.5431\netapa 2: 31 s\n\nCIFRA razon_residuo 0.543148\nCIFRA err_relativo 0.248014\nCIFRA frac_exacta 0.000325\n\n── 69 s en total, 16 hilos, CPU\nLECTURA: hay estructura (el residuo cae), pero la recuperación no es exacta. Sospecha de α: el afinado por capa la movió. Probar estimando α conjuntamente antes de descartar la salida (a)."
+  },
+  "medicion": null,
+  "veredicto": {
+    "cuando": "2026-08-23 01:52",
+    "confirma": false,
+    "fuente": "sonda",
+    "metrica": "frac_exacta",
+    "valor": 0.000325,
+    "espero": ">=0.95"
+  },
+  "leccion": "La estructura RVQ no se recupera con k-means sobre grupos normalizados por el RMS de la fila: frac_exacta 0,000325 y err_relativo 0,248. Pero lo que falla es la SONDA, no necesariamente la hipotesis: verificado despues en reconstruir_v12.py:_EscalaFila que la reconstruccion por bloques solo optimiza una escala por FILA y los parametros 1D, luego el reticulo C1+C2 sigue intacto salvo un factor multiplicativo por fila. El RMS de fila no es ese factor. Siguiente sonda (C2): trabajar con grupos normalizados a NORMA UNIDAD, que son invariantes a la escala de fila y eliminan la incognita alfa por completo.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 01:48",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 01:48",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 01:48",
+      "que": "predicho frac_exacta >=0.95"
+    },
+    {
+      "cuando": "2026-08-23 01:49",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 01:52",
+      "que": "veredicto: REFUTA (frac_exacta=0.000325)"
+    }
+  ]
+}

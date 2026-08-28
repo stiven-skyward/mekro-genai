@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_1741",
+  "nivel": "n2",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 1200,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "tres",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 881,
+      "tokens_entrada": 11163,
+      "segundos": 1379.7,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-tres-4localt1/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 881.0,
+    "segundos_media": 1379.7,
+    "intervenciones": 0
+  }
+}

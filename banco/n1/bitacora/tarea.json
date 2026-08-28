@@ -1,0 +1,17 @@
+{
+ "id": "bitacora",
+ "nivel": "n1",
+ "encargo": "La prueba falla en el primer arranque, cuando `eventos.jsonl` aún no existe. Arregla donde corresponda para que una bitácora inexistente sea la vacía. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "El «dónde corresponde» es parte de la tarea: el contrato («un fichero que no existe ES la bitácora vacía») está escrito en bitacora.py pero el FileNotFoundError nace en disco.py. Mide elegir la capa del arreglo en un módulo de dos ficheros y tratar el primer arranque como caso normal, no especial.",
+ "guion": [
+  "<think>Primer arranque que revienta: seguro que alguien abre sin comprobar. Veo el error y las dos capas.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"bitacora.py\"}}\n</tool_call>\n<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"disco.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"disco.py\", \"cambios\": [{\"buscar\": \"def cargar(ruta):\\n    with open(ruta, encoding=\\\"utf-8\\\") as f:\\n        return [json.loads(linea) for linea in f if linea.strip()]\", \"poner\": \"def cargar(ruta):\\n    try:\\n        with open(ruta, encoding=\\\"utf-8\\\") as f:\\n            return [json.loads(linea) for linea in f if linea.strip()]\\n    except FileNotFoundError:\\n        return []\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "El arreglo va en `disco.cargar`: un fichero inexistente devuelve la lista vacía, que es lo que `bitacora.py` promete. `anotar` ya creaba el fichero con la «a». 3/3."
+ ]
+}

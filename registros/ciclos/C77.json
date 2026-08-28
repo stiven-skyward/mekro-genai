@@ -1,0 +1,61 @@
+{
+  "id": "C77",
+  "pregunta": "¿Un tope_tokens de 1.050 fuerza al modelo a comprimir la tarea lista por debajo de su línea base de 1.614, manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 21:15",
+  "revision": {
+    "cuando": "2026-08-27 21:15",
+    "texto": "C74-C76 refutaron que topes blandos en n3/larga fuerzan compresión. n3/lista tiene baseline 1614 tokens. El ruido es ~10%, así que un umbral de 1050 (35% de margen) es robusto. No se ha medido tokens_media en n3/lista."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 21:15",
+    "metrica": "tokens_media",
+    "espero": "<1050",
+    "porque": "Baseline 1614. Umbral 1050 es 35% menor, superando el margen de 15% requerido. Si el modelo logra <1050, demuestra que la restricción sí fuerza eficiencia en esta tarea, a diferencia de larga."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 21:32",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --etiqueta lazo-C77 --tarea lista --tope-vueltas 32 --tope-tokens 1050 --tope-segundos 7200",
+    "codigo": 0,
+    "segundos": 1069.9,
+    "cifras": {
+      "tareas_pct": 0.0,
+      "tokens_media": 1171.0,
+      "segundos_media": 1068.8,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n3 · cerebro gguf · modo lista · 1 tareas ==\n\n── lista\n[1] 121 tok · 476.7 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 48.8 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 539.8 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(x)` - adds an item\n     - `pendientes()` - returns list of pending items\n     - `tachar(x)` - marks an item as done (removed from pending)\n     - Data stored in `lista.jsonl`\n  \n  2. `orden.py` is a CLI:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds item\n     - `tachar <x>` - marks item as done; if item\n  ·· turno cortado sin llamadas: se le pide continuar\n   ✗ FALLA · tope_tokens · 3 vueltas · 1171 tok · 1068.8 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 0.0\nCIFRA tokens_media 1171.0\nCIFRA segundos_media 1068.8\nCIFRA intervenciones 0\n\n0/1 tareas · registro → registros/2026-08-27_2132_lazo-C77.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 21:37",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 1171.0,
+    "espero": "<1050"
+  },
+  "leccion": "REFUTA.\nEl umbral de 1.050 se superó al registrar 1.171 tokens de media.\nLa causa probable es que el modelo prioriza la completitud sobre la brevedad ante la restricción.\nEl 100% de éxito se colapsó a 0% por el corte por tope de tokens.\nLa métrica de segundos_media de 1.068,8 s confirma la ineficiencia temporal.\nMedir ahora un tope_tokens de 1.200 para aislar el punto de quiebre.\nVerificar si el éxito se recupera manteniendo la compresión por debajo de 1.614.\nRegistrar la tasa de intervención para cuantificar la fricción del corte.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 21:15",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 21:15",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 21:15",
+      "que": "predicho tokens_media <1050"
+    },
+    {
+      "cuando": "2026-08-27 21:32",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 21:37",
+      "que": "veredicto: REFUTA (tokens_media=1171.0)"
+    }
+  ]
+}

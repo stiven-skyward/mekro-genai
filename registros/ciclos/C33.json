@@ -1,0 +1,61 @@
+{
+  "id": "C33",
+  "pregunta": "¿Baja el tope de vueltas de 16 a 8 los segundos_media de n3/lista sin romper la tarea?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 02:36",
+  "revision": {
+    "cuando": "2026-08-26 02:36",
+    "texto": "C30 y C31 midieron n3/lista con tope_vueltas=16. C32 probó foco (no disponible). El suelo de ruido es ~10%. C31 tardó 2403s, C30 1630s. Si el modelo converge rápido, reducir el tope no debería afectar el éxito, pero podría cortar carreras lentas."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 02:36",
+    "metrica": "segundos_media",
+    "espero": "<1400",
+    "porque": "C30 tardó 1630s. Un 15% de margen sobre 1630 es ~1385. Si el tope de vueltas no es el cuello de botella, el tiempo debería mantenerse cerca del baseline o bajar ligeramente por menos sobrecarga de contexto, pero no subir. Si sube, el tope de vueltas está limitando la convergencia."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 03:06",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --etiqueta lazo-C33 --tarea lista --tope-vueltas 8 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1766.2,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 1933.0,
+      "segundos_media": 1765.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "[1] 165 tok · 498.2 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 52.1 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 635.9 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(item)` - adds an item to the list\n     - `pendientes()` - returns a list of pending (not yet checked) items\n     - `tachar(item)` - marks an item as done (checked)\n  \n     Data is persisted in `lista.jsonl`.\n  \n  2. `orden.py` is a CLI script:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds item x\n     - `t\n  ·· turno cortado sin llamadas: se le pide continuar\n[4] 296 tok · 272.6 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"lista.py\", \"contenido\": \"import json\\nimport os\\n\\nRUTA = \\\"lista.jsonl\\\"\\n\\n\\ndef _leer():\\n    if not os.pat…)  (0.0 s)\n[5] 221 tok · 168.7 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"orden.py\", \"contenido\": \"import sys\\nfrom lista import anadir, pendientes, tachar\\n\\n\\ndef main():\\n    if len…)  (0.0 s)\n[6] 27 tok · 33.0 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.1 s)\n[7] 174 tok · 100.8 s\n  Los 6 asertos pasan. Resumen de lo construido:\n  \n  - **`lista.py`** — módulo con `anadir`, `pendientes`, `tachar`; persiste en `lista.jsonl` (una línea JSON por elemento: `{\"nombre\": …, \"hecho\": bool}`). `tachar` lanza `ValueError` si el elemento no está pendiente.\n  - **`orden.py`** — CLI (`python3 orden.py <cmd> [arg]`): `ver` imprime pendientes una por línea; `anadir <x>` añade; `tachar <x>` marca y\n   ✓ PASA · fin · 7 vueltas · 1933 tok · 1765.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 1933.0\nCIFRA segundos_media 1765.1\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_0306_lazo-C33.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 03:13",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 1765.1,
+    "espero": "<1400"
+  },
+  "leccion": "REFUTA. El umbral era <1400s y la medición fue 1765.1s, superando el límite en 365.1s. La causa más probable es que el tope de 8 vueltas no es el cuello de botella, sino que la sobrecarga de contexto o la velocidad de inferencia domina el tiempo total. La tarea se completó al 100% con 1933 tokens medios y 0 intervenciones, confirmando que la restricción de vueltas no rompió la ejecución. El tiempo total de 1766.2s excede el baseline de 1630s, indicando un aumento del 8.3% en la duración. No se observó un aumento por sobrecarga de contexto, sino una degradación general del rendimiento. Se debe medir el tiempo por llamada individual para aislar si la lentitud proviene de la inferencia o de la gestión de contexto.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 02:36",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 02:36",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 02:36",
+      "que": "predicho segundos_media <1400"
+    },
+    {
+      "cuando": "2026-08-26 03:06",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 03:13",
+      "que": "veredicto: REFUTA (segundos_media=1765.1)"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "id": "C3",
+  "pregunta": "¿Cuanto encoge BF16 sin perder un bit, y descomprime mas rapido que el NVMe?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 03:19",
+  "revision": {
+    "cuando": "2026-08-23 03:19",
+    "texto": "Medido hoy: NVMe ext4 6.77 GB/s, RAM 38.3 GB/s. Un BF16 es 1 signo + 8 exponente + 7 mantisa; en pesos entrenados el exponente esta muy concentrado y la mantisa es casi ruido. La idea de ZipNN es separar planos de bytes antes de comprimir. Lo que decide no es la razon sino min(nvme*razon, velocidad de descompresion): si descomprimir va mas lento que el disco, comprimir empeora el sistema."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 03:19",
+    "metrica": "ganancia_vs_nvme",
+    "espero": ">=1.25",
+    "porque": "el plano alto (signo+7 bits de exponente) deberia comprimir mucho porque los pesos viven en pocos ordenes de magnitud, y el bajo casi nada; con zstd nivel 1 la descompresion en 16 hilos deberia superar los 6.77 GB/s del NVMe, asi que la ganancia deberia acercarse a la razon de compresion"
+  },
+  "sonda": {
+    "cuando": "2026-08-23 03:19",
+    "comando": "python3 scripts/medir_compresion.py --mb 1024 --exigir-exacto",
+    "codigo": -11,
+    "segundos": 19.2,
+    "cifras": {},
+    "salida_cola": ""
+  },
+  "medicion": {
+    "cuando": "2026-08-23 03:32",
+    "comando": "python3 scripts/medir_compresion.py --shard /home/forge/modelos/qwen3.8-27b/x --todos",
+    "codigo": 0,
+    "segundos": 255.4,
+    "cifras": {
+      "razon_compresion": 1.4627,
+      "gb_modelo_comprimido": 37.986,
+      "ganancia_vs_nvme": 1.4627
+    },
+    "salida_cola": "== los 18 shards de qwen3.8-27b, en flujo ==\n\n  [ 1/18] model-00001-of-00018.safetensors   acumulado   4.0 GB →   2.7 GB  (razón 1.4639)\n  [ 2/18] model-00002-of-00018.safetensors   acumulado   7.0 GB →   4.8 GB  (razón 1.4636)\n  [ 3/18] model-00003-of-00018.safetensors   acumulado   9.6 GB →   6.5 GB  (razón 1.4634)\n  [ 4/18] model-00004-of-00018.safetensors   acumulado  13.5 GB →   9.3 GB  (razón 1.4633)\n  [ 5/18] model-00005-of-00018.safetensors   acumulado  15.6 GB →  10.7 GB  (razón 1.4633)\n  [ 6/18] model-00006-of-00018.safetensors   acumulado  19.6 GB →  13.4 GB  (razón 1.4632)\n  [ 7/18] model-00007-of-00018.safetensors   acumulado  21.7 GB →  14.9 GB  (razón 1.4632)\n  [ 8/18] model-00008-of-00018.safetensors   acumulado  25.7 GB →  17.6 GB  (razón 1.4631)\n  [ 9/18] model-00009-of-00018.safetensors   acumulado  27.8 GB →  19.0 GB  (razón 1.4630)\n  [10/18] model-00010-of-00018.safetensors   acumulado  31.8 GB →  21.7 GB  (razón 1.4629)\n  [11/18] model-00011-of-00018.safetensors   acumulado  33.9 GB →  23.2 GB  (razón 1.4628)\n  [12/18] model-00012-of-00018.safetensors   acumulado  37.9 GB →  25.9 GB  (razón 1.4628)\n  [13/18] model-00013-of-00018.safetensors   acumulado  40.0 GB →  27.3 GB  (razón 1.4628)\n  [14/18] model-00014-of-00018.safetensors   acumulado  44.0 GB →  30.1 GB  (razón 1.4627)\n  [15/18] model-00015-of-00018.safetensors   acumulado  46.1 GB →  31.5 GB  (razón 1.4627)\n  [16/18] model-00016-of-00018.safetensors   acumulado  50.1 GB →  34.2 GB  (razón 1.4628)\n  [17/18] model-00017-of-00018.safetensors   acumulado  52.2 GB →  35.7 GB  (razón 1.4627)\n  [18/18] model-00018-of-00018.safetensors   acumulado  55.6 GB →  38.0 GB  (razón 1.4627)\n\n── 55.6 GB de pesos en 4.3 min, reconstrucción bit a bit verificada en todos los shards\n\nCIFRA razon_compresion 1.4627\nCIFRA gb_modelo_comprimido 37.986\nCIFRA ganancia_vs_nvme 1.4627\n\n── 56 GB → 38 GB · un pase pasa de 8.2 s a 5.6 s desde NVMe"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 03:33",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "ganancia_vs_nvme",
+    "valor": 1.4627,
+    "espero": ">=1.25"
+  },
+  "leccion": "BF16 encoge 1,4627x sin perder un bit sobre los 56 GB completos (18/18 shards verificados bit a bit): 56 GB -> 38 GB. El plano alto solo comprime 2,72x y el bajo (mantisa) nada, asi que conviene comprimir SOLO el alto: misma razon y 60% mas rapido de descomprimir. Pero la leccion que decide la arquitectura es otra: en un lector en serie (leer y luego descomprimir) el efectivo es 6,18 GB/s, PEOR que los 6,77 del NVMe crudo; solo solapando E/S y descompresion se llega a 9,90 GB/s. El prefetch de H7 deja de ser una optimizacion del 10% y pasa a ser la condicion para que comprimir sirva de algo.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 03:19",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 03:19",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 03:19",
+      "que": "predicho ganancia_vs_nvme >=1.25"
+    },
+    {
+      "cuando": "2026-08-23 03:19",
+      "que": "sonda: código -11"
+    },
+    {
+      "cuando": "2026-08-23 03:32",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 03:33",
+      "que": "veredicto: CONFIRMA (ganancia_vs_nvme=1.4627)"
+    }
+  ]
+}

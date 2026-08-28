@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_1122",
+  "nivel": "n2",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 1200,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "aguja",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 686,
+      "tokens_entrada": 37187,
+      "segundos": 2372.5,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-aguja-o2nwsso3/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 686.0,
+    "segundos_media": 2372.5,
+    "intervenciones": 0
+  }
+}

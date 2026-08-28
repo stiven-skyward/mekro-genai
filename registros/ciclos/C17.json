@@ -1,0 +1,60 @@
+{
+  "id": "C17",
+  "pregunta": "¿cuánto cuesta en PPL re-cuantizar el deshecho con nuestro propio RVQ, que es la salida (c) y no necesita ni arqueología ni GPU?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 14:46",
+  "revision": {
+    "cuando": "2026-08-23 14:46",
+    "texto": "Siete ciclos han establecido que el reticulo del campeon sobrevive (C11: libro 15,73 M = 0,938 x 4096^2; C12: beta recuperada con cierre 0,0034-0,0040; C14: traslaciones 242 contra 2) y que separarlo resiste (C13, C15, C16, tres instrumentos distintos). Hoy, con una comprobacion de segundos que debio hacerse el primer dia, se ha medido lo que faltaba para juzgar la salida (c): el error relativo del campeon frente al BF16 es 0,4945 / 0,4938 / 0,4920 / 0,5671 en capas centrales y 0,2431 / 0,2111 en las capas 0 y 63, mediana 0,4929. O sea que la cuantizacion original ya perturba los pesos la MITAD de su magnitud y el modelo sigue siendo utilizable. C13 midio que nuestro RVQ propio sobre el deshecho alcanza err_relativo 0,123 con ocho iteraciones y la traza todavia bajando. Sumado en cuadratura sobre 0,4929 da 0,5080, un aumento del 3,1% del error total. La salida (c) estaba descartada en docs/cerebro-2bit.md por 'perdida adicional' sin que nadie midiera cuanta, y tiene dos ventajas decisivas: no necesita recuperar nada, porque los libros los generamos NOSOTROS y los guardamos, y no necesita GPU. Ademas hay holgura de presupuesto que nadie ha usado: M1 admite hasta 10 GB y 27,8 G parametros a 2,5 bits son 8,7 GB, luego se puede gastar mas de los 1,9995 bits del original para recuperar calidad. El criterio de M1 es PPL <= +1% frente al checkpoint deshecho, y esa es la cifra que hay que medir, no la norma de los pesos."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 14:46",
+    "metrica": "razon_ppl",
+    "espero": "<1.01",
+    "porque": "La cadena de aritmetica, escrita antes de medir. El BF16 (error 0) da PPL 5,764 en codigo sobre nuestro corpus y el deshecho (error 0,4929) da 15,967, o sea 1,019 nats de diferencia sobre 0,4929 de error: una pendiente de 2,07 nats por unidad de error relativo, suponiendo que la degradacion es aproximadamente lineal en el error de peso, que es lo unico que dan dos puntos. Re-cuantizar lleva el error de 0,4929 a 0,5080, un incremento de 0,0151, luego 0,0313 nats mas, luego la razon de PPL seria 1,032. Eso REBASA el +1% que exige M1, asi que predigo <1,01 esperando fallar: la prediccion honesta es que a 1,9995 bits y con un ajuste de ocho iteraciones NO se cumple el criterio. Lo pongo asi y no al reves porque el umbral que decide es el de M1, no el que me resulte comodo acertar. Lo que decide cada desenlace: si sale <1,01 la salida (c) resuelve H1 tal cual y no hay mas que hablar; si sale entre 1,01 y 1,05 la salida (c) es viable pero necesita gastar la holgura de bits —2,5 bits caben en 8,7 GB— o mas iteraciones de ajuste, y ambas cosas son baratas y medibles; si sale por encima de 1,10 la extrapolacion lineal era optimista, la degradacion se acumula peor de lo lineal a traves de las capas y la salida (c) queda descartada CON CIFRA, que es como debio descartarse desde el principio."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 15:45",
+    "comando": "python3 -u scripts/medir_recuantizacion.py --ventana 512 --ventanas 1 --capas 20,30,40,50 --salida registros/2026-08-23_C17-recuant.json",
+    "codigo": 0,
+    "segundos": 3473.1,
+    "cifras": {
+      "razon_ppl": 4.0255,
+      "delta_nats_por_capa": 0.02176,
+      "err_rvq_medio": 0.3765
+    },
+    "salida_cola": "corpus torch.Size([2, 512]) · capas a re-cuantizar [20, 30, 40, 50] · hilos 16\n[1/2] CONTROL: el deshecho sin tocar\n[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d\n    nll 2.81685 · ppl 16.7241 · 289s\n[2/2] re-cuantizando 4 capas\n    capa 20 re-cuantizada · err 0.3680 · 775s\n    capa 30 re-cuantizada · err 0.3685 · 1587s\n    capa 40 re-cuantizada · err 0.3688 · 2355s\n    capa 50 re-cuantizada · err 0.3809 · 3080s\n    nll 2.90389 · ppl 18.2451 · 3175s\n\n{\n  \"capas_recuantizadas\": [\n    20,\n    30,\n    40,\n    50\n  ],\n  \"err_rvq_medio\": 0.3765,\n  \"nll_control\": 2.81685,\n  \"nll_recuantizado\": 2.90389,\n  \"ppl_control\": 16.7241,\n  \"ppl_recuantizado\": 18.2451,\n  \"delta_nats_por_capa\": 0.02176,\n  \"razon_ppl_extrapolada_64\": 4.0255,\n  \"segundos\": 3464.4\n}\nCIFRA razon_ppl 4.0255\nCIFRA delta_nats_por_capa 0.02176\nCIFRA err_rvq_medio 0.3765\n\nregistro: registros/2026-08-23_C17-recuant.json"
+  },
+  "medicion": null,
+  "veredicto": {
+    "cuando": "2026-08-23 15:45",
+    "confirma": false,
+    "fuente": "sonda",
+    "metrica": "razon_ppl",
+    "valor": 4.0255,
+    "espero": "<1.01"
+  },
+  "leccion": "REFUTADO con holgura: razon_ppl 4,0255 frente a <1,01. Medido sobre el corpus real: el deshecho intacto da nll 2,81685 y PPL 16,7241; con cuatro capas re-cuantizadas (20, 30, 40, 50) sube a nll 2,90389 y PPL 18,2451, o sea 0,08704 nats repartidos en cuatro capas = 0,02176 nats POR CAPA. Extrapolado a las 64 capas son 1,393 nats y una razon de PPL de 4,03. La salida (c) tal como se probo NO cumple el +1% de M1: se lo salta por un factor 400. DOS AVISOS QUE HAY QUE LEER JUNTOS ANTES DE DAR LA VIA POR MUERTA. Primero, la sonda corrio con configuracion DEGRADADA y por tanto su numero es una COTA, no una medida: err_rvq_medio 0,3765 frente al 0,123 que C13 alcanzo con n=600.000 y ocho iteraciones alternantes. Le puse 24 puntos por codigo donde hacen falta 146, que es exactamente el error que C13 dejo escrito. Segundo, la extrapolacion de 4 capas a 64 supone que el dano es lineal en el numero de capas y aditivo, y eso no esta medido: podria compensarse parcialmente o agravarse. QUE PASA SI SE ARREGLA LA CONFIGURACION, con las dos hipotesis de escalado que caben: si el dano es LINEAL en el error de peso, pasar de 0,3765 a 0,123 lo divide por 3,06 y da 0,455 nats sobre 64 capas, razon 1,58; si es CUADRATICO, lo divide por 9,4 y da 0,149 nats, razon 1,16. Las dos rebasan el 1,01 de M1. Y gastando la holgura de bits —2,5 bits caben en 8,7 GB— con un err optimista de 0,06 saldrian 1,25 (lineal) o 1,036 (cuadratico). Ni siquiera el caso mas favorable llega al criterio. LA CIFRA QUE FALTA, y es barata: el EXPONENTE con el que el dano crece con el error de peso. Con dos hipotesis que difieren en un factor 4 no se puede decidir nada, y medir el exponente no exige re-cuantizar: basta inyectar ruido de magnitud relativa controlada en las mismas cuatro capas y medir el dano a varios niveles, un pase de cinco minutos por nivel. El punto real que ya tenemos (err 0,3765 -> 0,02176 nats/capa) ancla la curva. Eso es C18, y decide si gastar bits salva la salida (c) o si hay que ir a por la (b). LECCION DE METODO: la prediccion se escribio ESPERANDO fallar, con el umbral puesto donde lo pone META.md y no donde me resultaba comodo acertar, y las tres ramas del desenlace estaban descritas antes de medir. Por eso el 4,03 no ha necesitado ninguna explicacion inventada despues: cayo en la rama tercera, que ya decia que la extrapolacion lineal era optimista y que la degradacion se acumula peor de lo lineal a traves de las capas.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 14:46",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 14:46",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 14:46",
+      "que": "predicho razon_ppl <1.01"
+    },
+    {
+      "cuando": "2026-08-23 15:45",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 15:45",
+      "que": "veredicto: REFUTA (razon_ppl=4.0255)"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_1256",
+  "nivel": "n2",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 1200,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "tres",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 881,
+      "tokens_entrada": 11163,
+      "segundos": 922.8,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-tres-nq44mp5o/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 881.0,
+    "segundos_media": 922.8,
+    "intervenciones": 0
+  }
+}

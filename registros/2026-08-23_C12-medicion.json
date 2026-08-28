@@ -1,0 +1,49 @@
+{
+  "capa": 45,
+  "tensores": [
+    "mlp.up_proj",
+    "mlp.down_proj",
+    "mlp.gate_proj",
+    "linear_attn.out_proj",
+    "linear_attn.in_proj_qkv"
+  ],
+  "por_tensor": [
+    {
+      "cierre_mediano": 0.004025,
+      "cierre_mediano_control": 0.332691,
+      "frac_filas_conectadas": 1.0,
+      "puentes": 579898.0,
+      "tensor": "mlp.up_proj"
+    },
+    {
+      "cierre_mediano": 0.003443,
+      "cierre_mediano_control": 0.443885,
+      "frac_filas_conectadas": 1.0,
+      "puentes": 570420.0,
+      "tensor": "mlp.down_proj"
+    },
+    {
+      "cierre_mediano": 0.003915,
+      "cierre_mediano_control": 0.523414,
+      "frac_filas_conectadas": 1.0,
+      "puentes": 577169.0,
+      "tensor": "mlp.gate_proj"
+    },
+    {
+      "cierre_mediano": 0.003488,
+      "cierre_mediano_control": 0.448664,
+      "frac_filas_conectadas": 1.0,
+      "puentes": 106301.0,
+      "tensor": "linear_attn.out_proj"
+    },
+    {
+      "cierre_mediano": 0.003808,
+      "cierre_mediano_control": 0.378369,
+      "frac_filas_conectadas": 1.0,
+      "puentes": 246882.0,
+      "tensor": "linear_attn.in_proj_qkv"
+    }
+  ],
+  "peor_tensor": "mlp.up_proj",
+  "segundos": 72.9
+}

@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_2230",
+  "nivel": "n1",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 493,
+      "tokens_entrada": 8250,
+      "segundos": 757.8,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-nxgr8dug/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 493.0,
+    "segundos_media": 757.8,
+    "intervenciones": 0
+  }
+}

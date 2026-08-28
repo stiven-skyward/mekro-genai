@@ -1,0 +1,17 @@
+{
+ "id": "version",
+ "nivel": "n2",
+ "encargo": "La prueba de `migrador.py` falla. Arréglalo. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "El bug es de IDEMPOTENCIA: la primera migración sale perfecta y el fallo solo aparece al relanzar (los puntos se multiplican otra vez). Ni el encargo ni la primera pasada lo delatan: hay que leer la prueba hasta el segundo `migrar()` y entender que migrar es mantenimiento relanzable. Es el primer bug del banco que solo existe en la SEGUNDA ejecución.",
+ "guion": [
+  "<think>La prueba dirá en qué aserto cae; luego miro el migrador.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"prueba.py\"}}\n</tool_call>\n<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"migrador.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"migrador.py\", \"cambios\": [{\"buscar\": \"    for ficha in cargar():\\n        ficha[\\\"v\\\"] = 2\", \"poner\": \"    for ficha in cargar():\\n        if ficha.get(\\\"v\\\") == 2:      # ya migrada: ni tocarla\\n            fichas.append(ficha)\\n            continue\\n        ficha[\\\"v\\\"] = 2\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "El fallo era de idempotencia: relanzar `migrar()` volvía a multiplicar los puntos de fichas ya migradas. Ahora una ficha con `v == 2` pasa de largo. 3/3."
+ ]
+}

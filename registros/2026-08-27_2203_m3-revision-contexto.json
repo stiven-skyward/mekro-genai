@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_2203",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "lista",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 2069,
+      "tokens_entrada": 21954,
+      "segundos": 1442.2,
+      "verificador": "6/6 asertos ✓",
+      "trabajo": "/tmp/banco-lista-iopn241b/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 2069.0,
+    "segundos_media": 1442.2,
+    "intervenciones": 0
+  }
+}

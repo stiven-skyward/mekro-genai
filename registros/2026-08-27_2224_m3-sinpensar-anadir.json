@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_2224",
+  "nivel": "n1",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": false,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 2,
+      "intervenciones": 0,
+      "tokens_salida": 202,
+      "tokens_entrada": 3812,
+      "segundos": 1107.0,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-anadir-n3lv_lm_/caja/prueba.py\", line 7, in <module>\n    inv.sale(\"tuerca\", 4)\nAttributeError: 'Inventario' object has no attribute 'sale'",
+      "trabajo": "/tmp/banco-anadir-n3lv_lm_/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 0.0,
+    "tokens_media": 202.0,
+    "segundos_media": 1107.0,
+    "intervenciones": 0
+  }
+}

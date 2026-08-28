@@ -1,0 +1,61 @@
+{
+  "id": "C73",
+  "pregunta": "M3: ¿mejora una cifra del banco un mando DESCUBIERTO Y ADOPTADO por el ciclo autónomo, sin humano en el bucle y con registro?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 16:58",
+  "revision": {
+    "cuando": "2026-08-27 16:58",
+    "texto": "La puerta de M3 la abrió el autor hoy. El mecanismo (scripts/adopcion.py): adopta solo victorias limpias (CONFIRMA + 100% + 0 intervenciones), solo tokens_media (segundos baila ×2 con la máquina, C23), solo si la mejora supera el suelo de ruido (10%) Y es atribuible al mando (el tope debe MORDER el uso de la línea base — el mecanismo de compresión que C37/C38 midieron); reversión automática si una carrera adoptada falla; historial imborrable. Las dos primeras pasadas del mecanismo adoptaron ruido (segundos de máquina, mandos por defecto, topes que no muerden) y las tres reglas de honestidad se endurecieron ANTES de cablear nada. Resultado: UNA adopción vigente, limpia y causal — n3/lista con tope_tokens 1.600, descubierta por C40 (ciclo enteramente autónomo del barrido nocturno: propuesto, medido y veredictado por el lazo solo), 1.732 tokens frente a 2.118 de línea base. Esta medición corre la carrera OFICIAL con --adoptados (la tubería entera, no banderas a mano)."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 16:58",
+    "metrica": "tokens_media",
+    "espero": "<1900",
+    "porque": "La linea base inmutable de n3/lista es 2.118 tokens (su primera medicion, C30). El mando adoptado (tope 1.600) midio 1.732 en C40; el suelo de ruido es ~9-10%, asi que espero 1.550-1.900. La barra en 1.900 exige una mejora real >10% sobre la base — mas que el ruido — sin pedir que se repita el numero exacto de C40. Lo que decide: <1900 con 100% de tareas CIERRA M3 en su primera letra — una cifra del banco mejoro por un mando que el ciclo descubrio (C40), el mecanismo adopto solo, y la carrera oficial aplico por la tuberia (--adoptados), todo con registro; >=1900 con 100% diria que la compresion de C40 no es reproducible y la adopcion deberia revertirse por no-mejora (regla a añadir); fallo de tarea dispararia la REVERSION automatica y ese seria el resultado del ciclo — el vigilante funcionando tambien cuenta como M3, pero sin declararlo logrado."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 17:21",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n3 --tarea lista --cerebro gguf --modo lista --adoptados --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400 --etiqueta m3-adopcion-oficial",
+    "codigo": 0,
+    "segundos": 1357.5,
+    "cifras": {
+      "tareas_pct": 0.0,
+      "tokens_media": 1614.0,
+      "segundos_media": 1356.3,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n3 · cerebro gguf · modo lista · 1 tareas ==\n\n── lista\n   (mandos adoptados: {'tope_vueltas': 16, 'tope_tokens': 1600, 'tope_segundos': 5400})\n[1] 121 tok · 560.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 70.1 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 517.4 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(x)` - adds an item\n     - `pendientes()` - returns list of pending items\n     - `tachar(x)` - marks an item as done (removed from pending)\n     - Data stored in `lista.jsonl`\n  \n  2. `orden.py` is a CLI:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds item\n     - `tachar <x>` - marks item as done; if item\n  ·· turno cortado sin llamadas: se le pide continuar\n[4] 443 tok · 193.8 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"lista.py\", \"contenido\": \"import json\\nimport os\\n\\nARCHIVO = \\\"lista.jsonl\\\"\\n\\n\\ndef _leer():\\n    if not os.…)  (0.0 s)\n   ‼ adopción REVERTIDA: la tarea falló con los mandos adoptados\n   ✗ FALLA · tope_tokens · 4 vueltas · 1614 tok · 1356.3 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 0.0\nCIFRA tokens_media 1614.0\nCIFRA segundos_media 1356.3\nCIFRA intervenciones 0\n\n0/1 tareas · registro → registros/2026-08-27_1721_m3-adopcion-oficial.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 17:22",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 1614.0,
+    "espero": "<1900"
+  },
+  "leccion": "CONFIRMADO en la cifra (1.614 < 1900) pero la GUARDA manda: la tarea FALLO por tope_tokens y M3 NO se declara. Lo que este ciclo probo es la otra mitad del mecanismo, y en produccion: el vigilante de adopciones REVIRTIO solo la adopcion fallida, con constancia en el historial — el 100% es sagrado y la maquinaria lo defiende sin humano. La causa raiz, medible: C40 'gano' con 1.732 tokens de USO sobre un tope de 1.600 — rebaso su propio presupuesto y sobrevivio porque el tope se chequea al empezar cada vuelta; la adopcion eligio una configuracion sin margen, fragil por construccion, y la deriva normal de guion la mato. REGLA NUEVA del mecanismo (la cuarta de honestidad): solo se adopta una victoria que termino DENTRO de su tope (valor <= tope_tokens) — ganar rebasando el presupuesto es suerte, no configuracion. Con esa regla, el candidato robusto que queda en los registros es C39 (tope 1.800, uso ~1.6xx, 100%): la siguiente pasada lo adopta y C74 lo mide por la tuberia oficial. El arco C73→C74 es el mecanismo completo enseñado en publico: adopcion fragil → fallo → reversion automatica → regla endurecida → adopcion robusta.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 16:58",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 16:58",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 16:58",
+      "que": "predicho tokens_media <1900"
+    },
+    {
+      "cuando": "2026-08-27 17:21",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 17:22",
+      "que": "veredicto: CONFIRMA (tokens_media=1614.0)"
+    }
+  ]
+}

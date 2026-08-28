@@ -1,0 +1,77 @@
+{
+  "id": "C12",
+  "pregunta": "¿se puede LEER β_fila de los duplicados en vez de estimarla, y lo confirma el cierre de ciclos del grafo de puentes?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 13:06",
+  "revision": {
+    "cuando": "2026-08-23 13:06",
+    "texto": "C11 dejo demostrado que el reticulo sigue intacto y que el libro mide 15,73 M = 0,938 x 4096^2, o sea que filas distintas COMPARTEN puntos del reticulo: hay del orden de 900.000 pares duplicados entre los 5,57 M de grupos de una matriz de 17408x5120 con g=16. C1 fracaso por estimar alfa como el RMS de la fila cuando la escala real la puso _EscalaFila (verificado en reconstruir_v12.py: s de forma (out_features,1), pesos del Linear congelados salvo por esa parametrizacion). La leccion de C11 fue explicita: cuando una sonda dependa de estimar algo que no esta guardado, hay que reformular la prueba para no necesitarlo. Aqui se aplica a la recuperacion misma y no solo a la deteccion: si el grupo (r,i) y el grupo (r2,j) usan el MISMO punto del reticulo, entonces el cociente de sus normas ES beta_r/beta_r2 exactamente, sin estimar nada. Cada duplicado es un PUENTE entre dos filas. Con 900.000 puentes y 17.408 filas el grafo esta densamente conectado y un arbol de expansion fija todas las beta salvo una constante global, que da igual porque se absorbe en el libro. Para encontrar los duplicados entre 5,57 M de vectores sin comparar todos contra todos: firma de signos por proyecciones aleatorias (LSH). Dos direcciones separadas solo por el redondeo de bf16 distan ~0,006 radianes y comparten la firma de 20 bits con probabilidad 0,96, mientras que dos al azar la comparten con probabilidad 2^-20."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 13:06",
+    "metrica": "cierre_mediano",
+    "espero": "<0.01",
+    "porque": "El grafo de puentes tiene del orden de 300.000 aristas utiles y solo 17.407 caben en un arbol de expansion: las otras ~283.000 son REDUNDANTES y tienen que cerrar. Si el modelo W[r,grupo] = beta_r*(C1[i]+C2[j]) es cierto, el cociente que predice el arbol para una arista redundante y el que se mide en esa arista deben coincidir hasta la precision de bf16, que son 2^-8 = 0,0039 relativo por componente y, promediado sobre la norma de 16 componentes, del orden de 0,001. Por eso predigo mediana del desajuste relativo < 0,01, que deja un factor 10 de margen. Esta es la prueba que no se puede acomodar despues: un grafo cuyos ciclos cierran a 0,001 no lo produce el azar ni un artefacto: 283.000 comprobaciones independientes de una misma hipotesis. Si sale >= 0,01 el modelo esta mal —o hay mas de una escala, o los puentes no son verdaderos duplicados— y la recuperacion por esta via no vale. Si sale por debajo, beta queda RECUPERADA y no estimada, y lo unico que falta para H1 es k-means sobre los grupos ya desescalados."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 13:07",
+    "comando": "python3 scripts/recuperar_escalas.py --capa 30 --tensor mlp.gate_proj --g 16 --salida registros/2026-08-23_C12-escalas.json",
+    "codigo": 0,
+    "segundos": 15.6,
+    "cifras": {
+      "cierre_mediano": 0.004354,
+      "cierre_mediano_control": 0.302022,
+      "frac_filas_conectadas": 1.0,
+      "puentes": 487079.0
+    },
+    "salida_cola": "capa 30 · mlp.gate_proj · 17408x5120 · g=16 · 5,570,560 grupos (0 nulos) · 0s\n  ronda 1: 233,280 puentes · 5s\n  ronda 2: 217,783 puentes · 9s\n  ronda 3: 244,047 puentes · 12s\n  puentes únicos: 487,079\n{\n  \"capa\": 30,\n  \"tensor\": \"mlp.gate_proj\",\n  \"g\": 16,\n  \"grupos\": 5570560,\n  \"puentes\": 487079,\n  \"aristas_redundantes\": 469672,\n  \"filas\": 17408,\n  \"filas_conectadas\": 17408,\n  \"frac_filas_conectadas\": 1.0,\n  \"cierre_mediano\": 0.004354,\n  \"cierre_p90\": 0.010341,\n  \"cierre_p99\": 0.015381,\n  \"beta_min\": 0.52469,\n  \"beta_max\": 1.568319,\n  \"segundos\": 13.3,\n  \"cierre_mediano_control\": 0.302022\n}\nCIFRA cierre_mediano 0.004354\nCIFRA cierre_mediano_control 0.302022\nCIFRA frac_filas_conectadas 1.0\nCIFRA puentes 487079\n\nregistro: registros/2026-08-23_C12-escalas.json · escalas: registros/2026-08-23_C12-escalas.pt"
+  },
+  "medicion": {
+    "cuando": "2026-08-23 13:09",
+    "comando": "python3 scripts/recuperar_escalas.py --capa 45 --tensor mlp.up_proj,mlp.down_proj,mlp.gate_proj,linear_attn.out_proj,linear_attn.in_proj_qkv --g 16 --eps 0.015 --rondas 4 --salida registros/2026-08-23_C12-medicion.json",
+    "codigo": 0,
+    "segundos": 74.5,
+    "cifras": {
+      "cierre_mediano": 0.004025,
+      "cierre_mediano_control": 0.332691,
+      "frac_filas_conectadas": 1.0,
+      "puentes": 106301.0
+    },
+    "salida_cola": "\n=== mlp.up_proj\n    cierre 0.004025 · control 0.332691 · filas 1.0 · puentes 579,898\n\n=== mlp.down_proj\n    cierre 0.003443 · control 0.443885 · filas 1.0 · puentes 570,420\n\n=== mlp.gate_proj\n    cierre 0.003915 · control 0.523414 · filas 1.0 · puentes 577,169\n\n=== linear_attn.out_proj\n    cierre 0.003488 · control 0.448664 · filas 1.0 · puentes 106,301\n\n=== linear_attn.in_proj_qkv\n    cierre 0.003808 · control 0.378369 · filas 1.0 · puentes 246,882\n\nPEOR caso: mlp.up_proj\nCIFRA cierre_mediano 0.004025\nCIFRA cierre_mediano_control 0.332691\nCIFRA frac_filas_conectadas 1.0\nCIFRA puentes 106301\n\nregistro: registros/2026-08-23_C12-medicion.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 13:10",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "cierre_mediano",
+    "valor": 0.004025,
+    "espero": "<0.01"
+  },
+  "leccion": "CONFIRMA en las cinco matrices de la capa 45: cierre mediano 0,003443 a 0,004025 (peor caso mlp.up_proj), 100% de las filas conectadas en todas, y el control con las normas BARAJADAS da entre 0,333 y 0,523, o sea de 83 a 130 veces peor. BETA_FILA QUEDA RECUPERADA Y NO ESTIMADA, que es exactamente lo que mato a C1. EL CONCEPTO, que es lo que hay que guardar: el PUENTE DE DUPLICADOS. C11 habia probado que filas distintas comparten puntos del reticulo; de ahi se sigue que si el grupo (r,i) y el grupo (r2,j) usan el mismo punto, el cociente de sus normas ES beta_r/beta_r2 exactamente, sin estimar nada. Cada duplicado es un puente entre dos filas, el grafo de puentes conecta las 17.408 filas y un arbol de expansion fija todas las escalas salvo una constante global que se absorbe en el libro. Se encontraron entre 106.301 y 579.898 puentes por matriz en 12-16 s con FIRMA DE SIGNOS: 20 proyecciones aleatorias, ordenar por firma y comparar solo vecinos en ese orden. Dos direcciones separadas solo por el redondeo de bf16 distan ~0,006 rad y comparten firma con probabilidad 0,96; dos al azar, con 2^-20. De O(n^2) a O(n log n) sobre 5,57 millones de grupos. LA PRUEBA, y por que no se puede acomodar despues: solo 17.407 aristas caben en el arbol; las otras ~470.000 son REDUNDANTES y tienen que cerrar. Son cientos de miles de comprobaciones independientes de la misma hipotesis, y el control las destruye. Un grafo cuyos ciclos cierran a 0,004 cuando barajar las normas lo lleva a 0,33 no lo produce un artefacto. HONESTIDAD SOBRE EL RESIDUO: 0,004 esta por encima del 0,001 que predije para bf16 puro. La explicacion —post hoc, y por tanto hipotesis— es que eps admite como duplicados algunos vecinos que no lo son; apretar eps de 0,020 a 0,015 movio el cierre de 0,00435 a 0,00403, que es coherente pero no prueba. Quien quiera zanjarlo: barrer eps y ver si el cierre tiende a ~0,001. LO QUE FALTA PARA H1, ahora que las escalas estan: dividir cada fila por su beta, y sobre los grupos ya desescalados hacer k-means k=4096 para C1, tomar los residuos para C2, y cerrar con la comprobacion dura que ya estaba escrita en el holograma: reconstruir beta*(C1[i]+C2[j]) y comparar BIT A BIT contra el tensor guardado. Si esa comparacion sale exacta, H1 deja de ser una hipotesis y pasa a ser un empaquetador.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 13:06",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 13:06",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 13:06",
+      "que": "predicho cierre_mediano <0.01"
+    },
+    {
+      "cuando": "2026-08-23 13:07",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 13:09",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 13:10",
+      "que": "veredicto: CONFIRMA (cierre_mediano=0.004025)"
+    }
+  ]
+}

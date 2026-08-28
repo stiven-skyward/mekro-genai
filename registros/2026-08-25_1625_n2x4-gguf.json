@@ -1,0 +1,71 @@
+{
+  "cuando": "2026-08-25_1625",
+  "nivel": "n2",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 8000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "aguja",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 789,
+      "tokens_entrada": 32077,
+      "segundos": 2345.6,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-aguja-5h8ha0ww"
+    },
+    {
+      "id": "cupones",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 930,
+      "tokens_entrada": 12444,
+      "segundos": 1162.4,
+      "verificador": "7/7 asertos ✓",
+      "trabajo": "/tmp/banco-cupones-je07prsa"
+    },
+    {
+      "id": "tres",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 869,
+      "tokens_entrada": 11227,
+      "segundos": 1043.2,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-tres-u2krxgkc"
+    },
+    {
+      "id": "version",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 1254,
+      "tokens_entrada": 16092,
+      "segundos": 1329.5,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-version-nhyn5ie2"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 960.5,
+    "segundos_media": 1470.2,
+    "intervenciones": 0
+  }
+}

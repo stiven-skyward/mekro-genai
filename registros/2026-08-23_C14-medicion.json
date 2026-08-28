@@ -1,0 +1,93 @@
+{
+  "capa": 30,
+  "tensor": "mlp.gate_proj",
+  "g": 16,
+  "k": 4096,
+  "fuentes": {
+    "campeon": {
+      "cumulos": [
+        3818,
+        1417
+      ],
+      "tam_cumulos": [
+        2293,
+        2271
+      ],
+      "usados": [
+        2293,
+        2271
+      ],
+      "diferencias": 5207403,
+      "multiplicidad_max": 242,
+      "top_por_desplazamiento": [
+        [
+          107,
+          80,
+          80,
+          76,
+          62
+        ],
+        [
+          242,
+          174,
+          96,
+          89,
+          83
+        ],
+        [
+          229,
+          172,
+          150,
+          138,
+          85
+        ]
+      ],
+      "escala_rejilla": 0.010297,
+      "cierre_beta": 0.01036,
+      "segundos": 136.5
+    },
+    "bf16": {
+      "cumulos": [
+        1653,
+        369
+      ],
+      "tam_cumulos": [
+        2881,
+        2674
+      ],
+      "usados": [
+        2881,
+        2674
+      ],
+      "diferencias": 7703794,
+      "multiplicidad_max": 2,
+      "top_por_desplazamiento": [
+        [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      ],
+      "escala_rejilla": 0.539005,
+      "cierre_beta": null,
+      "segundos": 323.4
+    }
+  },
+  "segundos": 323.5
+}

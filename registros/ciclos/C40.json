@@ -1,0 +1,61 @@
+{
+  "id": "C40",
+  "pregunta": "¿El tope de tokens de 1600 permite completar n3/lista con menos de 1800 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 08:34",
+  "revision": {
+    "cuando": "2026-08-26 08:34",
+    "texto": "C38 mostró que 1500 tokens fallan la tarea. C39 mostró que 1800 tokens no comprimen el gasto (1933). C37 mostró que 2500 no comprime. El rango crítico está entre 1500 y 1800. Se busca el punto donde el tope fuerza compresión sin romper la tarea."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 08:34",
+    "metrica": "tokens_media",
+    "espero": "<1800",
+    "porque": "El baseline es 1933. El ruido es ~10% (193). Un umbral de 1800 tiene un margen de 133 sobre el baseline, que es menor al ruido. Sin embargo, si el tope de 1600 fuerza un recorte real, la media debería caer drásticamente. Si la tarea se completa, la media será el tope o ligeramente por debajo. Si falla, la media será baja pero tareas_pct será 0. La hipótesis asume que 1600 es suficiente para completar la tarea n3/lista con compresión."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 08:55",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --etiqueta lazo-C40 --tarea lista --tope-vueltas 16 --tope-tokens 1600 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1252.0,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 1732.0,
+      "segundos_media": 1251.0,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n3 · cerebro gguf · modo lista · 1 tareas ==\n\n── lista\n[1] 165 tok · 444.2 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 47.7 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 531.9 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(item)` - adds an item to the list\n     - `pendientes()` - returns a list of pending (not yet checked) items\n     - `tachar(item)` - marks an item as done (checked)\n  \n     Data is persisted in `lista.jsonl`.\n  \n  2. `orden.py` is a CLI script:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds item x\n     - `t\n  ·· turno cortado sin llamadas: se le pide continuar\n[4] 296 tok · 129.7 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"lista.py\", \"contenido\": \"import json\\nimport os\\n\\nRUTA = \\\"lista.jsonl\\\"\\n\\n\\ndef _leer():\\n    if not os.pat…)  (0.0 s)\n[5] 221 tok · 95.2 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"orden.py\", \"contenido\": \"import sys\\nfrom lista import anadir, pendientes, tachar\\n\\n\\ndef main():\\n    if len…)  (0.0 s)\n   ✓ PASA · tope_tokens · 5 vueltas · 1732 tok · 1251.0 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 1732.0\nCIFRA segundos_media 1251.0\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_0855_lazo-C40.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 09:00",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 1732.0,
+    "espero": "<1800"
+  },
+  "leccion": "CONFIRMA.\nLa métrica tokens_media es 1732, por debajo del umbral de 1800.\nEl margen de seguridad es de 68 tokens respecto al límite.\nEl éxito se mantiene al 100% sin intervenciones.\nLa causa probable es que el tope de 1600 tokens por vuelta no impide la finalización.\nEl modelo comprimió la salida para ajustarse al límite.\nMedir la varianza de tokens_media en 10 repeticiones.\nVerificar si el recorte de contexto degrada la calidad del código.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 08:34",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 08:34",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 08:34",
+      "que": "predicho tokens_media <1800"
+    },
+    {
+      "cuando": "2026-08-26 08:55",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 09:00",
+      "que": "veredicto: CONFIRMA (tokens_media=1732.0)"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "id": "C50",
+  "pregunta": "¿El tope de vueltas de 16 permite completar n1/bitacora con menos de 900 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 18:30",
+  "revision": {
+    "cuando": "2026-08-26 18:30",
+    "texto": "C49 recalibró el sesgo de predicción anclando umbrales en líneas base. n1/bitacora no tiene línea base de segundos, pero n1/anadir (766s) es la referencia más cercana. El ruido es ~10%, así que el umbral debe tener margen. Se elige 900s para cubrir la variabilidad de la tarea sin ser trivial."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 18:30",
+    "metrica": "segundos_media",
+    "espero": "<900",
+    "porque": "La línea base de n1/anadir es 766s. Asumiendo que bitacora tiene una complejidad similar o ligeramente mayor, se fija un umbral de 900s. Esto representa un margen del 17% sobre la referencia de 766s, superando el umbral mínimo de 15% exigido por el suelo de ruido. Si el modelo es eficiente, debería estar por debajo."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 18:46",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --etiqueta lazo-C50 --tarea bitacora --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 920.9,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 654.0,
+      "segundos_media": 919.7,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── bitacora\n[1] 130 tok · 404.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"find . -type f -name '*.py' | head -30\"})  (0.0 s)\n[2] 50 tok · 42.2 s · 2 llamadas\n  ✓ leer({\"ruta\": \"bitacora.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 26 tok · 124.3 s · 1 llamadas\n  ✓ leer({\"ruta\": \"disco.py\"})  (0.0 s)\n[4] 366 tok · 227.5 s · 1 llamadas\n  El problema está en `disco.py`: `cargar` abre el fichero directamente y lanza `FileNotFoundError` si no existe. La docstring de `bitacora.py` lo dice claro: \"Un fichero que aún no existe ES una bitácora: la vacía\". La corrección va en `cargar`.\n  ✓ editar({\"ruta\": \"disco.py\", \"cambios\": [{\"buscar\": \"def cargar(ruta):\\n    with open(ruta, encoding=\\\"utf-8\\\") as f:\\n        r…)  (0.0 s)\n[5] 27 tok · 62.5 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[6] 55 tok · 55.2 s\n  Corregido. En `disco.py`, `cargar` ahora captura `FileNotFoundError` y devuelve `[]`, de modo que una bitácora inexistente se trata como la vacía. La prueba pasa 3/3.\n   ✓ PASA · fin · 6 vueltas · 654 tok · 919.7 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 654.0\nCIFRA segundos_media 919.7\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1846_lazo-C50.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 18:55",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 919.7,
+    "espero": "<900"
+  },
+  "leccion": "REFUTA. El umbral era <900 segundos y la medición fue 919.7 segundos. La causa más probable es que la tarea de bitacora requirió 6 vueltas completas para diagnosticar y corregir el error en `disco.py`, superando la complejidad estimada. El éxito se mantuvo al 100% con 654 tokens medios y 0 intervenciones. El tope de 16 vueltas no fue el limitante, sino el tiempo de inferencia por vuelta. Medir la latencia pura de inferencia por token para aislar el cuello de botella.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 18:30",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 18:30",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 18:30",
+      "que": "predicho segundos_media <900"
+    },
+    {
+      "cuando": "2026-08-26 18:46",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 18:55",
+      "que": "veredicto: REFUTA (segundos_media=919.7)"
+    }
+  ]
+}

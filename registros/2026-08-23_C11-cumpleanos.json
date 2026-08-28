@@ -1,0 +1,64 @@
+{
+  "capa": 30,
+  "tensor": "mlp.gate_proj",
+  "g": 16,
+  "n": 20000,
+  "eps": 0.02,
+  "forma": [
+    17408,
+    5120
+  ],
+  "por_fuente": {
+    "campeon": {
+      "vecino_mediano": 0.58543,
+      "vecino_p01": 0.41439,
+      "frac_cerca": 0.0019
+    },
+    "bf16": {
+      "vecino_mediano": 0.60906,
+      "vecino_p01": 0.45027,
+      "frac_cerca": 0.0
+    },
+    "gaussiana": {
+      "vecino_mediano": 0.6108,
+      "vecino_p01": 0.45403,
+      "frac_cerca": 0.0
+    }
+  },
+  "barrido": [
+    {
+      "n": 10000,
+      "campeon": 0.0012,
+      "libro_estimado": 8333333,
+      "bf16": 0.0
+    },
+    {
+      "n": 20000,
+      "campeon": 0.0019,
+      "libro_estimado": 10526316,
+      "bf16": 0.0
+    },
+    {
+      "n": 40000,
+      "campeon": 0.00315,
+      "libro_estimado": 12698413,
+      "bf16": 0.0
+    },
+    {
+      "n": 80000,
+      "campeon": 0.00535,
+      "libro_estimado": 14953270,
+      "bf16": 0.0
+    },
+    {
+      "n": 160000,
+      "campeon": 0.010169,
+      "libro_estimado": 15734481,
+      "bf16": 0.0
+    }
+  ],
+  "libro_estimado_mediano": 12698413,
+  "razon_libro_vs_k1k2": 0.7569,
+  "razon_vecinos_vs_bf16": 1000000000.0,
+  "segundos": 208.6
+}

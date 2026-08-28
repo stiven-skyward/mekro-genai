@@ -1,0 +1,82 @@
+{
+  "id": "C21",
+  "pregunta": "¿es K(t) suave en el índice de token, que es lo que sostiene el 95% de ahorro de la parte Chebyshev de TESSERA-KV?",
+  "fase": "cerrado",
+  "abierto": "2026-08-24 02:39",
+  "revision": {
+    "cuando": "2026-08-24 02:39",
+    "texto": "TESSERA-KV propone guardar 4-6 coeficientes de Chebyshev por bloque de 128 tokens en vez de 128 vectores K, con un ahorro del 95%. Toda esa cifra descansa en UNA suposicion: que la secuencia K(t) a lo largo del indice de token es suave, o sea que 'el flujo del razonamiento se mueve sobre una variedad diferenciable'. Antes de sondear conviene fijar lo que ya sabemos y que cambia el interes de la propuesta: la cache KV de este modelo NO es el cuello de botella aqui. Qwen3.8-27B tiene 48 de 64 capas de atencion lineal (estado recurrente, sin KV) y las 16 de atencion completa llevan GQA con 4 cabezas KV y head_dim 256, luego la KV son 0,50 GB a 8.192 tokens y 8,00 GB a 131.072, frente a los ~80 GB que la propuesta atribuye a Llama-3-70B. Y el cuello medido en la primera carrera del banco con cerebro real es el PREFILL, 94,1% del reloj, que es computo y no memoria. Aun asi la suposicion de suavidad merece medirse porque decide si la idea vale para contextos de un millon, y porque es barata: basta calcular K en una capa de atencion real y ajustar el polinomio. El control obligado —leccion de C16, el modelo nulo se mide y no se calcula— es ajustar exactamente lo mismo sobre la MISMA secuencia con los tokens BARAJADOS: barajar destruye cualquier suavidad temporal y deja intacta la estadistica de los vectores, asi que si el error de ajuste real se parece al barajado, K no es suave."
+  },
+  "prediccion": {
+    "cuando": "2026-08-24 02:39",
+    "metrica": "razon_cheby_vs_barajado",
+    "espero": ">=0.8",
+    "porque": "Predigo que K NO es suave y que el ajuste real sera casi tan malo como el barajado, o sea razon >= 0,8. La razon es que K = W_k por el flujo residual, y el flujo residual cambia de contenido semantico de un token al siguiente de forma abrupta: un identificador seguido de un parentesis seguido de un salto de linea no son puntos vecinos de ninguna variedad suave. La metafora del 'flujo del razonamiento sobre una variedad diferenciable' describe la trayectoria de la ATENCION agregada, no la de los vectores K token a token. Con grado 5 sobre bloques de 128 hay 6 coeficientes para 128 puntos: si la senal tuviera cualquier componente de alta frecuencia —y el texto la tiene— el ajuste solo captura la tendencia lenta. Lo que decide: si la razon sale >= 0,8 la parte Chebyshev de TESSERA-KV esta refutada en su suposicion basica y el 95% de ahorro no existe, aunque el desacoplamiento asimetrico K/V y el ancla ternaria sigan en pie; si sale <= 0,5 hay estructura temporal real que explotar y merece medirse cuanto error de atencion introduce, no solo cuanto error de reconstruccion."
+  },
+  "sonda": {
+    "cuando": "2026-08-24 02:41",
+    "comando": "python3 -u scripts/sondear_tessera.py --capa 3 --salida registros/2026-08-23_C21-tessera.json",
+    "codigo": 0,
+    "segundos": 13.9,
+    "cifras": {
+      "razon_cheby_vs_barajado": 0.9638,
+      "err_cheby_real": 0.7499,
+      "err_ancla_ternario": 0.4304
+    },
+    "salida_cola": "[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d\nflujo residual hasta la capa 3 · 11s\nK real: (512, 1024) de self_attn.k_proj.weight\n\nChebyshev grado 5 sobre bloques de 128:\n  error real      0.7499\n  error BARAJADO  0.7781   <- el control: destruye el orden temporal\n  media del bloque0.7933   <- el ajuste más tonto posible (grado 0)\n\nAncla + ternario: err 0.4304   (ternario SIN ancla: 0.5493)\n\nCIFRA razon_cheby_vs_barajado 0.9638\nCIFRA err_cheby_real 0.7499\nCIFRA err_ancla_ternario 0.4304\nregistro: registros/2026-08-23_C21-tessera.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-24 02:59",
+    "comando": "python3 -u /tmp/claude-1000/-mnt-e-Mekro-Genai/be29fd01-15e0-4c3e-83c4-d1e8c5ea504a/scratchpad/c21agg.py",
+    "codigo": 0,
+    "segundos": 0.3,
+    "cifras": {
+      "razon_cheby_vs_barajado": 0.8584,
+      "err_ancla_ternario": 0.3909
+    },
+    "salida_cola": " capa  grado     real  barajado    media   razón  ancla+tern\n    3     11   0.7178    0.7576   0.7933  0.9475      0.4304\n    3      5   0.7499    0.7781   0.7933  0.9638      0.4304\n   31     11   0.6104    0.7112   0.7439  0.8584      0.4106\n   31      5   0.6511    0.7296   0.7439  0.8923      0.4106\n   63     11   0.6552    0.7287   0.7615  0.8990      0.3909\n   63      5   0.6939    0.7470   0.7615  0.9289      0.3909\n\ncaso más favorable a Chebyshev de los 6: razón 0.8584\nCIFRA razon_cheby_vs_barajado 0.8584\nCIFRA err_ancla_ternario 0.3909"
+  },
+  "veredicto": {
+    "cuando": "2026-08-24 02:59",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "razon_cheby_vs_barajado",
+    "valor": 0.8584,
+    "espero": ">=0.8"
+  },
+  "leccion": "CONFIRMA en las seis configuraciones: K(t) NO es suave en el indice de token, y la parte Chebyshev de TESSERA-KV queda refutada en su suposicion basica. Medido sobre Keys reales de tres capas de atencion completa (3, 31 y 63) con grados 5 y 11, bloques de 128 tokens. En el caso MAS FAVORABLE a Chebyshev de los seis —capa 31, grado 11— la razon entre el error real y el del control barajado es 0,8584: desordenar los tokens empeora el ajuste solo un 14%, o sea que el orden temporal casi no aporta informacion. Y el error absoluto de reconstruccion se queda en 0,6104 con DOCE coeficientes para 128 tokens, cuando la propuesta pide 4-6 y necesita reconstruir el vector exacto. La media del bloque —grado 0, el ajuste mas tonto posible— da 0,7439, asi que doce coeficientes compran una mejora del 18% sobre no ajustar nada. El 95% de ahorro en Keys no existe. POR QUE FALLA LA INTUICION, que es lo que hay que guardar: la metafora del 'flujo del razonamiento sobre una variedad diferenciable' describe la trayectoria de la ATENCION AGREGADA, no la de los vectores K token a token. K = W_k por el flujo residual, y el flujo residual salta de contenido semantico entre tokens vecinos: un identificador, un parentesis y un salto de linea no son puntos proximos de ninguna variedad suave. Confundir la suavidad del proceso con la suavidad de la representacion es el error, y es facil de cometer porque la metafora es buena para otra cosa. LO QUE SI SOBREVIVE DE LA PROPUESTA: el desacoplamiento asimetrico K/V es correcto —las Keys necesitan precision direccional y los Values contenido— y el ancla mas residuo ternario aporta de verdad: el error de reconstruccion baja de 0,5493 sin ancla a 0,4304 con ella en la capa 3, y llega a 0,3909 en la capa 63, o sea un 21,6% de mejora que viene de la invarianza por traslacion del softmax. AVISO sobre esa cifra: 0,39 de error en la reconstruccion de K NO es el 'error relativo menor a 1e-4' que promete el documento, porque ese 1e-4 se refiere al resultado del SOFTMAX y no al vector reconstruido. Son dos afirmaciones distintas y la segunda no se ha medido. LO QUE NO DEPENDE DE ESTA MEDICION, y conviene que quede escrito: en esta maquina TESSERA-KV no aceleraria nada hoy. La cache KV de Qwen3.8-27B son 0,50 GB a 8.192 tokens y 8,00 GB a 131.072 —no los ~80 GB que la propuesta atribuye a Llama-3-70B— porque 48 de sus 64 capas son GatedDeltaNet con estado recurrente y las 16 de atencion llevan GQA con 4 cabezas KV. La arquitectura ya se comio diez veces ese problema. Y el cuello medido del arnes es el PREFILL, 94,1% del reloj, que es computo y no memoria: comprimir la KV no acelera un GEMM. La propuesta apunta a un cuello que aqui no existe, y solo mordería a un millon de tokens, donde la KV serian 61 GB.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-24 02:39",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-24 02:39",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-24 02:39",
+      "que": "predicho razon_cheby_vs_barajado >=0.8"
+    },
+    {
+      "cuando": "2026-08-24 02:40",
+      "que": "sonda: código 1"
+    },
+    {
+      "cuando": "2026-08-24 02:41",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-24 02:50",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-24 02:59",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-24 02:59",
+      "que": "veredicto: CONFIRMA (razon_cheby_vs_barajado=0.8584)"
+    }
+  ]
+}

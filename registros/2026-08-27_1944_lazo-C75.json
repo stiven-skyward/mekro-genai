@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_1944",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 32,
+    "tope_tokens": 1050,
+    "tope_segundos": 7200
+  },
+  "tareas": [
+    {
+      "id": "larga",
+      "paso": true,
+      "motivo": "tope_tokens",
+      "motivo_extra": "",
+      "vueltas": 8,
+      "intervenciones": 1,
+      "tokens_salida": 1242,
+      "tokens_entrada": 40004,
+      "segundos": 2244.3,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-larga-esxrmfru/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 1242.0,
+    "segundos_media": 2244.3,
+    "intervenciones": 1
+  }
+}

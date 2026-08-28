@@ -1,0 +1,61 @@
+{
+  "id": "C43",
+  "pregunta": "¿El tope de tokens de 1200 permite completar n2/cupones con menos de 800 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 12:01",
+  "revision": {
+    "cuando": "2026-08-26 12:01",
+    "texto": "C42 midió n2/aguja con tope 1200 y obtuvo 686 tokens. C40 midió n3/lista con tope 1600 y obtuvo 1732. El suelo de ruido es ~10%. Busco una tarea n2 no medida (cupones) para verificar si el comportamiento de tokens es consistente en el nivel n2."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 12:01",
+    "metrica": "tokens_media",
+    "espero": "<800",
+    "porque": "C42 estableció un baseline de 686 tokens para n2/aguja con tope 1200. Asumo que n2/cupones tiene complejidad similar. El umbral 800 ofrece un margen de 114 tokens (16.6%) sobre el baseline de 686, superando el ruido del 10% (68.6). Esto valida la consistencia del nivel n2."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 12:19",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --etiqueta lazo-C43 --tarea cupones --tope-vueltas 16 --tope-tokens 1200 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1037.9,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 957.0,
+      "segundos_media": 1036.8,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── cupones\n[1] 73 tok · 389.8 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la && echo '---' && find . -name '*.py' -not -path './.git/*' | head -40\"})  (0.0 s)\n[2] 95 tok · 100.9 s · 4 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"caja.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"carro.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"catalogo.py\"})  (0.0 s)\n[3] 620 tok · 431.1 s · 2 llamadas\n  Tengo el contrato claro. El carro suma 2×2 + 5 = 9.00; con MITAD → 9×0.5 = 4.50; con DIEZ → 9×0.9 = 8.10. Creo `cupones.py` y actualizo `caja.py` en una sola pasada.\n  ✓ escribir({\"ruta\": \"cupones.py\", \"contenido\": \"\\\"\\\"\\\"Cupones de descuento de la tienda.\\\"\\\"\\\"\\n\\n_CUPONES = {\\\"MITAD\\\": 0.5, \\\"DIE…)  (0.0 s)\n  ✓ editar({\"ruta\": \"caja.py\", \"cambios\": [{\"buscar\": \"def cobrar(carro):\\n    return f\\\"TOTAL: {carro.total():.2f}\\\"\", \"poner\": \"d…)  (0.0 s)\n[4] 27 tok · 35.9 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 142 tok · 75.8 s\n  7/7 asertos en verde. Resumen de lo hecho:\n  \n  - **`cupones.py`** (nuevo): `descuento(codigo)` devuelve `0.5` para `\"MITAD\"`, `0.1` para `\"DIEZ\"` y levanta `ValueError` para cualquier otro código.\n  - **`caja.py`**: `cobrar` ahora acepta `cupon=None`; si se pasa un cupón, importa `descuento` y multiplica el total por `1 - descuento`. Sin cupón el comportamiento es idéntico al anterior.\n  \n  No se tocó `pru\n   ✓ PASA · fin · 5 vueltas · 957 tok · 1036.8 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 957.0\nCIFRA segundos_media 1036.8\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1219_lazo-C43.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 12:25",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 957.0,
+    "espero": "<800"
+  },
+  "leccion": "REFUTA.\nEl umbral era 800 tokens y la medición arrojó 957 tokens.\nLa cifra excede el umbral en 157 tokens.\nLa causa más probable es que la tarea de cupones exige más contexto que la aguja.\nEl 100% de éxito se mantuvo con 0 intervenciones.\nEl tiempo medio fue de 1036.8 segundos.\nLa complejidad de n2/cupones supera el baseline de 686 tokens.\nMedir la tokens_media de n2/aguña con tope 1200 para aislar la variable.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 12:01",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 12:01",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 12:01",
+      "que": "predicho tokens_media <800"
+    },
+    {
+      "cuando": "2026-08-26 12:19",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 12:25",
+      "que": "veredicto: REFUTA (tokens_media=957.0)"
+    }
+  ]
+}

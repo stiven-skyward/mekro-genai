@@ -1,0 +1,60 @@
+{
+  "id": "C15",
+  "pregunta": "¿componen las traslaciones entre cúmulos, o sea d_AB + d_BC = d_AC, que es lo que exige que sean diferencias de C1?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 13:55",
+  "revision": {
+    "cuando": "2026-08-23 13:55",
+    "texto": "C14 midio que entre dos cumulos la misma diferencia se repite 242 veces en el campeon frente a 2 en el control, sobre 5,2 millones de diferencias y en una matriz distinta de la de su sonda. Esa diferencia dominante deberia ser d_AB = C1[i_A] - C1[i_B]. Pero C14 tambien dejo escrito el limite: la multiplicidad crecio x1,49 cuando el ideal crecia x2,31, o sea que la pureza de los cumulos del k-means cae al 19%, suficiente para DETECTAR la traslacion y no para RECONSTRUIR apoyandose en ella. Ademas C14 dejo la leccion de instrumento mas cara del dia: la firma de signos heredada de C12 daba multiplicidad 2 sobre los mismos datos donde la rejilla sobre el vector completo da 162, y lo que la delato no fue el resultado sino un numero secundario que no encajaba. De ahi que este ciclo no mida una magnitud sino una CONSISTENCIA: si los desplazamientos dominantes son de verdad diferencias de C1, tienen que componer, d_AB + d_BC = d_AC, en todos los triangulos. Es la misma prueba que valido las escalas en C12 —alli el grafo era de filas unidas por duplicados, aqui de cumulos unidos por traslaciones— y tiene la misma virtud: son decenas de comprobaciones independientes que ninguna explicacion posterior puede acomodar, con un control donde el efecto no puede existir."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 13:55",
+    "metrica": "cierre_traslaciones_mediano",
+    "espero": "<0.05",
+    "porque": "Si d_AB es la diferencia de dos entradas de C1, la composicion es una identidad algebraica y el unico error posible es numerico: el ruido de bf16 sobre los pesos es ~0,002 relativo, la desescalada por beta anade el cierre de C12 (0,004-0,009) y promediar los miembros de la celda de la rejilla REDUCE ese ruido en raiz de la multiplicidad, del orden de raiz de 100. Por eso espero cierres del orden de 0,01 y pongo la barra en 0,05, con un factor 5 de margen. En el control, los desplazamientos dominantes son celdas de ruido sin relacion entre si, luego d_AB + d_BC no tiene por que parecerse a d_AC y el cierre debe salir del orden de 1, o sea del tamano de los propios vectores: la separacion prevista es de dos ordenes de magnitud. Lo que decide: si cierra, C1 queda recuperado salvo una traslacion global propagando por el arbol como se propago log beta en C12, y H1 pasa a ser cuestion de fijar esa traslacion y verificar bit a bit; si no cierra pero las multiplicidades son altas, la diferencia dominante NO es una diferencia de C1 sino un artefacto de cumulos impuros, y hay que encontrar las traslaciones sin pasar por el k-means, verificando candidatos con el recuento |U interseccion (U+d)| sobre el conjunto entero."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 14:01",
+    "comando": "python3 scripts/tejer_traslaciones.py --capa 30 --tensor mlp.gate_proj --cumulos 10 --tope-cumulo 1200 --salida registros/2026-08-23_C15-tejido.json",
+    "codigo": 0,
+    "segundos": 340.3,
+    "cifras": {
+      "cierre_traslaciones_mediano": 0.54303,
+      "cierre_traslaciones_control": 9.9,
+      "triangulos": 120.0
+    },
+    "salida_cola": "[campeon] 10 cúmulos de [1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200] puntos · 150s\n[campeon] multiplicidades de las 45 aristas: [98, 88, 84, 82, 79, 73] …\n[campeon] 120 triángulos · cierre mediano 0.54303 · p90 0.95101\n\n[bf16] 10 cúmulos de [1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200] puntos · 313s\n[bf16] multiplicidades de las 45 aristas: [2, 2, 2, 2, 2, 2] …\n[bf16] 0 triángulos · cierre mediano 9.90000 · p90 9.90000\n\nCIFRA cierre_traslaciones_mediano 0.54303\nCIFRA cierre_traslaciones_control 9.9\nCIFRA triangulos 120\n\nregistro: registros/2026-08-23_C15-tejido.json"
+  },
+  "medicion": null,
+  "veredicto": {
+    "cuando": "2026-08-23 14:03",
+    "confirma": false,
+    "fuente": "sonda",
+    "metrica": "cierre_traslaciones_mediano",
+    "valor": 0.54303,
+    "espero": "<0.05"
+  },
+  "leccion": "REFUTADO —cierre mediano 0,54303 frente a <0,05— y cae en la segunda rama que la prediccion dejo escrita: las multiplicidades son altas pero los triangulos no cierran, luego la diferencia dominante NO es una diferencia de C1 usable, sino un artefacto de cumulos impuros. Las cifras: 45 aristas con multiplicidades 98, 88, 84, 82, 79, 73 —muy por encima del suelo de 2 del control—, 120 triangulos, cierre mediano 0,54303 y p90 0,95101, o sea del tamano de los propios vectores. LA CAUSA, que C14 ya habia anotado y esto confirma: con cumulos al 19% de pureza cada PAR de cumulos elige el desplazamiento entre una pareja de indices DISTINTA. d_AB usa (i_A1, i_B2), d_BC usa (i_B3, i_C1): son diferencias de C1 verdaderas cada una por su lado, pero de indices que no encadenan, y por eso no componen. El fallo no esta en la hipotesis del reticulo —C11, C12 y C14 la sostienen con tres pruebas independientes— sino en usar el k-means como punto de partida. AVISO SOBRE EL CONTROL, que esta vez salio degenerado y hay que decirlo: el BF16 no produjo NINGUNA arista valida (todas sus multiplicidades son 2, por debajo del minimo de 20), asi que su 9,9 es un relleno y no una comparacion. Lo informativo del control no es su cierre sino su AUSENCIA de aristas: en el modelo sin cuantizar no hay traslaciones que tejer. Aun asi, un control que no produce datos es un control a medias, y la proxima version deberia bajarle el minimo para que produzca cierres comparables aunque sean de ruido. LO QUE VIENE, y es el concepto que faltaba: ANCLAR. El problema es que relacionar cumulos entre si mezcla indices; la salida es referir todo a UN SOLO punto. Fijado u0 = C1[i0] + C2[j0], un punto u de U cumple que u - u0 es una diferencia valida exactamente cuando u comparte i0 (y entonces u - u0 es una diferencia de C2) o comparte j0 (y es una diferencia de C1). Ancladas en u0, las diferencias SI son consistentes por construccion y componen. Y la validez de un candidato d se comprueba contando |U interseccion (U+d)|, que con una rejilla ordenada y busqueda binaria cuesta del orden de 30 ms por candidato: 20.000 candidatos son 10 minutos, y de ellos deberian pasar unos 10, que es 2/4096 por candidato. Eso es C16.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 13:55",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 13:55",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 13:55",
+      "que": "predicho cierre_traslaciones_mediano <0.05"
+    },
+    {
+      "cuando": "2026-08-23 14:01",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 14:03",
+      "que": "veredicto: REFUTA (cierre_traslaciones_mediano=0.54303)"
+    }
+  ]
+}

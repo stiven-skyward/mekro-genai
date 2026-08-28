@@ -1,0 +1,58 @@
+{
+  "cuando": "2026-08-25_0920",
+  "nivel": "n1",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 236,
+      "tokens_entrada": 8189,
+      "segundos": 0.0,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-cdiqrm45"
+    },
+    {
+      "id": "migrar",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 222,
+      "tokens_entrada": 9455,
+      "segundos": 0.1,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-migrar-6yduu4f1"
+    },
+    {
+      "id": "rojo",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 176,
+      "tokens_entrada": 7375,
+      "segundos": 0.1,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-rojo-qljnkyl5"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 211.3,
+    "segundos_media": 0.1,
+    "intervenciones": 0
+  }
+}

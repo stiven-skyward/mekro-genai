@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-25_1447",
+  "nivel": "n0",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 8000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "humo",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 378,
+      "tokens_entrada": 7357,
+      "segundos": 775.8,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-humo-w26k9oh0"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 378.0,
+    "segundos_media": 775.8,
+    "intervenciones": 0
+  }
+}

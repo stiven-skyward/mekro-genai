@@ -1,0 +1,24 @@
+{
+  "modelo": "/home/forge/modelos/gguf/Qwen3.8-27B-UD-Q2_K_XL.gguf",
+  "gb": 9.15,
+  "hilos": 16,
+  "ventana": 512,
+  "por_dominio": {
+    "codigo": {
+      "ventanas": 4,
+      "tokens": 2044,
+      "nll": 1.5502,
+      "ppl": 4.7124
+    },
+    "espanol": {
+      "ventanas": 4,
+      "tokens": 2044,
+      "nll": 2.35926,
+      "ppl": 10.5831
+    }
+  },
+  "prefill_seg": 31.707,
+  "tokens_generados": 64,
+  "seg_por_token": 9.0819,
+  "tokens_por_s": 0.11
+}

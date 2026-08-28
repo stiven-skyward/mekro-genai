@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-25_1919",
+  "nivel": "n3",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "lista",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 621,
+      "tokens_entrada": 9021,
+      "segundos": 0.2,
+      "verificador": "6/6 asertos ✓",
+      "trabajo": "/tmp/banco-lista-2u99l4kx"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 621.0,
+    "segundos_media": 0.2,
+    "intervenciones": 0
+  }
+}

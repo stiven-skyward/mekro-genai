@@ -1,0 +1,75 @@
+{
+  "id": "C22",
+  "pregunta": "¿recupera el contexto append-exacto (razonamiento incluido, sin re-plantillar) la palanca del prefill incremental que C20 demostró posible?",
+  "fase": "cerrado",
+  "abierto": "2026-08-24 21:46",
+  "revision": {
+    "cuando": "2026-08-24 21:46",
+    "texto": "C20 refutó (3.359,5 s) y dejó el diagnóstico: kv_cache_seq_rm devuelve false en el Qwen3.8 GGUF (atención híbrida, sin borrado parcial de caché), así que cualquier divergencia entre lo cacheado y lo remontado fuerza re-evaluar el prompt entero. La sonda verbose demostró las dos ramas: con divergencia, 'partial kv removal not supported, re-evaluating full prompt'; con extensión exacta de la secuencia (tokens crudos, think incluido), 'prefix-match hit' y solo evalúa el sufijo. Para medirla hay que cambiar el arnés: (1) el turno del asistente vuelve al contexto con sus tokens crudos, think incluido, no re-plantillado tras separar_razonamiento; (2) compactar() queda vetada mientras el prefijo importe —reescribe por el medio y C20 enseñó que eso cuesta el prefill entero—; (3) la observación de herramienta solo APPENDEA. Ojo al alquiler: el think ocupa ventana (888 tok de salida en la carrera de C20) y presion() subestima tokens por factor 2,1 medido (tokeniza 'x'*N y el BPE comprime las tiradas), así que antes de la carrera hay que arreglar presion() o el desbordamiento saltará por SystemExit sin avisar."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 00:56",
+    "metrica": "segundos_media",
+    "espero": "<1800",
+    "porque": "Aritmetica sobre la carrera refutada de C20 (6 vueltas, 10.693 tokens de entrada acumulada, 888 de salida, 3.359,5 s): con contexto append-exacto la entrada deja de ser la SUMA de los seis contextos y pasa a evaluarse una sola vez, del orden del contexto final sin lo generado: ~2.500 tokens (prompt de sistema con nueve herramientas ~1.900, ahora en tokens especiales de verdad, mas observaciones y pegamento ~600; los ~888 generados entran gratis en la cache al muestrearse). A 0,247-0,33 s por token de prefill son 620-825 s, mas ~310-420 s de generacion: total 1.040-1.250 s. Pongo la barra en 1.800 y no en 1.300 por tres ruidos medidos: la maquina varia dia a dia hasta x1,35 (vuelta 1: 525,9 s frente a 388,9), el guion del modelo cambiara porque ahora VE el think anterior y los tokens especiales del formato con que se entreno, y el tiempo de herramientas no se ahorra. Lo que decide: por debajo de 1.800 la palanca esta puesta y el reloj cae a la mitad; entre 1.800 y 2.700 algo sigue re-evaluando (mirar el aviso verbose de Llama.generate vuelta a vuelta); por encima de 2.700 no reutiliza nada y el diseno append-exacto esta mal montado. GUARDA previa al reloj: tareas_pct tiene que seguir en 100 con 0 intervenciones —si la tarea falla, el numero no compara nada— y la sonda debe ensenar el prefix-match hit ANTES de gastar la carrera."
+  },
+  "sonda": {
+    "cuando": "2026-08-25 01:02",
+    "comando": "python3 -u scripts/sondear_append.py",
+    "codigo": 0,
+    "segundos": 325.2,
+    "cifras": {
+      "reutilizo": 1.0,
+      "aceleracion": 2.12
+    },
+    "salida_cola": "── instancia A: primera generación (frío, inevitable)\n   216 tok entrada · 91 tok salida · 133.692 s · llamadas: ['bash({\"comando\": \"cat suma.py\"})']\n── instancia A: segunda generación (append-exacto, lo que se sonda)\n   338 tok entrada · 96 tok salida · 49.352 s\n   el motor dijo: ['Llama.generate: 307 prefix-match hit, remaining 31 prompt tokens to eval']\n── instancia B (fresca): mismo estado de bucle, prefill entero\n   269 tok entrada · 96 tok salida · 104.621 s\n\nCIFRA reutilizo 1\nCIFRA aceleracion 2.12"
+  },
+  "medicion": {
+    "cuando": "2026-08-25 01:11",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --tarea humo --tope-vueltas 16 --tope-tokens 8000 --tope-segundos 5400 --etiqueta n0-gguf-humo-append",
+    "codigo": 0,
+    "segundos": 545.5,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 400.0,
+      "segundos_media": 544.3,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n0 · cerebro gguf · modo lista · 1 tareas ==\n\n── humo\n[1] 82 tok · 332.8 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"suma.py\"})  (0.0 s)\n[2] 189 tok · 133.6 s · 1 llamadas\n  El bug es obvio: `sumar` resta en vez de sumar. Con eso, `doblar` también queda arreglado porque delega en `sumar`.\n  ✓ editar({\"ruta\": \"suma.py\", \"cambios\": [{\"buscar\": \"    return a - b\", \"poner\": \"    return a + b\"}]})  (0.0 s)\n[3] 26 tok · 19.2 s · 1 llamadas\n  ✗ bash({\"comando\": \"python prueba.py\"})  (0.0 s)\n[4] 27 tok · 18.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 76 tok · 36.8 s\n  Listo. El único cambio: en `suma.py`, la línea `return a - b` → `return a + b`. Con eso `sumar` hace lo que dice y `doblar` (que es `sumar(x, x)`) devuelve `2x` correctamente. La prueba pasa: **3/3 asertos ✓**.\n   ✓ PASA · fin · 5 vueltas · 400 tok · 544.3 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 400.0\nCIFRA segundos_media 544.3\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-25_0111_n0-gguf-humo-append.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 01:12",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 544.3,
+    "espero": "<1800"
+  },
+  "leccion": "CONFIRMADO —544,3 s frente a <1.800— y por debajo incluso de la aritmetica optimista (1.040-1.250): la palanca esta puesta. Misma guarda: 3/3 asertos, 0 intervenciones, 5 vueltas. El reparto lo dice todo: vuelta 1 en frio 332,8 s y las cuatro siguientes 133,6 / 19,2 / 18,4 / 36,8 — el prefill dejo de ser la suma de los contextos. Contra C20 (3.359,5) es x6,2; contra la mejor carrera anterior (C19 con cache de estados, 2.435,2) x4,5. Tres causas y no una, todas medidas: (1) el append-exacto evalua solo el sufijo (sonda: '307 prefix-match hit, remaining 31 prompt tokens to eval', aceleracion x2,12 en el juguete); (2) tokenize(special=True) —el defecto de llama-cpp-python era False— encoge el prompt (216 frente a 240 tokens el turno minimo) y el modelo ve POR FIN los tokens especiales del formato con que se entreno; (3) el modelo penso menos viendo su propio think anterior: 400 tokens de salida frente a 888, y no repitio el editar fallido de C20. CONFUNDIDOR honesto: (2) y (3) cambian el guion, asi que los 544,3 no separan cuanto es reutilizacion y cuanto guion mas corto; si algun dia hace falta separarlo, una carrera con special=True y contexto SIEMPRE frio lo aisla. El alquiler del think en ventana salio barato en humo (~2.400 tokens de contexto final sobre 8.192); la factura llegara en tareas largas, donde compactar() sigue costando un arranque en frio entero porque esta cache no admite borrado parcial: la huella lo detecta y degrada a lento, jamas a corrupto (13 asertos en tests/test_local_gguf.py). Regla practica que queda: en cerebros con cache hibrida, la transcripcion solo puede CRECER POR EL FINAL.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-24 21:46",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-24 21:46",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 00:56",
+      "que": "predicho segundos_media <1800"
+    },
+    {
+      "cuando": "2026-08-25 01:02",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-25 01:11",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 01:12",
+      "que": "veredicto: CONFIRMA (segundos_media=544.3)"
+    }
+  ]
+}

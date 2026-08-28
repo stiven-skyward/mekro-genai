@@ -1,0 +1,75 @@
+{
+  "id": "C20",
+  "pregunta": "¿devuelve el prefill incremental de verdad —no reiniciar el contexto— lo que la caché de estados no devolvió?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 22:17",
+  "revision": {
+    "cuando": "2026-08-23 22:17",
+    "texto": "C19 midio que LlamaRAMCache devuelve solo 324 s de los 1605 que promete la aritmetica: 2759,4 s sin cache y 2435,2 s con ella, un 20% de lo prometido. La causa quedo diagnosticada: esa cache no reutiliza el contexto vivo sino que GUARDA Y RESTAURA el estado completo del modelo en cada llamada, y copiar la KV de un 27B son cientos de MB por vuelta. El reparto del reloj de la primera carrera sigue mandando: 471 tokens de salida contra 10.526 de entrada, generar cuesta 164 s (5,9%) y el prefill 2595 s (94,1%), a 0,247 s por token de entrada. Ninguno de los dos se acelera en esta maquina —generar esta limitado por memoria y el prefill por computo— asi que la unica palanca es no rehacerlo. El mecanismo correcto es no tocar el contexto: entre dos vueltas la secuencia de tokens solo crece por el final, luego basta calcular el prefijo comun con la vuelta anterior y evaluar UNICAMENTE los tokens nuevos, sin reset y sin copias. llama-cpp-python ya lo trae en Llama.generate, que compara la secuencia pedida con la que tiene en contexto y evalua solo el sufijo; lo que hay que dejar de usar es create_completion, que reinicia. AVISO heredado de C19: un prefijo comun mal calculado corrompe el contexto EN SILENCIO y el modelo sigue respondiendo, solo que peor, asi que hay que verificar identidad de salida antes de creerse el reloj."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 22:17",
+    "metrica": "segundos_media",
+    "espero": "<1500",
+    "porque": "Sin reinicios ni copias de estado, el prefill total deja de ser la suma de los seis contextos (10.526 tokens) y pasa a ser el contexto FINAL una sola vez, del orden de 4.000 tokens: los ~2.000 del prompt del sistema con nueve herramientas mas lo que anaden las observaciones. A los 0,247 s por token medidos son unos 988 s de prefill mas los 164 s de generacion, o sea del orden de 1.150 s. Pongo la barra en 1.500 y no en 1.200 porque el guion del modelo puede variar entre carreras y porque el tiempo de las herramientas —correr python3, leer ficheros— no se ahorra. Lo que decide: por debajo de 1.500 el prefill incremental es la palanca y hay que dejarla puesta, con lo que el reloj cae a menos de la mitad del original; entre 1.500 y 2.200 devuelve mas que la cache de estados pero sigue rehaciendo trabajo, y habria que mirar si el prompt cambia por el PRINCIPIO en alguna vuelta —lo que invalidaria el prefijo comun—; por encima de 2.400 no esta reutilizando nada. Y ANTES de mirar el reloj hay que comprobar que la salida es identica a la de rehacer el prefill entero con temperatura 0: si no lo es, el numero del reloj no significa nada porque estaria midiendo un contexto corrupto."
+  },
+  "sonda": {
+    "cuando": "2026-08-24 20:47",
+    "comando": "python3 -u scripts/sondear_prefill.py",
+    "codigo": 0,
+    "segundos": 351.8,
+    "cifras": {
+      "identidad": 1.0,
+      "aceleracion": 1.2
+    },
+    "salida_cola": "── instancia A: primera generación (prefill completo, inevitable)\n   240 tok entrada · 88 tok salida · 87.821 s · llamadas: ['bash({\"comando\": \"cat suma.py\"})']\n── instancia A: segunda generación (prefill INCREMENTAL, lo que se sonda)\n   313 tok entrada · 96 tok salida · 111.192 s\n── instancia B (fresca): misma entrada, prefill entero desde cero\n   313 tok entrada · 96 tok salida · 133.229 s\n\nCIFRA identidad 1\nCIFRA aceleracion 1.20"
+  },
+  "medicion": {
+    "cuando": "2026-08-24 21:43",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --tarea humo --tope-vueltas 16 --tope-tokens 8000 --tope-segundos 5400 --etiqueta n0-gguf-humo-incremental",
+    "codigo": 0,
+    "segundos": 3360.8,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 888.0,
+      "segundos_media": 3359.5,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n0 · cerebro gguf · modo lista · 1 tareas ==\n\n── humo\n[1] 88 tok · 525.9 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"suma.py\"})  (0.0 s)\n[2] 200 tok · 619.5 s · 1 llamadas\n  ✓ editar({\"ruta\": \"suma.py\", \"cambios\": [{\"buscar\": \"    return a - b\", \"poner\": \"    return a + b\"}]})  (0.0 s)\n[3] 312 tok · 548.4 s · 1 llamadas\n  ✗ editar({\"ruta\": \"suma.py\", \"cambios\": [{\"buscar\": \"    return a - b\", \"poner\": \"    return a + b\"}]})  (0.0 s)\n[4] 80 tok · 473.3 s · 1 llamadas\n  ✗ bash({\"comando\": \"python prueba.py\"})  (0.0 s)\n[5] 88 tok · 514.3 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[6] 120 tok · 673.1 s\n  Listo. El problema era que `sumar` restaba en vez de sumar (`return a - b`). Lo corregí a `return a + b`, y la prueba pasa:\n  \n  ```\n  3/3 asertos ✓\n  ```\n   ✓ PASA · fin · 6 vueltas · 888 tok · 3359.5 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 888.0\nCIFRA segundos_media 3359.5\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-24_2143_n0-gguf-humo-incremental.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-24 21:46",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 3359.5,
+    "espero": "<1500"
+  },
+  "leccion": "REFUTADO —3.359,5 s frente a <1.500— y en la peor rama de la predicción: no reutiliza nada. La tarea pasó (3/3 asertos, 0 intervenciones): lo que falla es la palanca, no el arnés. LA CAUSA, vista con verbose=True en una sonda de un minuto: Llama.generate SÍ encuentra el prefijo común, pero kv_cache_seq_rm devuelve false —la caché del Qwen3.8 GGUF no admite borrado parcial, cosa de su atención híbrida— y el código cae EN SILENCIO a re-evaluar el prompt entero en cada vuelta. Con verbose apagado el aviso no se ve: por eso la sonda de identidad dio bien (la matemática no depende de la reutilización) y la aceleración ×1,20 se tomó por ruido cuando era el síntoma. Y el borrado solo hace falta porque el contexto que remonta el arnés DIVERGE de lo generado: quitar el <think> y re-plantillar el turno del asistente deja tokens cacheados de más que habría que podar. Comprobado en la misma sonda: si la secuencia nueva EXTIENDE EXACTAMENTE la cacheada —tokens crudos, think incluido— imprime prefix-match hit y evalúa solo el sufijo. La palanca exige contexto append-exacto a nivel de token: no sacar el razonamiento del contexto vivo, no re-plantillar, no compactar por el medio. El alquiler es que el think ocupa ventana (888 tokens de salida en esta carrera); si cabe en 8192 lo decide C22. Secundario: la vuelta 1, que no reutiliza en ningún diseño, costó 525,9 s frente a 388,9 en C19 —la máquina iba ~1,35× más lenta hoy— así que comparar carreras de días distintos sin esa corrección engaña.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 22:17",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 22:17",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 22:17",
+      "que": "predicho segundos_media <1500"
+    },
+    {
+      "cuando": "2026-08-24 20:47",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-24 21:43",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-24 21:46",
+      "que": "veredicto: REFUTA (segundos_media=3359.5)"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "humo",
+  "nivel": "n0",
+  "encargo": "La prueba `prueba.py` falla. Arregla el código de `suma.py` para que pase. No toques la prueba.",
+  "verificar": "python3 prueba.py",
+  "verificar_intacto": ["prueba.py"],
+  "porque": "Es la tarea más pequeña que ejercita el bucle entero: orientarse, leer, editar y verificar con bash. Si esto falla con cerebro `eco`, el fallo está en el arnés y no en el modelo.",
+  "guion": [
+    "<think>Primero veo por qué falla, sin leer nada todavía.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"suma.py\"}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"suma.py\", \"cambios\": [{\"buscar\": \"    return a - b\", \"poner\": \"    return a + b\"}]}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+    "`sumar` restaba en vez de sumar. Corregido y verificado: la prueba pasa 3/3."
+  ]
+}

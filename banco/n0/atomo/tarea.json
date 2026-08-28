@@ -1,0 +1,16 @@
+{
+  "id": "atomo",
+  "nivel": "n0",
+  "encargo": "En `medidas.py` las tres funciones devuelven el signo cambiado. Arregla las tres. Hazlo en UNA sola llamada a `editar`. No toques la prueba.",
+  "verificar": "python3 prueba.py",
+  "verificar_intacto": [
+    "prueba.py"
+  ],
+  "porque": "Mide la puerta 3 de META.md: herramientas de grano grueso. Tres cambios en una llamada cuestan una vuelta; en tres llamadas cuestan tres, y a 2,9 tok/s eso son minutos.",
+  "guion": [
+    "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"medidas.py\"}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"medidas.py\", \"cambios\": [{\"buscar\": \"return -(a + b)\", \"poner\": \"return a + b\"}, {\"buscar\": \"return -(a * b)\", \"poner\": \"return a * b\"}, {\"buscar\": \"return -(a - b)\", \"poner\": \"return a - b\"}]}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+    "Los tres signos corregidos en una sola llamada. Verificado: 3/3 asertos."
+  ]
+}

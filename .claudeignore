@@ -1,0 +1,6 @@
+__pycache__/
+.venv/
+logs/
+banco/*/semilla/
+# El checkpoint no se lee jamás desde una sesión: son 51 GB.
+modelos/

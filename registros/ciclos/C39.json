@@ -1,0 +1,61 @@
+{
+  "id": "C39",
+  "pregunta": "¿El tope de tokens de 1800 permite completar n3/lista con menos de 1700 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 07:46",
+  "revision": {
+    "cuando": "2026-08-26 07:46",
+    "texto": "C37 mostró que 2500 no comprime (1933 tokens). C38 mostró que 1500 trunca y falla (0% éxito, 1511 tokens). El baseline estable es 1933 tokens con 100% éxito. Se busca un punto intermedio donde el tope active la compresión sin romper la tarea."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 07:46",
+    "metrica": "tokens_media",
+    "espero": "<1700",
+    "porque": "El baseline es 1933. Un umbral de 1700 ofrece un margen de 233 tokens (12%) sobre el ruido, pero más importante, está por debajo del baseline para forzar compresión. Si el tope 1800 permite completar la tarea, la media debería bajar de 1933 a <1700. Si falla, tareas_pct será 0. La hipótesis asume que 1800 es suficiente para la tarea n3/lista."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 08:10",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --etiqueta lazo-C39 --tarea lista --tope-vueltas 16 --tope-tokens 1800 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1401.9,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 1933.0,
+      "segundos_media": 1400.8,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "[1] 165 tok · 464.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 47.2 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 504.5 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(item)` - adds an item to the list\n     - `pendientes()` - returns a list of pending (not yet checked) items\n     - `tachar(item)` - marks an item as done (checked)\n  \n     Data is persisted in `lista.jsonl`.\n  \n  2. `orden.py` is a CLI script:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds item x\n     - `t\n  ·· turno cortado sin llamadas: se le pide continuar\n[4] 296 tok · 168.2 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"lista.py\", \"contenido\": \"import json\\nimport os\\n\\nRUTA = \\\"lista.jsonl\\\"\\n\\n\\ndef _leer():\\n    if not os.pat…)  (0.0 s)\n[5] 221 tok · 102.7 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"orden.py\", \"contenido\": \"import sys\\nfrom lista import anadir, pendientes, tachar\\n\\n\\ndef main():\\n    if len…)  (0.0 s)\n[6] 27 tok · 27.9 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.1 s)\n[7] 174 tok · 82.2 s\n  Los 6 asertos pasan. Resumen de lo construido:\n  \n  - **`lista.py`** — módulo con `anadir`, `pendientes`, `tachar`; persiste en `lista.jsonl` (una línea JSON por elemento: `{\"nombre\": …, \"hecho\": bool}`). `tachar` lanza `ValueError` si el elemento no está pendiente.\n  - **`orden.py`** — CLI (`python3 orden.py <cmd> [arg]`): `ver` imprime pendientes una por línea; `anadir <x>` añade; `tachar <x>` marca y\n   ✓ PASA · fin · 7 vueltas · 1933 tok · 1400.8 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 1933.0\nCIFRA segundos_media 1400.8\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_0810_lazo-C39.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 08:16",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 1933.0,
+    "espero": "<1700"
+  },
+  "leccion": "REFUTA.\nEl umbral era 1700 tokens y la medición fue 1933.\nLa diferencia es de 233 tokens por encima del límite.\nEl tope de 1800 no impidió el éxito, pero no forzó la compresión esperada.\nLa causa probable es que la tarea n3/lista requiere ese volumen mínimo de tokens.\nEl 100% de éxito se mantuvo con 0 intervenciones.\nMide el tope de 1600 tokens para forzar una compresión real.\nObserva si el éxito cae o si el sistema recorta la salida.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 07:46",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 07:46",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 07:46",
+      "que": "predicho tokens_media <1700"
+    },
+    {
+      "cuando": "2026-08-26 08:10",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 08:16",
+      "que": "veredicto: REFUTA (tokens_media=1933.0)"
+    }
+  ]
+}

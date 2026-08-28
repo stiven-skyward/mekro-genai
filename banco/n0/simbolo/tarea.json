@@ -1,0 +1,17 @@
+{
+  "id": "simbolo",
+  "nivel": "n0",
+  "encargo": "La función `normalizar` devuelve el valor sin tocar y debería devolverlo en minúsculas y sin espacios alrededor. Está en algún sitio del paquete `app/`. Arréglala. No toques la prueba.",
+  "verificar": "python3 prueba.py",
+  "verificar_intacto": [
+    "prueba.py"
+  ],
+  "porque": "Obliga a usar `simbolos`: el nombre de la función se conoce pero no su fichero, y el árbol tiene cinco módulos. Es el caso que `grep` resuelve peor que un índice de símbolos.",
+  "guion": [
+    "<tool_call>\n{\"name\": \"simbolos\", \"arguments\": {\"aguja\": \"normalizar\", \"ruta\": \"app\"}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/util/texto.py\"}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/util/texto.py\", \"cambios\": [{\"buscar\": \"    return s\", \"poner\": \"    return s.strip().lower()\"}]}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+    "`normalizar` estaba en `app/util/texto.py` devolviendo la entrada tal cual. Corregido: 3/3 asertos."
+  ]
+}

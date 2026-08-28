@@ -1,0 +1,61 @@
+{
+  "id": "C67",
+  "pregunta": "¿El tope de tokens de 3000 permite completar n0/humo con menos de 423 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 08:16",
+  "revision": {
+    "cuando": "2026-08-27 08:16",
+    "texto": "Se midió n0/crear (278 tokens) y n1/rojo (682 tokens) confirmando eficiencia. n0/humo tiene baseline de 368 tokens. Se busca validar si la tarea de humo mantiene eficiencia bajo el tope de 3000 tokens."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 08:16",
+    "metrica": "tokens_media",
+    "espero": "<423",
+    "porque": "Baseline n0/humo es 368 tokens. Umbral 423 es 368 * 1.15 = 423.2. Margen del 15% sobre el ruido del 10%. La tarea es de nivel n0, similar a crear (278), por lo que se espera eficiencia alta y bajo consumo de tokens."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 08:26",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --etiqueta lazo-C67 --tarea humo --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 626.9,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 345.0,
+      "segundos_media": 625.8,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n0 · cerebro gguf · modo lista · 1 tareas ==\n\n── humo\n[1] 85 tok · 386.7 s · 3 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"suma.py\"})  (0.0 s)\n[2] 162 tok · 160.1 s · 1 llamadas\n  El bug es obvio: `sumar` hace resta en vez de suma. Con eso, `doblar` también queda arreglado porque delega en `sumar`.\n  ✓ editar({\"ruta\": \"suma.py\", \"cambios\": [{\"buscar\": \"return a - b\", \"poner\": \"return a + b\"}]})  (0.0 s)\n[3] 27 tok · 31.0 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[4] 71 tok · 44.8 s\n  Listo. El único cambio: en `suma.py`, `return a - b` → `return a + b`. Con eso `sumar` hace lo que dice y `doblar` (que delega en `sumar(x, x)`) también da el doble correcto. La prueba pasa 3/3.\n   ✓ PASA · fin · 4 vueltas · 345 tok · 625.8 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 345.0\nCIFRA segundos_media 625.8\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-27_0826_lazo-C67.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 08:31",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 345.0,
+    "espero": "<423"
+  },
+  "leccion": "CONFIRMA.\nEl umbral era 423 tokens.\nLa medición fue 345 tokens.\nLa diferencia es de 78 tokens.\nLa causa es la eficiencia del modelo gguf.\nEl tope de 3000 tokens no fue un límite.\nEl éxito fue del 100%.\nMedir segundos_media en la siguiente iteración.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 08:16",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 08:16",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 08:16",
+      "que": "predicho tokens_media <423"
+    },
+    {
+      "cuando": "2026-08-27 08:26",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 08:31",
+      "que": "veredicto: CONFIRMA (tokens_media=345.0)"
+    }
+  ]
+}

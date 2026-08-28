@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-25_2006",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "lista",
+      "paso": false,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 3,
+      "intervenciones": 0,
+      "tokens_salida": 1215,
+      "tokens_entrada": 5427,
+      "segundos": 1850.9,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-lista-_crh3jnn/prueba.py\", line 18, in <module>\n    from lista import anadir, pendientes, tachar\nModuleNotFoundError: No module named 'lista'",
+      "trabajo": "/tmp/banco-lista-_crh3jnn"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 0.0,
+    "tokens_media": 1215.0,
+    "segundos_media": 1850.9,
+    "intervenciones": 0
+  }
+}

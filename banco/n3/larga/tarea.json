@@ -1,0 +1,35 @@
+{
+ "id": "larga",
+ "nivel": "n3",
+ "encargo": "Los diez módulos de `app/` (m0.py a m9.py) devuelven el signo cambiado en su función `calcula`. Corrígelos TODOS. La prueba lo verifica. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "La tarea de RESISTENCIA de M5.1: diez arreglos con observaciones gordas acumulan >16.384 tokens de contexto — sin renacimiento muere por SystemExit a mitad; con él, la sesión renace y termina. Es la medida de «contexto que sobrevive horas».",
+ "guion": [
+  "<think>Diez módulos, mismo bug: voy uno a uno.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m0.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m0.py\", \"cambios\": [{\"buscar\": \"    return -(x + 0)\", \"poner\": \"    return x + 0\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m1.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m1.py\", \"cambios\": [{\"buscar\": \"    return -(x + 1)\", \"poner\": \"    return x + 1\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m2.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m2.py\", \"cambios\": [{\"buscar\": \"    return -(x + 2)\", \"poner\": \"    return x + 2\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m3.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m3.py\", \"cambios\": [{\"buscar\": \"    return -(x + 3)\", \"poner\": \"    return x + 3\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m4.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m4.py\", \"cambios\": [{\"buscar\": \"    return -(x + 4)\", \"poner\": \"    return x + 4\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m5.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m5.py\", \"cambios\": [{\"buscar\": \"    return -(x + 5)\", \"poner\": \"    return x + 5\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m6.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m6.py\", \"cambios\": [{\"buscar\": \"    return -(x + 6)\", \"poner\": \"    return x + 6\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m7.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m7.py\", \"cambios\": [{\"buscar\": \"    return -(x + 7)\", \"poner\": \"    return x + 7\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m8.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m8.py\", \"cambios\": [{\"buscar\": \"    return -(x + 8)\", \"poner\": \"    return x + 8\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"app/m9.py\", \"lineas\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/m9.py\", \"cambios\": [{\"buscar\": \"    return -(x + 9)\", \"poner\": \"    return x + 9\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "Los diez módulos tenían el signo cambiado en `calcula`; corregidos y la prueba pasa 10/10."
+ ]
+}

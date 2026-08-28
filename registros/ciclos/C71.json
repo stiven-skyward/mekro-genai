@@ -1,0 +1,61 @@
+{
+  "id": "C71",
+  "pregunta": "M5.1: ¿sobrevive una tarea que DESBORDA la ventana de 16.384 gracias al renacimiento holográfico, donde antes moría por SystemExit?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 11:51",
+  "revision": {
+    "cuando": "2026-08-27 11:51",
+    "texto": "El renacimiento está implementado (sesion.renacer + bucle) y probado en frío: 36/36 asertos, incluida una ventana enana donde el bucle antes moría y ahora termina. La tarea de resistencia n3/larga: 10 módulos de ~4,6 KB con el signo cambiado; cada lectura pesa ~1.200 tokens de observación y la aritmética del contexto acumulado (prompt ~1.400 + 10×(lectura+edición+generación) ≈ 17-20K) cruza los 16.384 hacia el módulo 7. Sin renacer, SystemExit seguro («el contexto son N tokens y el tope es 16384»); con renacer, la sesión paga un frío pequeño (~2K tokens) y sigue. eco pasa 1/1 con exigir-todo. El renacer invalida las huellas del append-exacto a propósito: el frío pequeño ES el diseño (C20 enseñó que cualquier reescritura cuesta un frío; que sea del contexto chico, no del grande)."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 11:51",
+    "metrica": "tareas_pct",
+    "espero": "==100",
+    "porque": "La unica causa de muerte de una tarea larga hoy es el desbordamiento, y el renacimiento lo elimina por construccion (probado en frio con ventana enana). Riesgos residuales: (a) que el resumen mecanico pierda algo esencial y el modelo repita trabajo hasta el tope de vueltas (32) — lo vigila la constancia de llamadas-ya-ejecutadas en el resumen; (b) que el modelo use grep en vez de leer y NO desborde — entonces el 100 llegaria sin renacer y la medicion no probaria M5.1: hay que mirar la traza y exigir al menos UN renacimiento para darla por buena, y si no lo hubo, engordar la tarea y repetir. Lo que decide: 100 CON renacimiento en la traza cierra la brecha 1; 0 por tope_vueltas con sintomas de repeticion acusa al resumen mecanico y la siguiente palanca es el resumen escrito por el cerebro; 0 por SystemExit seria un bug del cableado y a mirarlo antes que nada."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 12:22",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n3 --tarea larga --cerebro gguf --modo lista --tope-vueltas 32 --tope-tokens 8000 --tope-segundos 10800 --etiqueta m5-1-larga-gguf",
+    "codigo": 0,
+    "segundos": 1804.0,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 992.0,
+      "segundos_media": 1802.6,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "[3] 156 tok · 502.6 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m0.py\", \"cambios\": [{\"buscar\": \"    return -(x + 0)\", \"poner\": \"    return x + 0\"}]})  (0.0 s)\n[4] 84 tok · 54.4 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m1.py\", \"cambios\": [{\"buscar\": \"    return -(x + 1)\", \"poner\": \"    return x + 1\"}]})  (0.0 s)\n[5] 60 tok · 44.1 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m2.py\", \"cambios\": [{\"buscar\": \"    return -(x + 2)\", \"poner\": \"    return x + 2\"}]})  (0.0 s)\n[6] 60 tok · 46.4 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m3.py\", \"cambios\": [{\"buscar\": \"    return -(x + 3)\", \"poner\": \"    return x + 3\"}]})  (0.0 s)\n[7] 60 tok · 44.6 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m4.py\", \"cambios\": [{\"buscar\": \"    return -(x + 4)\", \"poner\": \"    return x + 4\"}]})  (0.0 s)\n[8] 60 tok · 43.4 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m5.py\", \"cambios\": [{\"buscar\": \"    return -(x + 5)\", \"poner\": \"    return x + 5\"}]})  (0.0 s)\n[9] 60 tok · 49.9 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m6.py\", \"cambios\": [{\"buscar\": \"    return -(x + 6)\", \"poner\": \"    return x + 6\"}]})  (0.0 s)\n[10] 60 tok · 56.1 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m7.py\", \"cambios\": [{\"buscar\": \"    return -(x + 7)\", \"poner\": \"    return x + 7\"}]})  (0.0 s)\n[11] 60 tok · 49.3 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m8.py\", \"cambios\": [{\"buscar\": \"    return -(x + 8)\", \"poner\": \"    return x + 8\"}]})  (0.0 s)\n[12] 57 tok · 50.4 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/m9.py\", \"cambios\": [{\"buscar\": \"    return -(x + 9)\", \"poner\": \"    return x + 9\"}]})  (0.0 s)\n[13] 37 tok · 42.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[14] 84 tok · 64.2 s\n  Corregidos los 10 módulos de `app/` (`m0.py` a `m9.py`): cada `calcula` ahora devuelve `x + i` en lugar de `-(x + i)`.\n  \n  Verificación:\n  \n  ```text\n  python3 prueba.py\n  10/10 asertos ✓\n  ```\n   ✓ PASA · fin · 14 vueltas · 992 tok · 1802.6 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 992.0\nCIFRA segundos_media 1802.6\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-27_1222_m5-1-larga-gguf.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 12:23",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 100.0,
+    "espero": "==100"
+  },
+  "leccion": "CONFIRMADO en la cifra —tareas_pct 100— pero la GUARDA de la propia prediccion dice que esto NO cierra M5.1 todavia: no hubo ni un renacimiento real (la unica coincidencia en el log es la cita de la prediccion) porque el modelo fue mas economico que mi aritmetica — 14 vueltas, 992 tokens de salida, contexto por vuelta ~9K, por debajo del umbral de 13.1K. La tarea de resistencia paso SIN estresar el mecanismo. Dos cosas medidas que si valen: (a) 64.045 tokens de entrada acumulada en 1.802,6 s — el append-exacto sostiene tareas largas con un reloj decente; (b) el renacimiento sigue probado solo en frio (ventana enana, 48 asertos). La leccion de metodo: para estresar un mecanismo relativo al contexto no se engorda la tarea (el modelo la adelgaza), se ENCOGE LA VENTANA — C72 repite la misma tarea con contexto_max 8000 y ahi el umbral de 6.4K se cruza hacia la vuelta 9 haga lo que haga el modelo. Guarda identica: 100 CON renacimiento en la traza, o no cuenta.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 11:51",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 11:51",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 11:51",
+      "que": "predicho tareas_pct ==100"
+    },
+    {
+      "cuando": "2026-08-27 12:22",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 12:23",
+      "que": "veredicto: CONFIRMA (tareas_pct=100.0)"
+    }
+  ]
+}

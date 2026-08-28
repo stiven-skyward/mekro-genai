@@ -1,0 +1,61 @@
+{
+  "id": "C31",
+  "pregunta": "¿está el presupuesto mínimo de n3/lista por encima de 1.500 tokens? (acotar la hebra que C30 dejó viva)",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 20:45",
+  "revision": {
+    "cuando": "2026-08-25 20:45",
+    "texto": "C29/C30 demostraron que a temperatura 0 el guion se repite token por token entre carreras. Eso convierte esta pregunta en ARITMÉTICA comprobable: el guion de C30 gastó 165+26+1024+477+214+27+185. El tope se comprueba al EMPEZAR cada vuelta (bucle.py:64), así que con tope 1.500: la vuelta 4 arranca con 1.215 (<1.500) y escribe lista.py (acumulado 1.692); la vuelta 5 arranca con 1.692 (≥1.500) y el turno para por tope_tokens SIN haber escrito orden.py; el verificador externo corre igual y falla (la prueba lanza orden.py por subprocess). Predicción derivada, no adivinada. Si en cambio PASA, lo refutado sería el determinismo entre carreras —más interesante que la pregunta original—."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 20:45",
+    "metrica": "tareas_pct",
+    "espero": "==0",
+    "porque": "Derivado del guion determinista de C30, no adivinado: con tope_tokens 1.500 la vuelta 5 arranca ya pasada (1.692 ≥ 1.500), el turno para por tope con solo lista.py escrito y el verificador falla al no existir orden.py. Lo que decide: 0 con motivo tope_tokens acota el presupuesto minimo real de este n3 en (1.500, 2.118] y cierra la hebra de C30 —con 2.118 medidos como suficiente, un tope operativo razonable para n3 es 3.000 con margen—; 100 refutaria EL DETERMINISMO entre carreras (el guion habria cambiado sin cambiar nada del arnes), que obligaria a revisar todas las comparaciones entre carreras del proyecto; 0 por otro motivo (no tope_tokens) seria un mecanismo nuevo a mirar de cerca."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-25 21:25",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --tope-vueltas 16 --tope-tokens 1500 --tope-segundos 5400 --etiqueta n3-gguf-tope1500",
+    "codigo": 0,
+    "segundos": 2404.8,
+    "cifras": {
+      "tareas_pct": 0.0,
+      "tokens_media": 1659.0,
+      "segundos_media": 2403.3,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n3 · cerebro gguf · modo lista · 1 tareas ==\n\n── lista\n[1] 165 tok · 439.5 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 55.1 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 1495.7 s\n  Ahora entiendo el contrato. Voy a crear los dos ficheros:\n  \n  <tool_call>\n  {\"name\": \"escribir\", \"arguments\": {\"ruta\": \"lista.py\", \"contenido\": \"\\\"\\\"\\\"Lista de la compra persistente en lista.jsonl.\\\"\\\"\\\"\\nimport json\\nimport os\\n\\n_RUTA = os.path.join(os.path.dirname(os.path.abspath(__file__)), \\\"lista.jsonl\\\")\\n\\n\\ndef _cargar():\\n    \\\"\\\"\\\"Devuelve la lista de entradas [(nombre, hecho), ...].\\\"\\\"\\\"\\n\n[4] 444 tok · 409.1 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"lista.py\", \"contenido\": \"\\\"\\\"\\\"Lista de la compra persistente en lista.jsonl.\\\"\\\"\\\"\\nimport json\\nimport os\\n\\…)  (0.0 s)\n   ✗ FALLA · tope_tokens · 4 vueltas · 1659 tok · 2403.3 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 0.0\nCIFRA tokens_media 1659.0\nCIFRA segundos_media 2403.3\nCIFRA intervenciones 0\n\n0/1 tareas · registro → registros/2026-08-25_2125_n3-gguf-tope1500.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 21:26",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 0.0,
+    "espero": "==0"
+  },
+  "leccion": "CONFIRMADO en la cifra —tareas_pct 0 por tope_tokens, 1.659 gastados, solo lista.py escrito— y la cota queda cerrada: el presupuesto minimo de n3/lista esta en (1.500, 2.118] y el tope operativo razonable para n3 es 3.000. PERO el camino micro DIVERGIO y eso es la mitad valiosa del ciclo: la vuelta 3 no repitio el think ingles de C29/C30 —salio antes, en castellano, y empezo el escribir, cortado a 1.024 en mitad del JSON; la vuelta 4 lo reemitio limpio (el camino de quejas de C24 funcionando)—. A temperatura 0 la unica fuente de divergencia es el contexto, y el culpable es el ls -la de la vuelta 1: el nombre del directorio temporal y las fechas CAMBIAN por carrera, y el muestreo greedy es caotico ante bits de contexto. El «token por token» que la leccion de C30 afirmo era demasiado fuerte: valio entre C29 y C30 por suerte, no por construccion. CONSECUENCIA DE METODO, directa para H6: comparar carreras como «mismo guion» solo vale si las observaciones son byte-identicas; el comparador del lazo autonomo necesita observaciones NORMALIZADAS (directorio de trabajo → «.», sin fechas, sin inodos) o cada comparacion arrastra este ruido. Es un cambio chico en herramientas/bash y compra reproducibilidad de verdad. Del mismo ciclo quedan construidas y probadas las dos piezas que el foco de H6 pedia: el VETO de rutas (permisos.py, banco/ de solo lectura en todo modo, 5 asertos) y el VIGILANTE (ciclo.py racha: N cerrados seguidos sin confirmar, umbral y codigo de salida para que el lazo pare y pida revision, 3 asertos). Falta el proponente: que el cerebro proponga la hipotesis siguiente desde horizonte.md y los registros.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 20:45",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 20:45",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 20:45",
+      "que": "predicho tareas_pct ==0"
+    },
+    {
+      "cuando": "2026-08-25 21:25",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 21:26",
+      "que": "veredicto: CONFIRMA (tareas_pct=0.0)"
+    }
+  ]
+}

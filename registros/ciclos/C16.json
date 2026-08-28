@@ -1,0 +1,75 @@
+{
+  "id": "C16",
+  "pregunta": "ancladas en un solo punto y sin k-means, ¿aparecen diferencias válidas del libro a la tasa que predice la aritmética?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 14:04",
+  "revision": {
+    "cuando": "2026-08-23 14:04",
+    "texto": "C15 refuto que las traslaciones entre cumulos compongan: 120 triangulos cierran a 0,543 pese a multiplicidades de 98, 88, 84. La causa esta identificada y no es la hipotesis del reticulo —C11 midio el libro en 15,73 M = 0,938 x 4096^2, C12 recupero beta con cierre 0,0034-0,0040, C14 midio traslaciones 242 contra 2 del control— sino el punto de partida: con cumulos del k-means al 19% de pureza, cada par de cumulos elige el desplazamiento entre una pareja de indices distinta, y (i_A1,i_B2) con (i_B3,i_C1) no encadenan. C15 dejo escrito el remedio: anclar en un solo punto. Fijado u0 = C1[i0] + C2[j0], la diferencia u - u0 es valida exactamente cuando u comparte i0 —y entonces es diferencia de C2— o comparte j0 —y es diferencia de C1—, luego todas las diferencias ancladas son consistentes por construccion. La validez se comprueba contando |U interseccion (U+d)| con una rejilla ordenada y busqueda binaria, sin k-means y sin optimizacion. C14 dejo ademas la leccion de instrumento: la rejilla sobre el VECTOR COMPLETO discrimina donde la firma de signos sobre la direccion es ciega, y aqui se usa esa."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 14:04",
+    "metrica": "candidatos_validos_campeon",
+    "espero": ">=3",
+    "porque": "La aritmetica, escrita antes de mirar: de 20.000 candidatos al azar, la fraccion que comparte i0 o j0 con el ancla es 2/4096, o sea 9,8 esperados. Para un d valido, un punto cualquiera cumple u+d en U con probabilidad (1/4096) por la ocupacion del reticulo, ~8e-5, luego el cribado con 20.000 puntos da 1,1 aciertos esperados por candidato valido y por Poisson deja pasar unos dos tercios: quedan ~6,5. La confirmacion con 400.000 puntos les da ~22 aciertos y el umbral esta en 8. Pongo la barra en 3 y no en 6 porque el margen de Poisson sobre 6,5 es ancho y porque 3 ya es imposible por azar: para un d INVALIDO el punto desplazado cae en celda ocupada con probabilidad ~3e-11 —la nube ocupa del orden de 12^16 = 2e17 celdas—, asi que el control debe dar 0 exacto. Lo que decide: si salen >=3 validos en el campeon y 0 en el control, la deteccion anclada funciona sin k-means y H1 pasa a ser cuestion de ESCALA —conseguir las ~1360 diferencias de una fila entera y de ahi C1 salvo traslacion—; si salen 0, el ancla elegida es un punto poco usado o la ocupacion del reticulo es mucho menor de lo estimado, y hay que anclar en un punto DUPLICADO, que por construccion se usa muchas veces."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 14:37",
+    "comando": "python3 scripts/anclar_diferencias.py --capa 30 --tensor mlp.gate_proj --candidatos 20000 --salida registros/2026-08-23_C16-anclas.json",
+    "codigo": 0,
+    "segundos": 1958.0,
+    "cifras": {
+      "candidatos_validos_campeon": 18023.0,
+      "candidatos_validos_control": 15950.0,
+      "cribados_campeon": 18055.0
+    },
+    "salida_cola": "[campeon] 5,570,560 grupos · rejilla lista · 13s\n[campeon] cribado: 18055 de 20000 con ≥1 acierto · 79s\n[campeon] válidos 18023 · mejores [124, 118, 117, 117, 117, 117, 117, 116, 116, 116] · 1034s\n\n[bf16] 5,570,560 grupos · rejilla lista · 1036s\n[bf16] cribado: 16122 de 20000 con ≥1 acierto · 1110s\n[bf16] válidos 15950 · mejores [129, 128, 127, 125, 125, 125, 124, 123, 123, 122] · 1956s\n\nCIFRA candidatos_validos_campeon 18023\nCIFRA candidatos_validos_control 15950\nCIFRA cribados_campeon 18055\n\nregistro: registros/2026-08-23_C16-anclas.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-23 14:43",
+    "comando": "python3 -u scripts/anclar_diferencias.py --capa 30 --tensor mlp.gate_proj --candidatos 4000 --criba 20000 --confirma 200000 --suelo-empirico --salida registros/2026-08-23_C16-medicion.json",
+    "codigo": 0,
+    "segundos": 250.8,
+    "cifras": {
+      "candidatos_validos_campeon": 0.0,
+      "candidatos_validos_control": 4.0,
+      "cribados_campeon": 3324.0
+    },
+    "salida_cola": "[bf16] 5,570,560 grupos · rejilla lista · 2s\n[bf16] cribado: 3831 de 4000 con ≥1 acierto · 17s\n[bf16] suelo empírico (p99,9 del control) = 69\n[bf16] válidos 4 · mejores [72, 71, 70, 70, 69, 69, 69, 69, 68, 68] · 122s\n\n[campeon] 5,570,560 grupos · rejilla lista · 134s\n[campeon] cribado: 3324 de 4000 con ≥1 acierto · 148s\n[campeon] suelo empírico (p99,9 del control) = 69\n[campeon] válidos 0 · mejores [69, 68, 67, 64, 64, 64, 62, 61, 60, 60] · 249s\n\nCIFRA candidatos_validos_campeon 0\nCIFRA candidatos_validos_control 4\nCIFRA cribados_campeon 3324\n\nregistro: registros/2026-08-23_C16-medicion.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 14:44",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "candidatos_validos_campeon",
+    "valor": 0.0,
+    "espero": ">=3"
+  },
+  "leccion": "REFUTADO sin ambiguedad con el instrumento corregido: 0 candidatos validos en el campeon frente a 4 en el control, y los mejores del campeon (69, 68, 67, 64) quedan POR DEBAJO del suelo empirico (p99,9 del control = 69 aciertos). La deteccion anclada por pertenencia en rejilla no tiene ningun poder discriminante. Los 4 del control son exactamente el 0,1% que la definicion del percentil obliga, o sea el suelo funcionando. LA LECCION CARA, y es la mas general del dia: EL MODELO NULO SE MIDE, NUNCA SE CALCULA DE UNA DENSIDAD IDEALIZADA. La sonda de este mismo ciclo, con el umbral calculado, dio 18.023 validos de 20.000 en el campeon y 15.950 en el control, con los MEJORES DEL CONTROL por encima de los del campeon. Yo habia calculado el suelo de falsos positivos suponiendo la nube repartida por del orden de 12^16 = 2e17 celdas —probabilidad 3e-11 de caer en celda ocupada— y la tasa real esta SEIS ORDENES DE MAGNITUD por encima, porque la ocupacion no es uniforme: la nube esta concentrada y un desplazamiento que es diferencia de dos puntos suyos devuelve los puntos al mismo nucleo denso. El test medía 'cae en el nucleo', no 'es una diferencia del libro'. Un suelo teorico de 3e-11 dio confianza para poner el umbral en 3; treinta segundos de control lo habrian desmentido. COROLARIO OPERATIVO, ya aplicado al instrumento: el control corre PRIMERO, y si satura no hace falta gastar el resto de la carrera. SEGUNDA LECCION, de arnes: las carreras desatendidas se lanzan con python3 -u. C16 estuvo 27 minutos sin emitir una linea porque Python bufferiza la salida cuando no escribe a un terminal, y el monitor que la vigilaba era decorativo; hubo que deducir su fase por el RSS del proceso. Corregido en los ocho scripts de sonda. BALANCE DE LA VIA (a) TRAS SIETE CICLOS, para quien retome: lo SOLIDO es que el reticulo sobrevive —C11 midio el libro en 15,73 M = 0,938 x 4096^2 con el control a cero exacto en cinco tamanos de muestra, C12 recupero beta_fila con cierre de ciclos 0,0034-0,0040 contra 0,33-0,52 del control barajado y el 100% de filas conectadas, C14 midio traslaciones 242 contra 2—. Lo que RESISTE es separarlo: C13 (el k-means converge a un RVQ valido pero distinto: 0,123 contra 0,399 del control, y hace falta CERO), C15 (las traslaciones entre cumulos impuros no componen: 0,543) y C16 (la deteccion anclada no discrimina: 0 sobre el suelo empirico). Tres intentos, tres instrumentos distintos. Eso NO refuta la salida (a) —la estructura esta ahi y esta medida tres veces— pero SI refuta la estimacion de coste que la abrio: 'horas de CPU' era optimista, y quien siga por aqui debe saber que ya se gastaron siete ciclos.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 14:04",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 14:04",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 14:04",
+      "que": "predicho candidatos_validos_campeon >=3"
+    },
+    {
+      "cuando": "2026-08-23 14:37",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 14:43",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 14:44",
+      "que": "veredicto: REFUTA (candidatos_validos_campeon=0.0)"
+    }
+  ]
+}

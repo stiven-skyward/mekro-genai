@@ -1,0 +1,77 @@
+{
+  "id": "C25",
+  "pregunta": "engordado n1 a seis tareas —dos ficheros coordinados, un bug de clase, el primer arranque—, ¿sigue el cerebro de trabajo pasándolo, y las tres viejas repiten?",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 11:51",
+  "revision": {
+    "cuando": "2026-08-25 11:51",
+    "texto": "C24 dejó 3/3 en el n1 original. Las tres tareas nuevas suben lo que aquel no medía: cadena exige DOS ediciones coordinadas en dos ficheros (migrar la firma sin propagarla deja rojo igual); fuga es el primer bug de CLASE del banco (argumento por defecto mutable: no hay línea que se ejecute mal, el estado sobrevive entre llamadas y solo asoma en la segunda); bitacora obliga a elegir la CAPA del arreglo (el contrato está en bitacora.py, el FileNotFoundError nace en disco.py). Las tres viejas (rojo, anadir, migrar) quedan dentro como controles de regresión intra-carrera. eco pasa 6/6 con exigir-todo (registro 2026-08-25_1150). Cambio del arnés desde C24, anotado: max_tokens por vuelta 512→1024 en bucle.py, porque C24 midió una llamada truncada por el tope en mitad del tool_call (~1 vuelta perdida); el EOS para solo, así que el presupuesto extra no cuesta nada, pero PUEDE alargar los think. Referencias de máquina: humo-control 544,3 s (C22) / 1.058,8 s (C24); el control del día se corre antes de medir."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 11:51",
+    "metrica": "tareas_pct",
+    "espero": ">=83",
+    "porque": "Espero que caiga A LO SUMO UNA de seis. Las tres viejas deberian repetir (C24 las paso con 0 intervenciones y nada del arnes que las toque ha cambiado salvo max_tokens, que solo QUITA truncados). De las nuevas, el orden de riesgo: fuga primero —es un bug de clase, no de linea; si el modelo no reconoce el patron del argumento mutable puede parchear el sintoma (p. ej. copiar el diccionario al devolver) y quedarse en rojo—; cadena segunda —migrar la firma en tarifas.py y olvidar factura.py deja rojo, aunque el TypeError de la prueba señala el camino—; bitacora tercera —el try/except es mecanico una vez visto el traceback—. La barra: 100 dice que el n1 engordado sigue dentro del alcance y M2 se declara con banco no-facil; 83 confirma con una caida a estudiar; 66 es zona gris (¿cayeron las nuevas o hubo regresion en las viejas? lo segundo seria del arnes, no del modelo); <66 refuta. Secundario sin barra: espero 3-6 vueltas y ~900-1.300 s por tarea con la maquina de ayer (control humo del dia primero, como manda C23); y CERO llamadas truncadas por tope —si aparece una con 1024, el problema no era el tope sino el think desbocado y la palanca pasa a ser H5."
+  },
+  "sonda": {
+    "cuando": "2026-08-25 11:51",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n1 --cerebro eco --modo lista --callado --exigir-todo --etiqueta n1x6-eco-sonda-C25",
+    "codigo": 0,
+    "segundos": 0.9,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 232.0,
+      "segundos_media": 0.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro eco · modo lista · 6 tareas ==\n\n── anadir\n   ✓ PASA · fin · 5 vueltas · 236 tok · 0.0 s · 0 interv.\n\n── bitacora\n   ✓ PASA · fin · 5 vueltas · 265 tok · 0.1 s · 0 interv.\n\n── cadena\n   ✓ PASA · fin · 5 vueltas · 293 tok · 0.1 s · 0 interv.\n\n── fuga\n   ✓ PASA · fin · 5 vueltas · 200 tok · 0.1 s · 0 interv.\n\n── migrar\n   ✓ PASA · fin · 6 vueltas · 222 tok · 0.1 s · 0 interv.\n\n── rojo\n   ✓ PASA · fin · 5 vueltas · 176 tok · 0.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 232.0\nCIFRA segundos_media 0.1\nCIFRA intervenciones 0\n\n6/6 tareas · registro → registros/2026-08-25_1151_n1x6-eco-sonda-C25.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-25 13:45",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --tope-vueltas 16 --tope-tokens 8000 --tope-segundos 5400 --etiqueta n1x6-gguf",
+    "codigo": 0,
+    "segundos": 6130.3,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 657.3,
+      "segundos_media": 1020.8,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "  def agrupar(palabras, grupos=None):\n      if grupos is None:\n          grupos = {}\n      for p in palabras:\n          gru\n   ✓ PASA · fin · 5 vueltas · 563 tok · 920.5 s · 0 interv.\n\n── migrar\n[1] 157 tok · 493.8 s · 3 llamadas\n  ✓ grep({\"patron\": \"etiqueta\", \"ruta\": \"formato.py\", \"contexto\": 3})  (0.0 s)\n  ✓ grep({\"patron\": \"etiqueta\", \"ruta\": \"informe.py\", \"contexto\": 3})  (0.0 s)\n  ✓ holos({})  (0.1 s)\n[2] 266 tok · 280.3 s · 1 llamadas\n  ✓ editar({\"ruta\": \"informe.py\", \"cambios\": [{\"buscar\": \"    return etiqueta(titulo, True, True)\", \"poner\": \"    return etiqueta(t…)  (0.0 s)\n[3] 66 tok · 60.9 s\n  tool_call con JSON inválido (Expecting ',' delimiter): {\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 -c \\\"\\nfrom informe import cabecera, nota\\nprint(repr(cabecera('hola mundo')))\\nprint(repr(nota('  hola  ')))\n   ✓ PASA · fin · 3 vueltas · 489 tok · 839.2 s · 0 interv.\n\n── rojo\n[1] 50 tok · 426.9 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py 2>&1 | head -80\"})  (0.2 s)\n[2] 49 tok · 116.6 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"turnos.py\"})  (0.0 s)\n[3] 578 tok · 547.6 s · 1 llamadas\n  El problema es claro: los intervalos son semientabiertos `[inicio, fin)` (fin excluido), así que tocarse en el borde **no** es pisarse. La condición usa `<=` cuando debería ser `<`.\n  ✓ editar({\"ruta\": \"turnos.py\", \"cambios\": [{\"buscar\": \"return a[0] <= b[1] and b[0] <= a[1]\", \"poner\": \"return a[0] < b[1] and b[…)  (0.0 s)\n[4] 27 tok · 44.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 88 tok · 111.9 s\n  Corregido. El cambio: en `solapan`, la comparación `<=` → `<`. Como los turnos son intervalos `[inicio, fin)` con fin excluido, dos turnos que se tocan en el borde (p. ej. `(0,10)` y `(10,20)`) no se pisan; la condición de solapamiento debe ser estricta.\n   ✓ PASA · fin · 5 vueltas · 792 tok · 1250.6 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 657.3\nCIFRA segundos_media 1020.8\nCIFRA intervenciones 0\n\n6/6 tareas · registro → registros/2026-08-25_1345_n1x6-gguf.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 13:46",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 100.0,
+    "espero": ">=83"
+  },
+  "leccion": "CONFIRMADO en la rama alta —tareas_pct 100 frente a >=83—: PLENO 6 de 6 con el banco engordado. Las tres nuevas, que median lo que C24 no midio, cayeron todas: bitacora eligio la capa correcta (disco.cargar) tras leer las dos (6 vueltas, 1.008,2 s); cadena busco con grep los LLAMADORES de precio_final antes de editar y coordino las dos ediciones (4 vueltas, 1.191,4 s); y fuga —mi apuesta a caer— paso con diagnostico de libro escrito por el propio modelo: «grupos={} es un argumento mutable por defecto... se comparte entre todas las llamadas» (5 vueltas, 920,5 s). Reconocio la CLASE del bug, no el sintoma. Las tres viejas repitieron casi calcadas (anadir 4 vueltas/mismo guion, migrar 3, rojo 5): el banco es estable entre carreras a temperatura 0. El arreglo de max_tokens 512→1024 quedo validado en el punto exacto: la vuelta 3 de rojo genero 578 tokens con think y llamada COMPLETOS —en C24 ese mismo punto trunco a 512 y costo una vuelta de reemision—. CERO llamadas malformadas en 27 vueltas (C24: 2 en 13) y CERO intervenciones: H5 pierde urgencia — que la gramatica espere a que el sintoma reaparezca con datos. Reloj: segundos_media 1.020,8 con la maquina a x1,33 (control humo del dia: 726,1 frente a 544,3 de C22); corregida ~765 s/tarea: el n1 nuevo cuesta ~40% mas que humo, proporcional a sus vueltas. El banco completo queda en 11/11 con cerebro real (n0 5/5 en C23, n1 6/6 aqui): M2 pedia >=50% y esta superado con margen incluso tras engordar — declararlo es ya decision de META.md, no falta ninguna medicion. La proxima subida honesta del liston no es mas n1: es n2 (multi-fichero con estado, presupuesto mayor) — y ahi apretara la ventana de 8.192, la factura que C22 dejo anotada.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 11:51",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 11:51",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 11:51",
+      "que": "predicho tareas_pct >=83"
+    },
+    {
+      "cuando": "2026-08-25 11:51",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-25 13:45",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 13:46",
+      "que": "veredicto: CONFIRMA (tareas_pct=100.0)"
+    }
+  ]
+}

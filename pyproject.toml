@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mekro-genai"
+version = "0.1.0"
+description = "Arnés agéntico de ingeniería para cerebros locales cuantizados, en CPU y sin nube"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Propietario — proyecto Mekro" }
+dependencies = [
+    "llama-cpp-python>=0.3",
+]
+
+[project.scripts]
+genai = "genai.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["genai*"]

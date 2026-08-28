@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_1338",
+  "nivel": "n2",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 1200,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "version",
+      "paso": true,
+      "motivo": "tope_tokens",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 1215,
+      "tokens_entrada": 8795,
+      "segundos": 1159.1,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-version-19cmw1uz/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 1215.0,
+    "segundos_media": 1159.1,
+    "intervenciones": 0
+  }
+}

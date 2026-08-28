@@ -1,0 +1,61 @@
+{
+  "id": "C48",
+  "pregunta": "¿El tope de tokens de 1200 permite completar n2/tres con menos de 800 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 17:18",
+  "revision": {
+    "cuando": "2026-08-26 17:18",
+    "texto": "C45-C47 midieron n2/version, aguja y cupones. version superó 900 tokens (1215), aguja cumplió 700 tokens (686) pero falló en tiempo (2322s), cupones superó 1100s (1204). n2/tres solo tiene tokens_media medido. Baseline segundos n2 ~1159-2322. Umbral 800 es 30% bajo el mínimo observado (1159)."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 17:18",
+    "metrica": "segundos_media",
+    "espero": "<800",
+    "porque": "n2/tres es una tarea de manipulación de lista simple. Baseline segundos n2 es ~1159-2322. 800 es 30% por debajo del mínimo observado (1159 en version). Si el modelo optimiza la inferencia, debería bajar de 1159. El margen de 30% cubre el ruido de ~10%."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 17:41",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --etiqueta lazo-C48 --tarea tres --tope-vueltas 16 --tope-tokens 1200 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1380.9,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 881.0,
+      "segundos_media": 1379.7,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── tres\n[1] 101 tok · 715.7 s · 2 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n  ✓ bash({\"comando\": \"python3 -m pytest -x --tb=short 2>&1 | head -80\"})  (0.2 s)\n[2] 71 tok · 111.5 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"agenda.py\"})  (0.0 s)\n[3] 546 tok · 410.4 s · 1 llamadas\n  Tres bugs claros:\n  \n  1. **`alta`** no limpia espacios en bordes → `\"  ana \"` se guarda tal cual.\n  2. **`busca`** aplica `.upper()` al prefijo → el contrato dice *tal cual, sensible a mayúsculas*.\n  3. **`listado`** ordena con `reverse=True` → el contrato dice *ascendente*.\n  ✓ editar({\"ruta\": \"agenda.py\", \"cambios\": [{\"buscar\": \"    agenda[nombre] = telefono\", \"poner\": \"    nombre = nombre.strip()\\n   …)  (0.0 s)\n[4] 27 tok · 52.8 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 136 tok · 85.5 s\n  Los tres asertos pasan. Resumen de los cambios en `agenda.py`:\n  \n  | Función | Bug | Fix |\n  |---|---|---|\n  | `alta` | Guardaba el nombre sin limpiar espacios en bordes | `nombre = nombre.strip()` antes de insertar |\n  | `busca` | Convertía el prefijo a mayúsculas (`prefijo.upper()`) | Compara `prefijo` tal cual, sensible a mayúsculas |\n  | `listado` | Ordenaba con `reverse=True` (descendente) | Ordena `sor\n   ✓ PASA · fin · 5 vueltas · 881 tok · 1379.7 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 881.0\nCIFRA segundos_media 1379.7\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1741_lazo-C48.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 17:48",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 1379.7,
+    "espero": "<800"
+  },
+  "leccion": "REFUTA. El umbral era <800 segundos y la medición registró 1379.7 segundos, superando el límite en 579.7 segundos. El éxito se mantuvo al 100% con 881 tokens medios, confirmando que el tope de 1200 tokens no impide la finalización. La causa probable es que la inferencia del modelo gguf en modo lista requiere más tiempo de cómputo por token que el estimado en la predicción. La predicción subestimó el coste temporal real de la tarea n2/tres en este entorno. No se observaron intervenciones humanas, lo que indica que el fallo es puramente de rendimiento de velocidad. El margen de 30% previsto no cubre la brecha real de 72% sobre el umbral. Debe medirse el tiempo de inferencia por token específico del modelo gguf para recalibrar el umbral.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 17:18",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 17:18",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 17:18",
+      "que": "predicho segundos_media <800"
+    },
+    {
+      "cuando": "2026-08-26 17:41",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 17:48",
+      "que": "veredicto: REFUTA (segundos_media=1379.7)"
+    }
+  ]
+}

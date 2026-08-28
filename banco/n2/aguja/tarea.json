@@ -1,0 +1,17 @@
+{
+ "id": "aguja",
+ "nivel": "n2",
+ "encargo": "La prueba falla: una de las validaciones de `validadores.py` rechaza un valor legal. Encuéntrala y arréglala. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "validadores.py mide 16.922 caracteres y `leer` trunca la observación a 12.000: el bug (valida_puerto, en el carácter 14.510) queda PASADO el truncado. Leerlo entero no sirve; hay que ir con grep o con leer(desde=...). Es la primera tarea donde la puerta 1 de META.md no es una economía sino la única vía.",
+ "guion": [
+  "<think>Que el traceback nombre al culpable antes de buscar nada.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"grep\", \"arguments\": {\"patron\": \"def valida_puerto\", \"ruta\": \"validadores.py\", \"contexto\": 8}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"validadores.py\", \"cambios\": [{\"buscar\": \"    return 0 < v < 65535\", \"poner\": \"    return 0 < v <= 65535\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "El aserto que caía era `valida_puerto(65535)`: la comparación usaba `<` estricto contra el docstring («AMBOS extremos incluidos»). Con `<=` la prueba pasa 10/10."
+ ]
+}

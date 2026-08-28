@@ -1,0 +1,59 @@
+{
+  "id": "C18",
+  "pregunta": "¿con qué exponente crece el daño en PPL con el error de peso, y por tanto puede la salida (c) llegar al +1 % gastando bits?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 15:47",
+  "revision": {
+    "cuando": "2026-08-23 15:47",
+    "texto": "C17 midio que re-cuantizar cuatro capas con err_rvq 0,3765 cuesta 0,02176 nats por capa, o sea razon de PPL 4,03 extrapolada a 64 capas, y refuto la salida (c) tal como se probo. Pero dejo dos avisos: la configuracion estaba degradada (24 puntos por codigo en vez de 146, err 0,3765 frente al 0,123 de C13) y la extrapolacion de 4 a 64 capas supone aditividad. Con las dos hipotesis de escalado que caben, lineal o cuadratico en el error de peso, el resultado con la configuracion buena seria razon 1,58 o 1,16, y gastando la holgura de bits —2,5 bits caben en 8,7 GB y M1 admite 10— con err 0,06 seria 1,25 o 1,036. Las dos hipotesis difieren en un factor 4 y ninguna llega al 1,01 de M1, asi que sin saber el exponente no se puede decidir si merece la pena arreglar la configuracion y gastar bits o si hay que ir a por la salida (b), que exige 24,3 h de GPU. Medir el exponente NO exige re-cuantizar: basta inyectar ruido de magnitud relativa controlada en las mismas cuatro capas, que cuesta un pase de cinco minutos por nivel en vez de trece minutos por matriz."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 15:47",
+    "metrica": "exponente",
+    "espero": ">=1.7",
+    "porque": "Un ruido gaussiano no esta correlacionado con los pesos, luego su termino de primer orden —el producto del gradiente por la perturbacion— tiene esperanza CERO y lo que queda es el termino de segundo orden. Por eso predigo exponente cercano a 2 y pongo la barra en 1,7. Lo que decide: si el exponente es ~2, bajar el error de 0,3765 a 0,123 divide el dano por 9,4 y gastar bits hasta err 0,06 lo divide por 39, con lo que la salida (c) se acerca al criterio y merece la pena arreglarla; si es ~1, dividir el error solo divide el dano en la misma proporcion y la salida (c) no llega ni gastando toda la holgura, y hay que ir a por la (b). LA VALIDACION VA DENTRO Y ES LO QUE HACE HONESTO EL PROXY: el ruido gaussiano NO es error de cuantizacion, que si esta correlacionado con los pesos, asi que el experimento incluye el nivel 0,3765 y debe reproducir alli los 0,02176 nats por capa que midio el RVQ real de C17. Si la razon ruido/RVQ sale entre 0,5 y 2, el proxy vale y el exponente es utilizable; si sale muy por debajo, el error de cuantizacion hace MAS dano que el ruido aleatorio de la misma magnitud, el proxy no vale y el exponente medido no se puede usar para extrapolar nada."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 16:07",
+    "comando": "python3 -u scripts/medir_recuantizacion.py --ventana 512 --ventanas 1 --capas 20,30,40,50 --ruido 0.10,0.20,0.3765 --salida registros/2026-08-23_C18-exponente.json",
+    "codigo": 0,
+    "segundos": 1202.0,
+    "cifras": {
+      "exponente": 1.5587,
+      "razon_ruido_vs_rvq": 0.718
+    },
+    "salida_cola": "    capa 20 re-cuantizada · err 0.3765 · 92s\n    capa 30 re-cuantizada · err 0.3765 · 141s\n    capa 40 re-cuantizada · err 0.3765 · 188s\n    capa 50 re-cuantizada · err 0.3766 · 239s\n    eps 0.3765 · nll 2.87935 · Δ/capa 0.015624 · 302s\n\n{\n  \"capas\": [\n    20,\n    30,\n    40,\n    50\n  ],\n  \"nll_control\": 2.81685,\n  \"curva\": [\n    {\n      \"eps\": 0.1,\n      \"nll\": 2.82475,\n      \"delta_nats_por_capa\": 0.001973\n    },\n    {\n      \"eps\": 0.2,\n      \"nll\": 2.8381,\n      \"delta_nats_por_capa\": 0.005312\n    },\n    {\n      \"eps\": 0.3765,\n      \"nll\": 2.87935,\n      \"delta_nats_por_capa\": 0.015624\n    }\n  ],\n  \"exponente\": 1.5587,\n  \"nivel_validacion\": 0.3765,\n  \"razon_ruido_vs_rvq\": 0.718,\n  \"segundos\": 1787501221.0\n}\nCIFRA exponente 1.5587\nCIFRA razon_ruido_vs_rvq 0.718\n\nregistro: registros/2026-08-23_C18-exponente.json"
+  },
+  "medicion": null,
+  "veredicto": {
+    "cuando": "2026-08-23 16:07",
+    "confirma": false,
+    "fuente": "sonda",
+    "metrica": "exponente",
+    "valor": 1.5587,
+    "espero": ">=1.7"
+  },
+  "leccion": "REFUTADO el exponente predicho —1,5587 frente a >=1,7— PERO EL PROXY SE VALIDA y por eso el ciclo entrega lo que iba a buscar. La validacion que iba dentro: al nivel 0,3765 el ruido gaussiano da 0,015624 nats por capa y el RVQ real de C17 dio 0,02176, razon 0,718, dentro del [0,5 - 2] que exigi ANTES de medir. O sea que el error de cuantizacion hace un 39% mas de dano que el ruido aleatorio de la misma magnitud —esta correlacionado con los pesos, como se advirtio— pero del mismo orden, luego el exponente es utilizable. Curva medida sobre las mismas cuatro capas: eps 0,10 -> 0,001973 nats/capa; eps 0,20 -> 0,005312; eps 0,3765 -> 0,015624. POR QUE FALLO LA PREDICCION: argumente que un ruido no correlacionado tiene primer orden de esperanza nula y deja solo el segundo, luego exponente 2. Lo medido es 1,56, o sea que el termino de primer orden NO se cancela. La razon es que el dano se mide sobre la NLL de un texto concreto y no en promedio sobre perturbaciones: la esperanza del primer orden es cero pero su MAGNITUD tipica no lo es, y con 64 capas y matrices grandes la fluctuacion de primer orden domina sobre el segundo orden en este rango. Argumentar con esperanzas cuando lo que se mide es una realizacion es el error, y es sutil. LA CIFRA QUE CIERRA LA SALIDA (c): para cumplir el +1% de M1 hacen falta 1,555e-4 nats por capa, y con exponente 1,5587 eso exige un error de peso de 0,0158, o sea el 1,6%. El RVQ bueno de C13 alcanza 0,123 y daria razon de PPL 1,276; con err 0,06 seria 1,083 y con err 0,03 seria 1,027. NINGUNO LLEGA. Y bajar a 0,0158 con cuantizacion vectorial de 16 dimensiones exigiria del orden de ocho bits por peso: 27,8 G parametros a 8 bits son 27,8 GB, cuando M1 admite 10. LA SALIDA (c) QUEDA DESCARTADA CON CIFRA, que es justo como pedia la leccion de C17 y como debio descartarse el primer dia en vez de con el adjetivo 'perdida adicional'. CONSECUENCIA PARA EL PROYECTO: H1 solo tiene dos caminos vivos. El (a), recuperar los libros originales, con el reticulo demostrado tres veces (C11, C12, C14) y la separacion resistiendo tres instrumentos (C13, C15, C16). El (b), tocar cuantizar_v2.py en QuantModels para que persista idx1/idx2/C1/C2/alfa y re-ejecutar: son unas lineas y 24,3 h de GPU, y es CERTERO. Hay ademas una tercera posibilidad que NO es tecnica y que no me corresponde decidir: el criterio de M1 exige PPL <= +1% frente al deshecho, que es una exigencia de reproducir el campeon, no de tener un cerebro usable. Si el autor decidiera que un cerebro con +8% de PPL sirve, la salida (c) con err 0,06 lo daria. Eso se escribe en META.md o no existe.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 15:47",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 15:47",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 15:47",
+      "que": "predicho exponente >=1.7"
+    },
+    {
+      "cuando": "2026-08-23 16:07",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 16:07",
+      "que": "veredicto: REFUTA (exponente=1.5587)"
+    }
+  ]
+}

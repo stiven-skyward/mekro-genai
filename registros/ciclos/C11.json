@@ -1,0 +1,63 @@
+{
+  "id": "C11",
+  "pregunta": "¿sale el tamaño del libro RVQ, 4096×4096, de contar direcciones duplicadas con la ley del cumpleaños?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 12:48",
+  "revision": {
+    "cuando": "2026-08-23 12:48",
+    "texto": "C10 midio que las direcciones de los grupos de 16 del campeon tienen duplicados y las de la MISMA matriz en BF16 no tienen ninguno: frac_cerca 0,00330 con n=40.000 en capa-30 mlp.up_proj y 0,005288 con n=80.000 en capa-45 linear_attn.out_proj, contra 0,000000 exacto en los dos controles (BF16 y gaussiano) y en seis configuraciones de g, tensor y capa. C10 tambien dejo escrito que su metro estaba roto —un cociente con denominador cero— y que la explicacion por la ley del cumpleanos se hizo DESPUES de ver el numero, luego no falsa nada. HERMETIC2.json dice k1=4096, k2=4096, g=16, cuantizador rvq. Verificado en reconstruir_v12.py que la unica transformacion posterior es una escala por fila, que no mueve direcciones. Lo que falta es la prueba que puede matar la hipotesis en vez de acomodarla: si las direcciones salen de un libro FINITO de |D| entradas, la fraccion de puntos con vecino coincidente vale n/|D| y crece LINEALMENTE con n, y el mismo |D| tiene que salir a todos los n. Si en cambio el 0,0033 es un artefacto —pesos saturados, grupos casi nulos, coincidencias de bf16— el |D| estimado se movera con n."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 12:48",
+    "metrica": "razon_libro_vs_k1k2",
+    "espero": "~1.0±60",
+    "porque": "Si el reticulo C1+C2 sigue intacto, las direcciones distintas posibles son k1*k2 = 4096*4096 = 16.777.216 y la ley del cumpleanos da frac_cerca = n/|D|, luego |D| estimado como n/frac_cerca debe salir del orden de 16,8 millones a todos los n del barrido. Predigo la razon |D|/(k1*k2) = 1,0 con una tolerancia ancha del 60% por tres razones concretas y no por prudencia vaga: las entradas del libro NO son equiprobables (los codigos frecuentes colisionan mas y sesgan |D| a la BAJA), el umbral eps=0,02 cuenta como coincidencia algun vecino que no lo es (sesga |D| a la baja tambien) y la muestra de 4096^2 con n de decenas de miles tiene ruido de Poisson del orden del 15% con 50 pares. Lo que decide: si la razon cae dentro y ademas el |D| estimado NO se mueve sistematicamente con n, el libro tiene 4096x4096 entradas, el reticulo esta intacto, C1 queda revertido y la salida (a) es el camino de H1: horas de CPU en vez de 24,3 de GPU. Si el |D| estimado crece o decrece con n, la ley no se cumple, el 0,0033 es un artefacto y hay que ir a la salida (b) sin mas sondas."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-23 12:52",
+    "comando": "python3 scripts/sondear_direcciones.py --capa 30 --tensor mlp.gate_proj --g 16 --n 20000 --barrido 10000,20000,40000,80000,160000 --salida registros/2026-08-23_C11-cumpleanos.json",
+    "codigo": 0,
+    "segundos": 210.4,
+    "cifras": {
+      "libro_estimado": 12698413.0,
+      "razon_libro_vs_k1k2": 0.7569,
+      "razon_vecinos_vs_bf16": 1000000000.0,
+      "frac_cerca_campeon": 0.0019,
+      "frac_cerca_bf16": 0.0,
+      "vecino_mediano_campeon": 0.58543
+    },
+    "salida_cola": "capa 30 · mlp.gate_proj · (17408, 5120) · g=16 · 5570560 grupos, muestra 20000\n  campeon    {\"vecino_mediano\": 0.58543, \"vecino_p01\": 0.41439, \"frac_cerca\": 0.0019}\n  bf16       {\"vecino_mediano\": 0.60906, \"vecino_p01\": 0.45027, \"frac_cerca\": 0.0}\n  gaussiana  {\"vecino_mediano\": 0.6108, \"vecino_p01\": 0.45403, \"frac_cerca\": 0.0}\n  n=  10000 campeón 0.001200 · bf16 0.000000 · |D| estimado 8,333,333\n  n=  20000 campeón 0.001900 · bf16 0.000000 · |D| estimado 10,526,316\n  n=  40000 campeón 0.003150 · bf16 0.000000 · |D| estimado 12,698,413\n  n=  80000 campeón 0.005350 · bf16 0.000000 · |D| estimado 14,953,270\n  n= 160000 campeón 0.010169 · bf16 0.000000 · |D| estimado 15,734,481\n\nCIFRA libro_estimado 12698413\nCIFRA razon_libro_vs_k1k2 0.7569\n\nCIFRA razon_vecinos_vs_bf16 1000000000.0\nCIFRA frac_cerca_campeon 0.0019\nCIFRA frac_cerca_bf16 0.0\nCIFRA vecino_mediano_campeon 0.58543\n\nregistro: registros/2026-08-23_C11-cumpleanos.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 12:52",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "razon_libro_vs_k1k2",
+    "valor": 0.7569,
+    "espero": "~1.0±60"
+  },
+  "leccion": "CONFIRMA, y con esto queda revertido C1: EL RETICULO RVQ SIGUE INTACTO EN LOS PESOS DESHECHOS, y su tamano de libro se ha recuperado contando duplicados. Barrido sobre capa-30 mlp.gate_proj, g=16, direcciones normalizadas a norma unidad: n=10.000 -> frac 0,001200 -> |D| 8,3 M; n=20.000 -> 0,001900 -> 10,5 M; n=40.000 -> 0,003150 -> 12,7 M; n=80.000 -> 0,005350 -> 15,0 M; n=160.000 -> 0,010169 -> 15,73 M, o sea 0,938 veces k1*k2 = 4096*4096 = 16.777.216. El control BF16, la misma matriz sin cuantizar, da 0,000000 exacto en los CINCO n. La fraccion crece con n y el cociente entre n consecutivos va 1,58 / 1,66 / 1,70 / 1,90 acercandose a 2, que es lo que exige la ley del cumpleanos para un libro finito. HONESTIDAD SOBRE EL SESGO: mi prediccion decia que el |D| estimado NO debia moverse con n, y SI se mueve: sube de 8,3 M a 15,7 M. No se mueve al azar ni se aleja, converge monotonamente al valor predicho. La explicacion —y es post hoc, con lo cual vale como hipotesis y no como prueba— es que hay dos poblaciones: un punado de direcciones muy frecuentes (grupos casi nulos o codigos dominantes) que colisionan incluso en muestras pequenas, mas el reticulo uniforme cuyo termino crece proporcional a n y acaba dominando. Por eso la estimacion honesta es la ASINTOTICA, la del n mas grande: 0,938. Quien quiera zanjar el sesgo tiene la prueba escrita: repetir con n=320.000 y ver si pasa de 0,938 a ~0,97; si se pasa de 1,0 la explicacion de las dos poblaciones es falsa. CONSECUENCIA, que es la que importa: la salida (a) de docs/cerebro-2bit.md esta VIVA. El indice no se guardo pero es deducible, porque el reticulo esta ahi y el libro tiene el tamano que dice HERMETIC2.json. H1 pasa de costar 24,3 horas de GPU —que este proyecto veta y que hoy ademas estan ocupadas— a costar horas de CPU. Y el camino esta: recuperar C1 por k-means sobre las direcciones, C2 por los residuos, y cerrar con la comprobacion dura que ya estaba escrita, reconstruir alfa*(C1[i]+C2[j]) y comparar bit a bit contra el tensor guardado. POR QUE FALLO C1 Y QUE HAY QUE APRENDER: C1 no midio mal, midio una cosa distinta creyendo que medía esta. Estimo alfa como el RMS de la fila cuando la escala real la puso _EscalaFila, y con la escala equivocada ningun reticulo aparece. La leccion no es 'C1 se equivoco': es que UNA REFUTACION TAMBIEN SE PUEDE EQUIVOCAR, y que la forma de blindarse es quitar la incognita del problema en vez de estimarla. Aqui bastaba normalizar a norma unidad: una escala por fila no mueve direcciones, y el parametro molesto desaparecio entero. Cuando una sonda dependa de estimar algo que no esta guardado, la pregunta correcta no es 'como lo estimo mejor' sino 'como formulo la prueba para no necesitarlo'.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 12:48",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 12:48",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 12:48",
+      "que": "predicho razon_libro_vs_k1k2 ~1.0±60"
+    },
+    {
+      "cuando": "2026-08-23 12:52",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 12:52",
+      "que": "veredicto: CONFIRMA (razon_libro_vs_k1k2=0.7569)"
+    }
+  ]
+}

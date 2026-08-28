@@ -1,0 +1,61 @@
+{
+  "id": "C8",
+  "pregunta": "¿el campeón de 2 bits reproduce el andamiaje de una llamada Hermes bien formada, o hace falta H5 (gramática) para que M1 exista siquiera?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 06:15",
+  "revision": {
+    "cuando": "2026-08-23 06:15",
+    "texto": "C4 midio que el campeon a 2 bits cambia el argmax en el 44% de las posiciones de texto real y que su PPL sobre este dominio es 15,967 en codigo (BF16: 5,764). Eso NO dice todavia si sabe emitir una llamada de herramienta: el andamiaje Hermes (<tool_call>, {\"name\": , \"arguments\": , </tool_call>) es texto de entropia casi nula, lo trae Qwen entrenado de fabrica (docs/arquitectura.md) y ademas el sistema lo deletrea en el prompt, asi que podria conservarse intacto aunque el resto derive. La pregunta importa porque H1 —empaquetar el campeon— es el camino critico de M1/M2/M3 y es caro, y porque H5 (decodificacion restringida por gramatica) esta hoy planificado como comodidad de M2: si el andamiaje no se conserva, H5 deja de ser comodidad y pasa a ser condicion de existencia de M1. El instrumento ya existe: scripts/medir_aceptacion.py hace teacher forcing capa a capa en CPU, y banco/n0/humo/tarea.json trae un guion de oro con las cuatro llamadas exactas que el arnes espera, de modo que se puede forzar la decodificacion sobre la respuesta correcta y mirar en que token se desvia el argmax. Coste: un pase por modelo, del orden de 10-20 min de CPU, sin GPU."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 06:15",
+    "metrica": "acuerdo_estructura_campeon",
+    "espero": ">=0.95",
+    "porque": "El andamiaje Hermes es la parte de entropia mas baja de todo el turno: el prompt del sistema lo deletrea literalmente, Qwen3 lo trae entrenado de fabrica y no hay eleccion que tomar entre '<tool_call>' y el salto de linea siguiente. Una cuantizacion a 2 bits destruye la cola de la distribucion, no el token forzado: por eso predigo que el campeon reproduce el andamiaje casi entero aunque falle al elegir QUE herramienta llamar. Y 0,95 es el umbral que decide, porque el andamiaje son ~12 tokens por llamada: por debajo de 0,95 se rompe de media mas de medio token por llamada, la llamada deja de parsear y H5 (gramatica) pasa de comodidad de M2 a condicion de existencia de M1. Si sale por encima, el problema del campeon es de criterio y no de forma, y H1 sigue siendo el camino correcto."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 07:00",
+    "comando": "python3 scripts/sondear_llamada.py --salida registros/2026-08-23_C8-llamada.json",
+    "codigo": 0,
+    "segundos": 2648.8,
+    "cifras": {
+      "acuerdo_estructura_campeon": 0.9318,
+      "acuerdo_estructura_bf16": 0.9773,
+      "acuerdo_oro_campeon": 0.8692,
+      "acuerdo_oro_bf16": 0.8923
+    },
+    "salida_cola": "    },\n    \"borrador\": {\n      \"acuerdo_oro\": 0.9375,\n      \"acuerdo_estructura\": 0.9091,\n      \"tokens_estructura\": 11,\n      \"prefijo_exacto\": 0,\n      \"nll_por_token\": 0.3281,\n      \"primera_desviacion\": \"oro='<tool_call>' → dijo='<think>' [ANDAMIAJE]\"\n    }\n  },\n  {\n    \"vuelta\": 4,\n    \"tokens_oro\": 23,\n    \"oro\": \"<tool_call>⏎{\\\"name\\\": \\\"bash\\\", \\\"arguments\\\": {\\\"comando\\\": \\\"pytho\",\n    \"grande\": {\n      \"acuerdo_oro\": 1.0,\n      \"acuerdo_estructura\": 1.0,\n      \"tokens_estructura\": 11,\n      \"prefijo_exacto\": 23,\n      \"nll_por_token\": 0.0099,\n      \"primera_desviacion\": \"\"\n    },\n    \"borrador\": {\n      \"acuerdo_oro\": 1.0,\n      \"acuerdo_estructura\": 1.0,\n      \"tokens_estructura\": 11,\n      \"prefijo_exacto\": 23,\n      \"nll_por_token\": 0.0568,\n      \"primera_desviacion\": \"\"\n    }\n  }\n]\n\nGLOBAL {\"grande\": {\"acuerdo_estructura\": 0.9773, \"acuerdo_oro\": 0.8923, \"nll_por_token\": 0.6177, \"tokens_estructura\": 44, \"tokens_oro\": 130}, \"borrador\": {\"acuerdo_estructura\": 0.9318, \"acuerdo_oro\": 0.8692, \"nll_por_token\": 0.8226, \"tokens_estructura\": 44, \"tokens_oro\": 130}}\nCIFRA acuerdo_estructura_campeon 0.9318\nCIFRA acuerdo_estructura_bf16 0.9773\nCIFRA acuerdo_oro_campeon 0.8692\nCIFRA acuerdo_oro_bf16 0.8923\n\nregistro: registros/2026-08-23_C8-llamada.json"
+  },
+  "medicion": null,
+  "veredicto": {
+    "cuando": "2026-08-23 07:02",
+    "confirma": false,
+    "fuente": "sonda",
+    "metrica": "acuerdo_estructura_campeon",
+    "valor": 0.9318,
+    "espero": ">=0.95"
+  },
+  "leccion": "REFUTADO por el numero, PERO NO por el mecanismo que se temia, y la diferencia cambia el plan. Medido: acuerdo_estructura del campeon a 2 bits = 0,9318 sobre 44 tokens de andamiaje de las cuatro llamadas del guion de oro de banco/n0 (predicho >=0,95). El control lo dice todo: el MISMO BF16 saca 0,9773, o sea que comete el mismo tipo de error. Y el error dominante, en los dos modelos, es emitir '<think>' donde el oro pone '<tool_call>': eso NO es una llamada malformada, es la decision legitima de razonar antes de actuar, que Qwen3 trae de fabrica. El guion de oro de la tarea de humo no incluye bloque <think> en las vueltas 2-4, asi que la metrica castigo como fallo de FORMA lo que es una alternativa valida de CRITERIO. Lo atribuible de verdad a los 2 bits son 2 tokens de 44: de 0,9773 a 0,9318. CONCLUSION PARA EL PLAN: el andamiaje Hermes sobrevive a la cuantizacion. H5 (decodificacion restringida por gramatica) NO es condicion de existencia de M1 como se sospechaba al abrir el ciclo; sigue siendo lo que era, una mejora barata que ademas eliminaria el 100% de estos fallos de forma por coste cero. H1 sigue siendo el camino correcto y el problema del campeon es de CRITERIO, no de FORMA. Dos observaciones que valen mas que la cifra. PRIMERA: en la vuelta 4 los dos modelos reproducen la llamada entera token a token (23 de 23), y en la vuelta 3 —la de 'editar', la mas larga y la que de verdad arregla el codigo— el BF16 clava 27 tokens seguidos y solo se desvia al elegir QUE cadena buscar. El campeon a 2 bits se desvia antes, pero por querer pensar, no por romper el JSON. SEGUNDA: el NLL por token sobre la respuesta correcta es 0,618 en el BF16 y 0,823 en el campeon; el campeon paga un 33% mas de sorpresa sobre lo que hay que hacer, y esa es la cifra honesta de cuanto cuesta la cuantizacion en esta tarea, no el 44% de desacuerdo de argmax de C4 sobre texto libre. LECCION DE METODO, que es la cara: un oro de un solo camino no sirve para juzgar la FORMA. Hay que separar dos preguntas que este ciclo mezclo, 'parsea la llamada' y 'coincide con el oro', porque la segunda castiga estrategias correctas. Si el banco crece con verificadores que comparen contra un guion unico, castigara al modelo por acertar de otra manera. LECCION DE INSTRUMENTO: la sonda no guardaba el detalle token a token, asi que reanalizar donde estaban exactamente las 3 desviaciones habria costado otros 44 min de CPU. Corregido en scripts/sondear_llamada.py: ahora el registro trae cada desviacion con su token de oro, el que dijo el modelo y si cae en andamiaje.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 06:15",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 06:15",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 06:15",
+      "que": "predicho acuerdo_estructura_campeon >=0.95"
+    },
+    {
+      "cuando": "2026-08-23 07:00",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 07:02",
+      "que": "veredicto: REFUTA (acuerdo_estructura_campeon=0.9318)"
+    }
+  ]
+}

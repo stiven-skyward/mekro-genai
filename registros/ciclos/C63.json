@@ -1,0 +1,61 @@
+{
+  "id": "C63",
+  "pregunta": "¿El tope de tokens de 3000 permite completar n1/migrar con menos de 562 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 06:04",
+  "revision": {
+    "cuando": "2026-08-27 06:04",
+    "texto": "C61 refutó que n0/simbolo baje de 767 tokens por fallas de bash. C60 confirmó que n0/rastro es rápido. n1/migrar tiene baseline de 489 tokens. Se asume que migrar es más eficiente que simbolo en tokens."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 06:04",
+    "metrica": "tokens_media",
+    "espero": "<562",
+    "porque": "Baseline n1/migrar es 489 tokens. Umbral 562 es +15% de margen sobre 489. El tope 3000 no limita. Se espera que la tarea de migración sea directa sin bucles de error como en simbolo."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 06:16",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --etiqueta lazo-C63 --tarea migrar --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 705.4,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 489.0,
+      "segundos_media": 704.3,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── migrar\n[1] 157 tok · 438.9 s · 3 llamadas\n  ✓ grep({\"patron\": \"etiqueta\", \"ruta\": \"formato.py\", \"contexto\": 3})  (0.0 s)\n  ✓ grep({\"patron\": \"etiqueta\", \"ruta\": \"informe.py\", \"contexto\": 3})  (0.0 s)\n  ✓ holos({})  (0.1 s)\n[2] 266 tok · 213.0 s · 1 llamadas\n  ✓ editar({\"ruta\": \"informe.py\", \"cambios\": [{\"buscar\": \"    return etiqueta(titulo, True, True)\", \"poner\": \"    return etiqueta(t…)  (0.0 s)\n[3] 66 tok · 47.8 s\n  tool_call con JSON inválido (Expecting ',' delimiter): {\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 -c \\\"\\nfrom informe import cabecera, nota\\nprint(repr(cabecera('hola mundo')))\\nprint(repr(nota('  hola  ')))\n   ✓ PASA · fin · 3 vueltas · 489 tok · 704.3 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 489.0\nCIFRA segundos_media 704.3\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-27_0616_lazo-C63.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 06:21",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 489.0,
+    "espero": "<562"
+  },
+  "leccion": "CONFIRMA.\nLa métrica tokens_media es 489.0, inferior al umbral de 562.\nEl margen de seguridad es de 73 tokens por debajo del límite.\nEl tope de 3000 tokens no impidió la finalización de la tarea.\nEl éxito se mantuvo al 100% sin intervenciones humanas.\nLa causa probable es la eficiencia directa del flujo de migración.\nNo se observaron bucles de error ni sobrecarga de contexto.\nMedir la varianza de tokens_media en 10 ejecuciones adicionales.\nVerificar si el tope de 3000 tokens afecta tareas de mayor complejidad.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 06:04",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 06:04",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 06:04",
+      "que": "predicho tokens_media <562"
+    },
+    {
+      "cuando": "2026-08-27 06:16",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 06:21",
+      "que": "veredicto: CONFIRMA (tokens_media=489.0)"
+    }
+  ]
+}

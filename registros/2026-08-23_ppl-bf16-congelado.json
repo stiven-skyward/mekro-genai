@@ -1,0 +1,18 @@
+{
+  "modelo": "/home/forge/modelos/qwen3.8-27b",
+  "etiqueta": "BF16 sin cuantizar",
+  "corpus": "c6c95a4dfc70188d",
+  "ventana": 512,
+  "ventanas_por_dominio": 4,
+  "por_dominio": {
+    "codigo": {
+      "nll": 1.47662,
+      "ppl": 4.3781
+    },
+    "espanol": {
+      "nll": 2.2541,
+      "ppl": 9.5267
+    }
+  },
+  "segundos": 958.7
+}

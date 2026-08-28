@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_2051",
+  "nivel": "n1",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "migrar",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 3,
+      "intervenciones": 0,
+      "tokens_salida": 489,
+      "tokens_entrada": 5744,
+      "segundos": 822.5,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-migrar-7ej39q11/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 489.0,
+    "segundos_media": 822.5,
+    "intervenciones": 0
+  }
+}

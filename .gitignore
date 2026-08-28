@@ -1,0 +1,21 @@
+# cuadernos y procesos locales
+logs/
+.genai/
+*.pid
+CLAUDE.md
+
+# artefactos pesados de investigación (los registros JSON sí van: son la evidencia)
+registros/cache-grande-C4corpus.pt
+registros/corpus-congelado.json
+
+# python
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.venv/
+
+# sesiones y temporales
+lista.jsonl
+eventos.jsonl

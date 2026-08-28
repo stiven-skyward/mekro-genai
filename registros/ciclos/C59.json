@@ -1,0 +1,61 @@
+{
+  "id": "C59",
+  "pregunta": "¿El tope de segundos de 5400 permite completar n0/crear con menos de 657 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 03:14",
+  "revision": {
+    "cuando": "2026-08-27 03:14",
+    "texto": "Se midió n0/crear en segundos_media con un valor de 570.1. Se requiere un umbral con margen del 15% sobre el baseline para validar la estabilidad temporal."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 03:14",
+    "metrica": "segundos_media",
+    "espero": "<657",
+    "porque": "El baseline es 570.1 segundos. Aplicando un margen de seguridad del 15% (570.1 * 1.15 = 655.615), se redondea a 657 para asegurar que la variación no supere el ruido de fondo del 10%."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 03:23",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --etiqueta lazo-C59 --tarea crear --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 550.2,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 278.0,
+      "segundos_media": 549.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n0 · cerebro gguf · modo lista · 1 tareas ==\n\n── crear\n[1] 41 tok · 371.0 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[2] 161 tok · 107.3 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"pila.py\", \"contenido\": \"class Pila:\\n    def __init__(self):\\n        self._datos = []\\n\\n    def apilar(self,…)  (0.0 s)\n[3] 27 tok · 28.6 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[4] 49 tok · 38.6 s\n  Listo. `pila.py` creado con la clase `Pila` (métodos `apilar`, `desapilar`, `vacia`) y la prueba pasa: **4/4 asertos ✓**.\n   ✓ PASA · fin · 4 vueltas · 278 tok · 549.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 278.0\nCIFRA segundos_media 549.1\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-27_0323_lazo-C59.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 03:29",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 549.1,
+    "espero": "<657"
+  },
+  "leccion": "CONFIRMA.\nEl umbral de 657 segundos supera la medición de 549.1 segundos.\nLa diferencia es de 107.9 segundos a favor del objetivo.\nEl tope de 5400 segundos no fue el limitante, ya que la tarea terminó en 550.2 segundos.\nEl 100% de éxito se mantuvo con 0 intervenciones.\nLa causa más probable es la eficiencia del modelo gguf en la tarea de creación.\nMedir la varianza de segundos_media en las próximas 10 ejecuciones.\nVerificar si el margen de 107.9 segundos absorbe picos de latencia.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 03:14",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 03:14",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 03:14",
+      "que": "predicho segundos_media <657"
+    },
+    {
+      "cuando": "2026-08-27 03:23",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 03:29",
+      "que": "veredicto: CONFIRMA (segundos_media=549.1)"
+    }
+  ]
+}

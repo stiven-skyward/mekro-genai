@@ -1,0 +1,61 @@
+{
+  "id": "C76",
+  "pregunta": "¿Un tope_segundos de 1.900 fuerza al modelo a optimizar la latencia de la tarea larga, manteniendo el 100% de éxito y sin exceder la línea base de 2.244 segundos?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 20:12",
+  "revision": {
+    "cuando": "2026-08-27 20:12",
+    "texto": "C74 y C75 midieron tokens en n3/larga, pero la métrica de segundos_media sigue sin explorar. La línea base es 2.244s. Un tope de 1.900s representa un margen del 15,3% sobre el baseline, cumpliendo el requisito de ruido. El objetivo es verificar si la restricción temporal comprime la ejecución sin romper el éxito."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 20:12",
+    "metrica": "segundos_media",
+    "espero": "<1900",
+    "porque": "El baseline de n3/larga es 2.244s. El umbral de 1.900s exige una reducción del 15,3%, superando el margen mínimo del 15% para evitar el ruido de ~10%. Si el modelo logra <1.900s con 100% de éxito, se confirma que la restricción temporal es una palanca válida para la eficiencia."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 20:48",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --etiqueta lazo-C76 --tarea larga --tope-vueltas 32 --tope-tokens 3000 --tope-segundos 1900",
+    "codigo": 0,
+    "segundos": 2185.6,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 1242.0,
+      "segundos_media": 2184.4,
+      "intervenciones": 1.0
+    },
+    "salida_cola": "== banco n3 · cerebro gguf · modo lista · 1 tareas ==\n\n── larga\n[1] 78 tok · 461.2 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls app/\"})  (0.0 s)\n[2] 64 tok · 54.8 s · 1 llamadas\n  ✓ bash({\"comando\": \"cat app/m0.py app/m1.py app/m2.py app/m3.py app/m4.py app/m5.py app/m6.py app/m7.py app/m8.py app/m9.py\"})  (0.0 s)\n[3] 108 tok · 1031.5 s · 1 llamadas\n  ✓ bash({\"comando\": \"grep -n \\\"calcula\\\" app/m*.py | head -20\"})  (0.0 s)\n[4] 43 tok · 121.4 s · 1 llamadas\n  ✗ bash({\"comando\": \"grep -n \\\"return\\\" app/m*.py | grep \\\"calcula\\\\|x +\\\"\"}) → modo «lista»: «x +\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[5] 74 tok · 54.0 s · 1 llamadas\n  ✓ bash({\"comando\": \"grep -n \\\"return\\\" app/m0.py app/m1.py app/m2.py app/m3.py app/m4.py app/m5.py app/m6.py app/m7.py app/m8.p…)  (0.0 s)\n[6] 109 tok · 106.5 s · 1 llamadas\n  ✓ bash({\"comando\": \"find . -name \\\"*test*\\\" -o -name \\\"*prueba*\\\" | head -10\"})  (0.0 s)\n[7] 26 tok · 34.4 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[8] 740 tok · 317.2 s · 10 llamadas\n  La prueba espera `calcula(5) == 5 + i`, es decir, `x + i` sin negación. Corrijo los diez módulos:\n  ✓ editar({\"ruta\": \"app/m0.py\", \"cambios\": [{\"buscar\": \"    return -(x + 0)\", \"poner\": \"    return x + 0\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m1.py\", \"cambios\": [{\"buscar\": \"    return -(x + 1)\", \"poner\": \"    return x + 1\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m2.py\", \"cambios\": [{\"buscar\": \"    return -(x + 2)\", \"poner\": \"    return x + 2\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m3.py\", \"cambios\": [{\"buscar\": \"    return -(x + 3)\", \"poner\": \"    return x + 3\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m4.py\", \"cambios\": [{\"buscar\": \"    return -(x + 4)\", \"poner\": \"    return x + 4\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m5.py\", \"cambios\": [{\"buscar\": \"    return -(x + 5)\", \"poner\": \"    return x + 5\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m6.py\", \"cambios\": [{\"buscar\": \"    return -(x + 6)\", \"poner\": \"    return x + 6\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m7.py\", \"cambios\": [{\"buscar\": \"    return -(x + 7)\", \"poner\": \"    return x + 7\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m8.py\", \"cambios\": [{\"buscar\": \"    return -(x + 8)\", \"poner\": \"    return x + 8\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m9.py\", \"cambios\": [{\"buscar\": \"    return -(x + 9)\", \"poner\": \"    return x + 9\"}]})  (0.0 s)\n   ✓ PASA · tope_segundos · 8 vueltas · 1242 tok · 2184.4 s · 1 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 1242.0\nCIFRA segundos_media 2184.4\nCIFRA intervenciones 1\n\n1/1 tareas · registro → registros/2026-08-27_2048_lazo-C76.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 20:58",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 2184.4,
+    "espero": "<1900"
+  },
+  "leccion": "REFUTA. El umbral de 1.900 s no se alcanzó, con una media de 2.184,4 s que excede el tope en 284,4 s. La causa probable es que la restricción temporal no acelera la inferencia, sino que el modelo prioriza la corrección de los 10 módulos. El 100% de éxito se mantuvo, pero la latencia real superó la línea base de 2.244 s solo marginalmente al bajar de ella. La intervención única indica que el error de lista blanca no frenó el proceso. Mide la latencia por vuelta para aislar si el cuello de botella es la edición masiva o la inferencia base.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 20:12",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 20:12",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 20:12",
+      "que": "predicho segundos_media <1900"
+    },
+    {
+      "cuando": "2026-08-27 20:48",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 20:58",
+      "que": "veredicto: REFUTA (segundos_media=2184.4)"
+    }
+  ]
+}

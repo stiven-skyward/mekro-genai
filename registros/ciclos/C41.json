@@ -1,0 +1,61 @@
+{
+  "id": "C41",
+  "pregunta": "¿El tope de vueltas de 8 permite completar n2/aguja con menos de 900 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 09:28",
+  "revision": {
+    "cuando": "2026-08-26 09:28",
+    "texto": "n3/lista está saturada (C38-C40). n2/aguja no tiene ciclos previos. Baseline estimado de segundos para n2 es ~1000s. El suelo de ruido es 10%, así que el umbral debe ser <900 (margen 15% sobre 1000)."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 09:28",
+    "metrica": "segundos_media",
+    "espero": "<900",
+    "porque": "Reducir tope_vueltas de 16 a 8 fuerza una finalización más rápida. Si el modelo no necesita >8 vueltas, el tiempo cae. Umbral 900 es 15% por debajo del baseline estimado de 1000s, superando el ruido del 10%."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 10:07",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --etiqueta lazo-C41 --tarea aguja --tope-vueltas 8 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 2291.4,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 686.0,
+      "segundos_media": 2290.3,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── aguja\n[1] 107 tok · 422.1 s · 2 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n  ✓ bash({\"comando\": \"find . -name '*.py' -type f | head -30\"})  (0.0 s)\n[2] 63 tok · 74.2 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"validadores.py\"})  (0.0 s)\n[3] 55 tok · 1397.0 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 prueba.py 2>&1\"})  (0.1 s)\n[4] 105 tok · 70.3 s · 1 llamadas\n  ✓ grep({\"patron\": \"def valida_puerto\", \"ruta\": \"validadores.py\", \"contexto\": 15})  (0.0 s)\n[5] 214 tok · 196.2 s · 1 llamadas\n  El error está en la línea 419: `return 0 < v < 65535` usa `<` en el extremo superior, así que 65535 se rechaza. La docstring dice claramente \"AMBOS extremos incluidos\".\n  ✓ editar({\"ruta\": \"validadores.py\", \"cambios\": [{\"buscar\": \"    return 0 < v < 65535\", \"poner\": \"    return 0 < v <= 65535\"}]})  (0.0 s)\n[6] 27 tok · 64.3 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[7] 115 tok · 62.7 s\n  Corregido. En `valida_puerto` (línea 419) la comparación era `0 < v < 65535`, que excluye el 65535. La docstring del propio validador dice \"entero entre 1 y 65535, **AMBOS extremos incluidos**\", así que el límite superior debe ser `<=`. Con el cambio a `0 < v <= 65535` la prueba pasa 10/10.\n   ✓ PASA · fin · 7 vueltas · 686 tok · 2290.3 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 686.0\nCIFRA segundos_media 2290.3\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1007_lazo-C41.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 10:13",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 2290.3,
+    "espero": "<900"
+  },
+  "leccion": "REFUTA. El tiempo medio de 2290.3 segundos supera el umbral de 900 segundos en 1390.3 segundos. La causa es la latencia de inferencia del modelo GGUF, no la cantidad de vueltas. El tope de 8 vueltas no fue el cuello de botella, ya que la tarea se resolvió en 7 vueltas. El 100% de éxito se mantuvo, pero la métrica de tiempo falló drásticamente. La predicción ignoró el coste computacional por token y por llamada. Debes medir el tiempo de inferencia por token para aislar la latencia del modelo.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 09:28",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 09:28",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 09:28",
+      "que": "predicho segundos_media <900"
+    },
+    {
+      "cuando": "2026-08-26 10:07",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 10:13",
+      "que": "veredicto: REFUTA (segundos_media=2290.3)"
+    }
+  ]
+}

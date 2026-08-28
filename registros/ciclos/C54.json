@@ -1,0 +1,61 @@
+{
+  "id": "C54",
+  "pregunta": "¿El tope de segundos de 5400 permite completar n1/rojo con menos de 1100 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 21:14",
+  "revision": {
+    "cuando": "2026-08-26 21:14",
+    "texto": "Se midió n1/rojo en C50 con 1250.6 segundos y 792 tokens. El umbral de 1100 segundos representa un 12% de margen sobre la línea base, superando el ruido del 10%. La tarea es nueva para la métrica de tiempo."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 21:14",
+    "metrica": "segundos_media",
+    "espero": "<1100",
+    "porque": "La línea base de n1/rojo es 1250.6 segundos. Un umbral de 1100 segundos implica una mejora del 12%, que excede el margen de ruido del 10%. Esto valida la eficiencia temporal del modelo gguf en esta tarea específica."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 21:36",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --etiqueta lazo-C54 --tarea rojo --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1357.6,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 682.0,
+      "segundos_media": 1356.0,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── rojo\n[1] 50 tok · 755.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py 2>&1 | head -80\"})  (0.1 s)\n[2] 49 tok · 137.1 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"turnos.py\"})  (0.0 s)\n[3] 486 tok · 369.9 s · 1 llamadas\n  El problema es claro: `solapan` usa `<=`, lo que cuenta como solapamiento tocarse en el borde. La prueba exige que tocarse en el borde **no** sea pisarse. Basta cambiar `<=` a `<`.\n  ✓ editar({\"ruta\": \"turnos.py\", \"cambios\": [{\"buscar\": \"return a[0] <= b[1] and b[0] <= a[1]\", \"poner\": \"return a[0] < b[1] and b[…)  (0.0 s)\n[4] 27 tok · 40.6 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 70 tok · 46.2 s\n  Corregido. El cambio: en `solapan` se sustituyó `<=` por `<` en ambas comparaciones, de modo que dos turnos que solo se tocan en el borde (fin de uno == inicio del otro) ya no se consideran solapados. La prueba pasa 5/5.\n   ✓ PASA · fin · 5 vueltas · 682 tok · 1356.0 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 682.0\nCIFRA segundos_media 1356.0\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_2136_lazo-C54.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 21:41",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 1356.0,
+    "espero": "<1100"
+  },
+  "leccion": "REFUTA. El umbral de 5400 segundos no impidió el éxito, pero el tiempo medio de 1356.0 segundos supera el límite de 1100 segundos. La cifra de 1356.0 excede el umbral en 256.0 segundos. La causa probable es la latencia de inferencia del modelo gguf, no el tope de tiempo. Mide la latencia por token para aislar el cuello de botella.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 21:14",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 21:14",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 21:14",
+      "que": "predicho segundos_media <1100"
+    },
+    {
+      "cuando": "2026-08-26 21:36",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 21:41",
+      "que": "veredicto: REFUTA (segundos_media=1356.0)"
+    }
+  ]
+}

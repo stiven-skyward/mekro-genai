@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_0855",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 1600,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "lista",
+      "paso": true,
+      "motivo": "tope_tokens",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 1732,
+      "tokens_entrada": 12348,
+      "segundos": 1251.0,
+      "verificador": "6/6 asertos ✓",
+      "trabajo": "/tmp/banco-lista-58ar2qms/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 1732.0,
+    "segundos_media": 1251.0,
+    "intervenciones": 0
+  }
+}

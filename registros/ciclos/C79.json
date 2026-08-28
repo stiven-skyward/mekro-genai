@@ -1,0 +1,61 @@
+{
+  "id": "C79",
+  "pregunta": "M3, letra exacta: ¿baja --sin-pensar los tokens de n1/anadir (banco de M2) más de un 10% manteniendo 100% y 0 intervenciones?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 22:05",
+  "revision": {
+    "cuando": "2026-08-27 22:05",
+    "texto": "C73-C78 falsaron los mandos pasivos (topes rompen antes de mejorar; contexto comprime por azar del camino: 1.365 vs 2.069 con la misma configuración). El mando que actúa EN CADA VUELTA por construcción es --sin-pensar: el prellenado enable_thinking=false de fábrica de Qwen3 (construido en M5.5, probado en el proponente del lazo), que elimina el bloque <think> — la fracción dominante de los tokens de salida. Cableado hoy de punta a punta (cerebro.pensar, bandera de carrera, mando adoptable con mordida propia; 205 asertos en verde). La diana es n1/anadir: base inmutable 493 tokens, tarea simple (leer contrato + un editar + verificar) donde C8 midió que el andamiaje Hermes no necesita el think para la FORMA; el riesgo abierto es el CRITERIO sin razonamiento — exactamente lo que se mide. n1 es el banco de M2: si adopta aquí, M3 se cumple en su letra."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 22:05",
+    "metrica": "tokens_media",
+    "espero": "<430",
+    "porque": "La base inmutable de anadir es 493 tokens, y en sus carreras el bloque think era del orden de un tercio a la mitad de la salida; sin el, la salida queda en llamadas y prosa breve: espero 200-350. La barra en 430 (-12,8%) exige superar el suelo de ruido sin apostar el numero fino. Lo que decide: <430 con 100% y 0 intervenciones dispara la ADOPCION AUTOMATICA de sin_pensar para anadir y M3 queda a la carrera oficial --adoptados de declararse — la mejora la descubrio el programa de investigacion del arnes (M5.5 construyo el mando, C74-C78 descartaron los demas), el mecanismo adopta solo y el registro lo prueba; <430 con tareas<100 diria que el criterio SI necesita el think incluso en tareas simples y la via muere con dato; >=430 diria que el think de anadir era menor de lo estimado y a mirar la transcripcion."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 22:24",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n1 --tarea anadir --cerebro gguf --modo lista --sin-pensar --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400 --etiqueta m3-sinpensar-anadir",
+    "codigo": 0,
+    "segundos": 1108.1,
+    "cifras": {
+      "tareas_pct": 0.0,
+      "tokens_media": 202.0,
+      "segundos_media": 1107.0,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── anadir\n[1] 45 tok · 436.5 s · 2 llamadas\n  ✓ leer({\"ruta\": \"inventario.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[2] 157 tok · 666.8 s\n  tool_call con JSON inválido (Expecting ',' delimiter): {\"name\": \"editar\", \"arguments\": {\"ruta\": \"inventario.py\", \"cambios\": [{\"buscar\": \"    def hay(self, nombre):\\n        return self._piezas.get(nombre, 0)\", \"pone\n   ✗ FALLA · fin · 2 vueltas · 202 tok · 1107.0 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 0.0\nCIFRA tokens_media 202.0\nCIFRA segundos_media 1107.0\nCIFRA intervenciones 0\n\n0/1 tareas · registro → registros/2026-08-27_2224_m3-sinpensar-anadir.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 22:25",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 202.0,
+    "espero": "<430"
+  },
+  "leccion": "CONFIRMADO en la cifra —202 frente a <430, un -59% sobre la base 493— pero la GUARDA manda otra vez: la tarea FALLO (2 vueltas: sin think el modelo se precipito y rompio el criterio) y la adopcion NO salta. La rama intermedia de la prediccion, cumplida al pie: el criterio SI necesita el razonamiento incluso en tareas simples — el think no es grasa, es donde vive la comprension del contrato de la prueba. Con esto van SIETE mediciones del espacio de mandos (C73-C79) y el mapa esta completo: topes rompen antes de mejorar, contexto comprime por azar del camino (±35%), sin-pensar total comprime de sobra (-59%) pero mata el criterio. El dato de C79 señala la sintesis obvia y aun sin medir: el think selectivo — pensar en las vueltas de DIAGNOSTICO (donde el criterio se forma) y no en las mecanicas (donde solo cuesta). Es bandera de carrera (--pensar-vueltas N) y C80 la mide como ULTIMO intento del revisor antes de rendir el informe al autor: si tampoco, M3 queda medido como inalcanzable con banderas y este cerebro, y la palanca pasa a M1.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 22:05",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 22:05",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 22:05",
+      "que": "predicho tokens_media <430"
+    },
+    {
+      "cuando": "2026-08-27 22:24",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 22:25",
+      "que": "veredicto: CONFIRMA (tokens_media=202.0)"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "tarea": "banco/n0/humo",
+  "vueltas": 4,
+  "ventana": 1666,
+  "por_vuelta": [
+    {
+      "vuelta": 1,
+      "tokens_oro": 38,
+      "oro": "<think>Primero veo por qué falla, sin leer nada todavía.</th",
+      "grande": {
+        "acuerdo_oro": 0.6842,
+        "acuerdo_estructura": 1.0,
+        "tokens_estructura": 11,
+        "prefijo_exacto": 1,
+        "nll_por_token": 1.9999,
+        "primera_desviacion": "oro='Prim' → dijo='\\n' [decisión]"
+      },
+      "borrador": {
+        "acuerdo_oro": 0.7105,
+        "acuerdo_estructura": 0.9091,
+        "tokens_estructura": 11,
+        "prefijo_exacto": 1,
+        "nll_por_token": 1.9128,
+        "primera_desviacion": "oro='Prim' → dijo='\\n' [decisión]"
+      }
+    },
+    {
+      "vuelta": 2,
+      "tokens_oro": 21,
+      "oro": "<tool_call>⏎{\"name\": \"leer\", \"arguments\": {\"ruta\": \"suma.py\"",
+      "grande": {
+        "acuerdo_oro": 0.9524,
+        "acuerdo_estructura": 0.9091,
+        "tokens_estructura": 11,
+        "prefijo_exacto": 0,
+        "nll_por_token": 0.1382,
+        "primera_desviacion": "oro='<tool_call>' → dijo='<think>' [ANDAMIAJE]"
+      },
+      "borrador": {
+        "acuerdo_oro": 0.8571,
+        "acuerdo_estructura": 0.9091,
+        "tokens_estructura": 11,
+        "prefijo_exacto": 0,
+        "nll_por_token": 0.8191,
+        "primera_desviacion": "oro='<tool_call>' → dijo='<think>' [ANDAMIAJE]"
+      }
+    },
+    {
+      "vuelta": 3,
+      "tokens_oro": 48,
+      "oro": "<tool_call>⏎{\"name\": \"editar\", \"arguments\": {\"ruta\": \"suma.p",
+      "grande": {
+        "acuerdo_oro": 0.9792,
+        "acuerdo_estructura": 1.0,
+        "tokens_estructura": 11,
+        "prefijo_exacto": 27,
+        "nll_por_token": 0.0245,
+        "primera_desviacion": "oro='   ' → dijo='return' [decisión]"
+      },
+      "borrador": {
+        "acuerdo_oro": 0.9375,
+        "acuerdo_estructura": 0.9091,
+        "tokens_estructura": 11,
+        "prefijo_exacto": 0,
+        "nll_por_token": 0.3281,
+        "primera_desviacion": "oro='<tool_call>' → dijo='<think>' [ANDAMIAJE]"
+      }
+    },
+    {
+      "vuelta": 4,
+      "tokens_oro": 23,
+      "oro": "<tool_call>⏎{\"name\": \"bash\", \"arguments\": {\"comando\": \"pytho",
+      "grande": {
+        "acuerdo_oro": 1.0,
+        "acuerdo_estructura": 1.0,
+        "tokens_estructura": 11,
+        "prefijo_exacto": 23,
+        "nll_por_token": 0.0099,
+        "primera_desviacion": ""
+      },
+      "borrador": {
+        "acuerdo_oro": 1.0,
+        "acuerdo_estructura": 1.0,
+        "tokens_estructura": 11,
+        "prefijo_exacto": 23,
+        "nll_por_token": 0.0568,
+        "primera_desviacion": ""
+      }
+    }
+  ],
+  "modelos": {
+    "grande": "/home/forge/modelos/qwen3.8-27b",
+    "borrador": "/home/forge/modelos/qwen38-h13b"
+  },
+  "global": {
+    "grande": {
+      "acuerdo_estructura": 0.9773,
+      "acuerdo_oro": 0.8923,
+      "nll_por_token": 0.6177,
+      "tokens_estructura": 44,
+      "tokens_oro": 130
+    },
+    "borrador": {
+      "acuerdo_estructura": 0.9318,
+      "acuerdo_oro": 0.8692,
+      "nll_por_token": 0.8226,
+      "tokens_estructura": 44,
+      "tokens_oro": 130
+    }
+  },
+  "segundos": 2646.1
+}

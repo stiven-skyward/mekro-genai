@@ -1,0 +1,87 @@
+{
+  "id": "C4",
+  "pregunta": "¿cuántos tokens acepta de verdad la decodificación especulativa con el campeón de 2 bits como borrador, sobre código y sobre español?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 04:48",
+  "revision": {
+    "cuando": "2026-08-23 04:49",
+    "texto": "C2 (registros/ciclos/C2.json) midio que verificar 8 tokens de golpe cuesta 0,879x lo que 1, luego la palanca es sacar mas tokens por pase y la unica tecnica sin perdida es la especulativa; el propio C2 deja escrito que la tasa de aceptacion NO esta medida y que es C4. C3 midio compresion x1,4627 y deja el pase en 5,6 s. La tabla de docs/densa-en-cpu.md:25 proyecta 0,71 / 1,43 / 2,86 tok/s para 4 / 8 / 16 tokens aceptados por pase: las tres primeras filas estan medidas, el divisor NO. holos/H8.md deja escrito el aviso caro: la aceptacion se mide sobre el dominio de trabajo, no sobre wikitext, porque un borrador que acierta el 80% en prosa puede acertar el 40% en codigo. Los dos modelos ya estan en ext4 y son la misma arquitectura y el mismo vocabulario (Qwen3_5ForConditionalGeneration, 248320, 64 capas): grande BF16 en /home/forge/modelos/qwen3.8-27b (52 GB, PPL 5,21) y borrador en /home/forge/modelos/qwen38-h13b (49 GB, fake-quant a 1,9995 bits, PPL 7,46). quant/perplejidad.py de QuantModels ya sabe hacer el pase capa a capa en teacher forcing, que es exactamente lo que hace falta: no hay que implementar H8 para medir C4."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 04:49",
+    "metrica": "tokens_por_pase_codigo",
+    "espero": ">=4.0",
+    "porque": "El borrador NO es otro modelo: es EL MISMO modelo cuantizado a 1,9995 bits (PPL 7,46 frente a 5,21). Un borrador asi se equivoca en la cola de la distribucion, no en el token facil, y el codigo esta lleno de tokens forzados (cierres de parentesis, sangrado, nombres ya vistos en el fichero) donde ambos modelos coinciden por construccion. Con gamma=8 propuestas por pase, E[aceptados+1] = (1-a^9)/(1-a), luego 4 tokens/pase exige a>=0,79 de acuerdo greedy. Predigo que se llega porque un fake-quant de 2 bits que solo pierde 2,25 puntos de PPL conserva el argmax en la gran mayoria de posiciones. Y 4,0 es exactamente el umbral que decide: la tabla de docs/densa-en-cpu.md:25 solo pasa de 0,7 tok/s a partir de 4 tokens por pase. Si sale por debajo de 4, la via densa con este borrador no llega a 1 tok/s y hay que cambiar de borrador (Qwen3 0,6B) o subir gamma; si sale por encima de 8, la via densa es mejor que la cuantizada porque da la salida EXACTA del BF16 a velocidad parecida."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 04:56",
+    "comando": "python3 scripts/medir_aceptacion.py --ventana 512 --ventanas 1 --gamma 8 --salida registros/2026-08-22_sonda-C4.json",
+    "codigo": 0,
+    "segundos": 121.2,
+    "cifras": {
+      "acuerdo_greedy_codigo": 0.5714,
+      "alfa_t1_codigo": 0.5717,
+      "tokens_por_pase_codigo": 2.231,
+      "acuerdo_greedy_espanol": 0.5186,
+      "alfa_t1_espanol": 0.4837,
+      "tokens_por_pase_espanol": 2.069,
+      "segundos_pase_grande": 53.6
+    },
+    "salida_cola": "    capa 41/64 · 34s\n    capa 49/64 · 42s\n    capa 57/64 · 49s\n    capa 64/64 · 55s\n    pase completo en 55s\n[3/3] cabezas y acuerdo\n\n{\n  \"codigo\": {\n    \"tokens\": 511,\n    \"acuerdo_greedy\": 0.5714,\n    \"alfa_t1\": 0.5717,\n    \"tokens_por_pase_g4\": 2.094,\n    \"iid_g4\": 2.191,\n    \"tokens_por_pase_g8\": 2.231,\n    \"iid_g8\": 2.318,\n    \"tokens_por_pase_g16\": 2.281,\n    \"iid_g16\": 2.333\n  },\n  \"espanol\": {\n    \"tokens\": 511,\n    \"acuerdo_greedy\": 0.5186,\n    \"alfa_t1\": 0.4837,\n    \"tokens_por_pase_g4\": 1.996,\n    \"iid_g4\": 1.999,\n    \"tokens_por_pase_g8\": 2.069,\n    \"iid_g8\": 2.072,\n    \"tokens_por_pase_g16\": 2.077,\n    \"iid_g16\": 2.077\n  }\n}\nCIFRA acuerdo_greedy_codigo 0.5714\nCIFRA alfa_t1_codigo 0.5717\nCIFRA tokens_por_pase_codigo 2.231\nCIFRA acuerdo_greedy_espanol 0.5186\nCIFRA alfa_t1_espanol 0.4837\nCIFRA tokens_por_pase_espanol 2.069\nCIFRA segundos_pase_grande 53.6\n\nregistro: registros/2026-08-22_sonda-C4.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-23 05:30",
+    "comando": "python3 scripts/medir_aceptacion.py --ventana 512 --ventanas 8 --gamma 8 --salida registros/2026-08-22_C4-aceptacion.json",
+    "codigo": 0,
+    "segundos": 1985.0,
+    "cifras": {
+      "acuerdo_greedy_codigo": 0.5631,
+      "alfa_t1_codigo": 0.5814,
+      "tokens_por_pase_codigo": 2.227,
+      "acuerdo_greedy_espanol": 0.523,
+      "alfa_t1_espanol": 0.5397,
+      "tokens_por_pase_espanol": 2.077,
+      "segundos_pase_grande": 319.1
+    },
+    "salida_cola": "    capa 41/64 · 831s\n    capa 49/64 · 1111s\n    capa 57/64 · 1378s\n    capa 64/64 · 1603s\n    pase completo en 1604s\n[3/3] cabezas y acuerdo\n\n{\n  \"codigo\": {\n    \"tokens\": 4088,\n    \"acuerdo_greedy\": 0.5631,\n    \"alfa_t1\": 0.5814,\n    \"tokens_por_pase_g4\": 2.093,\n    \"iid_g4\": 2.159,\n    \"tokens_por_pase_g8\": 2.227,\n    \"iid_g8\": 2.276,\n    \"tokens_por_pase_g16\": 2.274,\n    \"iid_g16\": 2.289\n  },\n  \"espanol\": {\n    \"tokens\": 4088,\n    \"acuerdo_greedy\": 0.523,\n    \"alfa_t1\": 0.5397,\n    \"tokens_por_pase_g4\": 1.991,\n    \"iid_g4\": 2.014,\n    \"tokens_por_pase_g8\": 2.077,\n    \"iid_g8\": 2.09,\n    \"tokens_por_pase_g16\": 2.095,\n    \"iid_g16\": 2.096\n  }\n}\nCIFRA acuerdo_greedy_codigo 0.5631\nCIFRA alfa_t1_codigo 0.5814\nCIFRA tokens_por_pase_codigo 2.227\nCIFRA acuerdo_greedy_espanol 0.523\nCIFRA alfa_t1_espanol 0.5397\nCIFRA tokens_por_pase_espanol 2.077\nCIFRA segundos_pase_grande 319.1\n\nregistro: registros/2026-08-22_C4-aceptacion.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 06:07",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_por_pase_codigo",
+    "valor": 2.227,
+    "espero": ">=4.0"
+  },
+  "leccion": "REFUTADO: 2,227 tokens por pase en codigo (predicho >=4,0), sobre 4088 tokens; la sonda de 511 tokens ya habia dado 2,231, luego es reproducible. El acuerdo greedy del campeon de 2 bits con el BF16 es 0,5631 en codigo y 0,5230 en espanol (alfa a temperatura 1: 0,5814 y 0,5397). Tres consecuencias. PRIMERA: gamma no es una palanca. El techo con gamma infinito es 1/(1-alfa) = 2,289 en codigo, y con gamma=8 ya se saca el 97,3% de ese techo (gamma=16 da 2,274). Alargar el borrador no arregla nada; lo unico que sube tokens/pase es subir alfa. SEGUNDA: las aceptaciones NO llegan a rafagas. El simulador sobre la secuencia real de aciertos da 2,227 y la formula i.i.d. de la literatura da 2,276: en codigo estan si acaso ligeramente ANTIcorreladas, luego la intuicion de que el codigo acepta a rachas (sangrado, cierres) es falsa contra este borrador. TERCERA y la que decide: el presupuesto de la via densa cae a 5,6 s/pase entre 2,227 = 2,51 s/token = 0,398 tok/s en codigo y 0,371 en espanol, por debajo incluso de la primera fila especulativa de docs/densa-en-cpu.md (0,71). Para 1 tok/s harian falta 5,6 tokens/pase, o sea alfa >= 0,821, frente al 0,563 medido. POR QUE es tan bajo: la PPL del campeon sobre ESTE dominio, en ventanas de 512, es 15,967 en codigo y 17,518 en espanol frente a 5,764 y 4,839 del BF16 (medido en registros/2026-08-23_C4-integridad-ppl.json). El hueco real es de x2,8 a x3,6, no el x1,43 que sugiere el par 7,46 vs 5,21 del conjunto de evaluacion de QuantModels. El aviso que H8 dejo escrito se cumplio al pie de la letra: el numero del dominio de trabajo es otro. Y hay una leccion transversal para QuantModels: la PPL no predice el acuerdo de argmax. Un modelo que pierde 2,25 puntos de PPL en su conjunto de evaluacion cambia el token mas probable en el 44% de las posiciones del dominio real. Si el campeon se quiere usar como borrador, la metrica que hay que optimizar al cuantizar es el acuerdo con el BF16, no la perplejidad. LIMITE DEL METODO, escrito para que nadie lo olvide: esto es teacher forcing sobre texto humano; en la especulativa real el borrador propone condicionado al prefijo que genera el modelo, no al del corpus. Es el estimador estandar y es el unico que se puede pagar hoy (dos pases por disco en vez de uno por token, 33 min de CPU sin tocar la GPU), pero es un proxy. INCIDENTE: la copia del campeon en ext4 estaba corrupta en silencio, capa-53 a 0 bytes y capa-62 truncada a 283 MB; una copia de 50 GB que nadie verifico. Reparadas, y despues verificado que el resultado es identico digito a digito leyendo el borrador del original en /mnt/e. Verificar la copia, no suponerla.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 04:48",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 04:49",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 04:49",
+      "que": "predicho tokens_por_pase_codigo >=4.0"
+    },
+    {
+      "cuando": "2026-08-23 04:54",
+      "que": "sonda: código 1"
+    },
+    {
+      "cuando": "2026-08-23 04:56",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 05:30",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 06:07",
+      "que": "veredicto: REFUTA (tokens_por_pase_codigo=2.227)"
+    }
+  ]
+}

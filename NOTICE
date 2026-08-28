@@ -1,0 +1,23 @@
+Mekro-Genai
+Copyright 2026 stiven-skyward
+
+Este producto se licencia bajo Apache License 2.0 (ver LICENSE).
+
+--------------------------------------------------------------------------
+AVISO SOBRE EL MODELO DE LENGUAJE (los pesos NO se distribuyen aquí)
+--------------------------------------------------------------------------
+
+Mekro-Genai está diseñado para funcionar con un modelo Qwen cuantizado
+(Qwen3.8-27B, GGUF Q2_K_XL) como cerebro local. Los pesos del modelo:
+
+- NO forman parte de este repositorio ni de sus artefactos.
+- Son obra de Alibaba Cloud (equipo Qwen) y de quienes publican sus
+  cuantizaciones GGUF, y se rigen por SU PROPIA licencia y condiciones de
+  uso, no por la Apache 2.0 de este repositorio.
+- Cada usuario los descarga por su cuenta y acepta la licencia del modelo
+  en origen: https://huggingface.co/Qwen
+
+Built with Qwen.
+
+Este repositorio no afirma ninguna afiliación con Alibaba Cloud ni con el
+equipo Qwen. Las marcas pertenecen a sus titulares.

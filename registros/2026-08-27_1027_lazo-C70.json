@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_1027",
+  "nivel": "n2",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "version",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 1309,
+      "tokens_entrada": 16148,
+      "segundos": 1225.7,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-version-7sk70j66/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 1309.0,
+    "segundos_media": 1225.7,
+    "intervenciones": 0
+  }
+}

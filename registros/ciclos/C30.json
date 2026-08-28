@@ -1,0 +1,77 @@
+{
+  "id": "C30",
+  "pregunta": "con el bucle arreglado —un turno cortado sin llamadas ya no es respuesta final—, ¿pasa n3/lista dentro del presupuesto de 3.000?",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 20:08",
+  "revision": {
+    "cuando": "2026-08-25 20:08",
+    "texto": "C29 encontró el borde en una esquina del arnés: el think de diseño gastó los 1.024 tokens del turno sin emitir llamada y el bucle lo dio por fin con 1.215 de 3.000 gastados. El arreglo está en bucle.py y probado con 3 asertos nuevos (24/24): motivo_parada==tope_tokens sin llamadas → se le pide continuar («no repitas lo pensado: emite YA la llamada»), con tope_vueltas/tope_tokens de freno; el reintento es barato porque el think cortado ya está en la caché KV (append-exacto de C22). La incógnita que queda VIVA de C29: el presupuesto — al corte llevaba 1.215 tokens a medio diseño; la continuación más los dos ficheros (~700-1.100 de contenido) puede rozar o pasar los 3.000. Control del día: humo 903,5 s a las 19:30 (registro n0-gguf-humo-control-C29, ×1,66 sobre C22); esta carrera va ~1h después y se asume el factor, anotando la deuda de no repetirlo."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 20:08",
+    "metrica": "tareas_pct",
+    "espero": "==100",
+    "porque": "Lo doy a ~60%, la mas incierta de la serie, y aun asi es la prediccion honesta: el mecanismo que mato C29 esta arreglado Y probado en frio, el modelo estaba razonando BIEN cuando se corto (el think enumeraba el contrato correcto), y la continuacion arranca con todo el diseño ya en cache. El riesgo dominante ya no es la forma ni el criterio: es aritmetico — 1.215 gastados al corte en C29 + la continuacion + dos escribir largos puede superar los 3.000 y parar por tope_tokens con la tarea a medias. Lo que decide: 100 con motivo fin cierra el arco entero de la sesion (el arnes construye un proyecto desde cero con 2,83 bits y presupuesto de muro) y deja el borde SOLO en el reloj; 0 por tope_tokens NO reabre el bucle — mide el presupuesto minimo de un n3 y la palanca pasa a ser la eficiencia de tokens del think (comprimirlo, o la miga de C29: el think en ingles como posible ahorro medible); 0 por cualquier otra via seria un mecanismo nuevo y habria que mirarlo de cerca antes de tocar nada."
+  },
+  "sonda": {
+    "cuando": "2026-08-25 20:08",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n3 --cerebro eco --modo lista --callado --exigir-todo --etiqueta n3-eco-sonda-C30",
+    "codigo": 0,
+    "segundos": 0.5,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 621.0,
+      "segundos_media": 0.2,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n3 · cerebro eco · modo lista · 1 tareas ==\n\n── lista\n   ✓ PASA · fin · 5 vueltas · 621 tok · 0.2 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 621.0\nCIFRA segundos_media 0.2\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-25_2008_n3-eco-sonda-C30.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-25 20:35",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400 --etiqueta n3-gguf-revancha",
+    "codigo": 0,
+    "segundos": 1631.3,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 2118.0,
+      "segundos_media": 1630.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 52.7 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 591.9 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(x)` - adds an item to the list\n     - `pendientes()` - returns a list of pending items\n     - `tachar(x)` - marks an item as done (removes from pending)\n     - Data is persisted in `lista.jsonl`\n  \n  2. `orden.py` is a CLI script:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds an item\n     - `tachar <x>`\n  ·· turno cortado sin llamadas: se le pide continuar\n[4] 477 tok · 250.9 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"lista.py\", \"contenido\": \"import json\\nimport os\\n\\nARCHIVO = \\\"lista.jsonl\\\"\\n\\n\\ndef _cargar():\\n    if not o…)  (0.0 s)\n[5] 214 tok · 110.7 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"orden.py\", \"contenido\": \"import sys\\nfrom lista import anadir, pendientes, tachar\\n\\n\\ndef main():\\n    if len…)  (0.0 s)\n[6] 27 tok · 32.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.1 s)\n[7] 185 tok · 101.6 s\n  Los 6 asertos pasan. Resumen de lo construido:\n  \n  - **`lista.py`** — módulo con `anadir`, `pendientes`, `tachar`. Persiste en `lista.jsonl` (una línea JSON por elemento: `{\"item\": …, \"hecho\": bool}`). `tachar` devuelve `True`/`False` según si el elemento estaba pendiente.\n  - **`orden.py`** — CLI (`python3 orden.py <cmd> [arg]`):\n    - `ver` → imprime pendientes, uno por línea.\n    - `anadir <x>` → añade.\n   ✓ PASA · fin · 7 vueltas · 2118 tok · 1630.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 2118.0\nCIFRA segundos_media 1630.1\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-25_2035_n3-gguf-revancha.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 20:36",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 100.0,
+    "espero": "==100"
+  },
+  "leccion": "CONFIRMADO —tareas_pct 100, predicho ==100 a un honesto 60%—: n3/lista PASA con 2.118 de 3.000 tokens y 0 intervenciones, y con ello queda medida LA FRASE DE LA MISION: el arnes construye un proyecto entero —modulo, CLI y persistencia que cruza procesos— desde un encargo en prosa, con el cerebro de 2,83 bits, solo CPU, dentro del presupuesto del §muro. La carrera fue ademas el experimento mas limpio posible del arreglo de C29: a temperatura 0 el modelo repitio el guion de C29 TOKEN POR TOKEN —mismo think de diseño en ingles, cortado en el mismo punto— y donde C29 murio, la rama nueva de bucle.py pidio continuar; la continuacion costo un turno de 477 tokens que escribio lista.py entero (el diseño ya estaba en la cache: el reintento barato que el append-exacto prometia, cumplido) y la tarea cerro con 882 tokens de margen. El par C29/C30 es el patron de oro del ciclo: mismo guion determinista, un solo cambio, el resultado se invierte — nada que rascar. Quedan vivas dos hebras baratas para el siguiente que pase: (1) el presupuesto minimo real de un n3 esta entre 1.215 (donde C29 murio a medio diseño) y 2.118 (donde C30 cerro): un tope de 2.000 probablemente mata la tarea y uno de 2.500 la deja JUSTA — medible en una carrera; (2) la miga del idioma sigue abierta: el think de diseño salio en ingles las dos veces, y si el ingles es mas denso por token, forzar el idioma del think es una palanca de presupuesto que se mide con una carrera y un contador.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 20:08",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 20:08",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 20:08",
+      "que": "predicho tareas_pct ==100"
+    },
+    {
+      "cuando": "2026-08-25 20:08",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-25 20:35",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 20:36",
+      "que": "veredicto: CONFIRMA (tareas_pct=100.0)"
+    }
+  ]
+}

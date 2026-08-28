@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_2132",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 32,
+    "tope_tokens": 1050,
+    "tope_segundos": 7200
+  },
+  "tareas": [
+    {
+      "id": "lista",
+      "paso": false,
+      "motivo": "tope_tokens",
+      "motivo_extra": "",
+      "vueltas": 3,
+      "intervenciones": 0,
+      "tokens_salida": 1171,
+      "tokens_entrada": 5945,
+      "segundos": 1068.8,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-lista-o2zfzb_w/caja/prueba.py\", line 18, in <module>\n    from lista import anadir, pendientes, tachar\nModuleNotFoundError: No module named 'lista'",
+      "trabajo": "/tmp/banco-lista-o2zfzb_w/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 0.0,
+    "tokens_media": 1171.0,
+    "segundos_media": 1068.8,
+    "intervenciones": 0
+  }
+}

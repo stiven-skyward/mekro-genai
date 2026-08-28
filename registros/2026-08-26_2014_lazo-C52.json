@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_2014",
+  "nivel": "n1",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "fuga",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 506,
+      "tokens_entrada": 10143,
+      "segundos": 939.4,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-fuga-k_l9k3lg/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 506.0,
+    "segundos_media": 939.4,
+    "intervenciones": 0
+  }
+}

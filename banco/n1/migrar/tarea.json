@@ -1,0 +1,19 @@
+{
+ "id": "migrar",
+ "nivel": "n1",
+ "encargo": "`formato.py` cambió en su v2: los interruptores de `etiqueta` son ahora SOLO por nombre. `informe.py` sigue llamando a la manera vieja y la prueba falla. Migra las llamadas de `informe.py`. No toques ni `formato.py` ni la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py",
+  "formato.py"
+ ],
+ "porque": "El TypeError apunta a la biblioteca, pero lo que hay que tocar son los LLAMADORES: formato.py va en verificar_intacto y «arreglarlo» es suspenso. Mide migrar una llamada leyendo la firma nueva y conservando la intención de la vieja (el orden posicional era mayusculas, recortar).",
+ "guion": [
+  "<think>Veo el error y las dos caras: la firma nueva y los llamadores.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"formato.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"informe.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"informe.py\", \"cambios\": [{\"buscar\": \"    return etiqueta(titulo, True, True)\", \"poner\": \"    return etiqueta(titulo, mayusculas=True, recortar=True)\"}, {\"buscar\": \"    return etiqueta(texto, False, True)\", \"poner\": \"    return etiqueta(texto, recortar=True)\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "Migradas las dos llamadas de `informe.py` a la firma por nombre, conservando la intención del orden viejo (mayusculas, recortar). `formato.py` intacto. 3/3."
+ ]
+}

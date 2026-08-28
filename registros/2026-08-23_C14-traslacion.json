@@ -1,0 +1,93 @@
+{
+  "capa": 45,
+  "tensor": "mlp.up_proj",
+  "g": 16,
+  "k": 4096,
+  "fuentes": {
+    "campeon": {
+      "cumulos": [
+        3899,
+        1534
+      ],
+      "tam_cumulos": [
+        2230,
+        2229
+      ],
+      "usados": [
+        1500,
+        1500
+      ],
+      "diferencias": 2250000,
+      "multiplicidad_max": 162,
+      "top_por_desplazamiento": [
+        [
+          162,
+          83,
+          42,
+          38,
+          18
+        ],
+        [
+          81,
+          47,
+          43,
+          42,
+          32
+        ],
+        [
+          85,
+          76,
+          72,
+          30,
+          26
+        ]
+      ],
+      "escala_rejilla": 0.012147,
+      "cierre_beta": 0.00888,
+      "segundos": 147.9
+    },
+    "bf16": {
+      "cumulos": [
+        571,
+        3887
+      ],
+      "tam_cumulos": [
+        2694,
+        2373
+      ],
+      "usados": [
+        1500,
+        1500
+      ],
+      "diferencias": 2250000,
+      "multiplicidad_max": 2,
+      "top_por_desplazamiento": [
+        [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      ],
+      "escala_rejilla": 0.563825,
+      "cierre_beta": null,
+      "segundos": 279.0
+    }
+  },
+  "segundos": 279.1
+}

@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_0616",
+  "nivel": "n1",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "migrar",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 3,
+      "intervenciones": 0,
+      "tokens_salida": 489,
+      "tokens_entrada": 5744,
+      "segundos": 704.3,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-migrar-zjzorsub/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 489.0,
+    "segundos_media": 704.3,
+    "intervenciones": 0
+  }
+}

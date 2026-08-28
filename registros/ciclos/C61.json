@@ -1,0 +1,61 @@
+{
+  "id": "C61",
+  "pregunta": "¿El tope de tokens de 3000 permite completar n0/simbolo con menos de 767 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 04:28",
+  "revision": {
+    "cuando": "2026-08-27 04:28",
+    "texto": "Se midió n0/simbolo en segundos (1650.1) pero no en tokens. El baseline de tokens es 666. El umbral de 767 ofrece un 15% de margen sobre el ruido. La tarea es de nivel n0, por lo que el tope de 3000 tokens es amplio y no debería ser limitante si el modelo es eficiente."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 04:28",
+    "metrica": "tokens_media",
+    "espero": "<767",
+    "porque": "El baseline de tokens para n0/simbolo es 666. Se aplica un margen de seguridad del 15% para cubrir la varianza de ruido (~10%). 666 * 1.15 = 765.9, redondeado a 767. Esto permite afirmar que el modelo no está inflando innecesariamente el contexto en esta tarea específica."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 04:47",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --etiqueta lazo-C61 --tarea simbolo --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1143.8,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 907.0,
+      "segundos_media": 1142.6,
+      "intervenciones": 13.0
+    },
+    "salida_cola": "  ✓ simbolos({\"aguja\": \"normalizar\", \"ruta\": \"app/\"})  (0.0 s)\n[2] 28 tok · 31.8 s · 1 llamadas\n  ✓ leer({\"ruta\": \"app/util/texto.py\"})  (0.0 s)\n[3] 89 tok · 62.1 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/util/texto.py\", \"cambios\": [{\"buscar\": \"    return s\", \"poner\": \"    return s.strip().lower()\"}]})  (0.0 s)\n[4] 74 tok · 48.9 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; assert normalizar('  Hello  World  ') == 'hello world';…) → modo «lista»: «assert normalizar('  Hello  World  ') == 'hello world'» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[5] 67 tok · 51.3 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(repr(normalizar('  Hello  World  '))); print(repr…) → modo «lista»: «print(repr(normalizar('  Hello  World  ')))» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[6] 60 tok · 51.1 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  ')); print(normalizar…) → modo «lista»: «print(normalizar('  Hello  World  '))» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[7] 49 tok · 44.4 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\"\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[8] 53 tok · 46.9 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\" 2>&1\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\" 2>&1» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[9] 49 tok · 46.9 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\"\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[10] 49 tok · 47.7 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\"\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[11] 49 tok · 44.5 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\"\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[12] 49 tok · 79.6 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\"\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[13] 49 tok · 46.5 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\"\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[14] 49 tok · 55.9 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\"\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[15] 49 tok · 48.6 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\"\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[16] 49 tok · 45.9 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from app.util.texto import normalizar; print(normalizar('  Hello  World  '))\\\"\"}) → modo «lista»: «print(normalizar('  Hello  World  '))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n   ✓ PASA · tope_vueltas · 16 vueltas · 907 tok · 1142.6 s · 13 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 907.0\nCIFRA segundos_media 1142.6\nCIFRA intervenciones 13\n\n1/1 tareas · registro → registros/2026-08-27_0447_lazo-C61.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 04:58",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 907.0,
+    "espero": "<767"
+  },
+  "leccion": "REFUTA.\nEl umbral era <767 tokens medios.\nLa medición registró 907 tokens medios.\nEl exceso es de 140 tokens sobre el límite.\nLa causa probable es el bucle de 13 intervenciones fallidas por la lista blanca.\nCada intento de bash consumió ~49 tokens sin avanzar la tarea.\nEl tope de 3000 tokens no impidió el éxito, pero el costo fue ineficiente.\nMedir la tasa de éxito con la lista blanca ampliada para reducir las intervenciones.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 04:28",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 04:28",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 04:28",
+      "que": "predicho tokens_media <767"
+    },
+    {
+      "cuando": "2026-08-27 04:47",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 04:58",
+      "que": "veredicto: REFUTA (tokens_media=907.0)"
+    }
+  ]
+}

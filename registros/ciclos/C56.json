@@ -1,0 +1,61 @@
+{
+  "id": "C56",
+  "pregunta": "¿El tope de segundos de 5400 permite completar n1/cadena con menos de 1600 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 23:06",
+  "revision": {
+    "cuando": "2026-08-26 23:06",
+    "texto": "C53-C55 midieron n1/migrar, rojo y anadir. Baseline n1/cadena: 1437.7s. Umbral 1600s (margen 11.3%)."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 23:06",
+    "metrica": "segundos_media",
+    "espero": "<1600",
+    "porque": "Baseline 1437.7s. Umbral 1600s da margen del 11.3%. Aísla latencia gguf en cadena."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 23:23",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --etiqueta lazo-C56 --tarea cadena --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1060.2,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 953.0,
+      "segundos_media": 1059.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── cadena\n[1] 91 tok · 429.3 s · 3 llamadas\n  ✓ holos({})  (0.1 s)\n  ✓ grep({\"patron\": \"precio_final\", \"glob\": \"*.py\"})  (0.0 s)\n  ✓ grep({\"patron\": \"descuento\", \"glob\": \"*.py\"})  (0.0 s)\n[2] 719 tok · 522.7 s · 2 llamadas\n  ✓ editar({\"ruta\": \"tarifas.py\", \"cambios\": [{\"buscar\": \"def precio_final(base, iva):\\n    return base * (1 + iva)\", \"poner\": \"def…)  (0.0 s)\n  ✓ editar({\"ruta\": \"factura.py\", \"cambios\": [{\"buscar\": \"def linea(concepto, base, iva):\\n    return f\\\"{concepto}: {precio_final(…)  (0.0 s)\n[3] 27 tok · 41.9 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[4] 116 tok · 61.9 s\n  Listo. Los dos cambios:\n  \n  - **`tarifas.py`** → `precio_final(base, iva, descuento=0.0)` ahora aplica la fracción de descuento **antes** del IVA: `base * (1 - descuento) * (1 + iva)`.\n  - **`factura.py`** → `linea(concepto, base, iva, descuento=0.0)` reenvía el parámetro a `precio_final`.\n  \n  La prueba pasa 5/5 sin tocarla.\n   ✓ PASA · fin · 4 vueltas · 953 tok · 1059.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 953.0\nCIFRA segundos_media 1059.1\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_2323_lazo-C56.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 23:28",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 1059.1,
+    "espero": "<1600"
+  },
+  "leccion": "CONFIRMA.\nEl umbral de 1600 segundos se supera con holgura.\nLa medición real fue de 1059.1 segundos.\nLa diferencia contra el umbral es de 540.9 segundos.\nEl tope de 5400 segundos no fue el factor limitante.\nLa causa más probable es la eficiencia del modelo gguf en la cadena.\nEl 100% de éxito se mantuvo sin intervenciones.\nMedir la latencia de las llamadas de edición en la siguiente iteración.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 23:06",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 23:06",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 23:06",
+      "que": "predicho segundos_media <1600"
+    },
+    {
+      "cuando": "2026-08-26 23:23",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 23:28",
+      "que": "veredicto: CONFIRMA (segundos_media=1059.1)"
+    }
+  ]
+}

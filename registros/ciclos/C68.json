@@ -1,0 +1,61 @@
+{
+  "id": "C68",
+  "pregunta": "¿El tope de tokens de 3000 permite completar n0/atomo con menos de 997 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 08:46",
+  "revision": {
+    "cuando": "2026-08-27 08:46",
+    "texto": "Se midió n0/crear (278 tokens) y n0/humo (345 tokens) con éxito total. n0/atomo tiene una línea base de 1161 tokens. Se asume que la eficiencia del modelo gguf se mantiene en tareas n0 similares, permitiendo predecir un ahorro significativo respecto al baseline."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 08:46",
+    "metrica": "tokens_media",
+    "espero": "<997",
+    "porque": "El baseline de n0/atomo es 1161 tokens. Aplicando un margen de seguridad del 15% sobre este valor (1161 * 0.85 = 986.85), se fija el umbral en 997 para asegurar que la medición supere el ruido de fondo (~10%) y confirme la eficiencia esperada sin degradación del éxito."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 09:07",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --etiqueta lazo-C68 --tarea atomo --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1269.7,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 1161.0,
+      "segundos_media": 1268.5,
+      "intervenciones": 14.0
+    },
+    "salida_cola": "  ✓ leer({\"ruta\": \"medidas.py\"})  (0.0 s)\n[2] 92 tok · 79.9 s · 1 llamadas\n  ✓ editar({\"ruta\": \"medidas.py\", \"cambios\": [{\"buscar\": \"return -(a + b)\", \"poner\": \"return a + b\"}, {\"buscar\": \"return -(a * b)\",…)  (0.0 s)\n[3] 58 tok · 46.3 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from medidas import suma, producto, resta; print(suma(2,3), producto(2,3), resta(5,2))\\\"\"}) → modo «lista»: «print(suma(2,3), producto(2,3), resta(5,2))\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[4] 69 tok · 54.1 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from medidas import suma, producto, resta; assert suma(2,3)==5; assert producto(2,3)==6; asser…) → modo «lista»: «assert suma(2,3)==5» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[5] 64 tok · 49.7 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"from medidas import suma, producto, resta; print(suma(2,3), producto(2,3), resta(5,2))\\\" 2>&1 …) → modo «lista»: «print(suma(2,3), producto(2,3), resta(5,2))\" 2>&1» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[6] 59 tok · 51.2 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\"\"}) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[7] 63 tok · 53.6 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1\"}) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[8] 65 tok · 53.7 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1 || …) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[9] 68 tok · 52.2 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1 || …) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[10] 72 tok · 54.0 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1 || …) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[11] 74 tok · 54.7 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1 || …) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[12] 77 tok · 99.1 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1 || …) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[13] 81 tok · 57.4 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1 || …) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[14] 83 tok · 61.1 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1 || …) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[15] 86 tok · 60.0 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1 || …) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[16] 90 tok · 61.8 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -c \\\"import medidas; print(medidas.suma(2,3), medidas.producto(2,3), medidas.resta(5,2))\\\" 2>&1 || …) → modo «lista»: «print(medidas.suma(2,3), medidas.producto(2,3), medidas.rest» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n   ✓ PASA · tope_vueltas · 16 vueltas · 1161 tok · 1268.5 s · 14 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 1161.0\nCIFRA segundos_media 1268.5\nCIFRA intervenciones 14\n\n1/1 tareas · registro → registros/2026-08-27_0907_lazo-C68.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 09:18",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 1161.0,
+    "espero": "<997"
+  },
+  "leccion": "REFUTA.\nEl umbral de 997 tokens se incumple con 1161 tokens medios.\nLa causa es el bloqueo de la lista blanca que impide ejecutar el código de verificación.\nEl modelo genera 14 intentos fallidos de bash para validar la solución.\nCada intento consume entre 58 y 90 tokens adicionales sin avanzar.\nEl tope de 3000 tokens no limita la ejecución, sino que permite el bucle de error.\nEl éxito del 100% se mantiene, pero la eficiencia se degrada un 16.4% sobre el umbral.\nMedir la tasa de tokens por intento fallido para cuantificar la penalización del sandbox.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 08:46",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 08:46",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 08:46",
+      "que": "predicho tokens_media <997"
+    },
+    {
+      "cuando": "2026-08-27 09:07",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 09:18",
+      "que": "veredicto: REFUTA (tokens_media=1161.0)"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "id": "C42",
+  "pregunta": "¿El tope de tokens de 1200 permite completar n2/aguja con menos de 800 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 10:42",
+  "revision": {
+    "cuando": "2026-08-26 10:42",
+    "texto": "C41 midió n2/aguja con topes altos (3000) y obtuvo 686 tokens medios. C39/C40 cartografiaron n3/lista. Busco el límite de compresión en n2/aguja para ver si la tarea es robusta a topes bajos sin perder éxito."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 10:42",
+    "metrica": "tokens_media",
+    "espero": "<800",
+    "porque": "El baseline medido en C41 es 686 tokens. Un tope de 1200 es holgado, pero el umbral de 800 deja un margen del 16% sobre el baseline (686 * 1.16 ≈ 796). Esto supera el suelo de ruido del 10% y valida si la tarea n2/aguja puede mantenerse por debajo de 800 tokens incluso con restricciones de salida más estrictas que las de C41."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 11:22",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --etiqueta lazo-C42 --tarea aguja --tope-vueltas 16 --tope-tokens 1200 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 2373.6,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 686.0,
+      "segundos_media": 2372.5,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── aguja\n[1] 107 tok · 423.5 s · 2 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n  ✓ bash({\"comando\": \"find . -name '*.py' -type f | head -30\"})  (0.0 s)\n[2] 63 tok · 75.8 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"validadores.py\"})  (0.0 s)\n[3] 55 tok · 1351.5 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 prueba.py 2>&1\"})  (0.1 s)\n[4] 105 tok · 106.4 s · 1 llamadas\n  ✓ grep({\"patron\": \"def valida_puerto\", \"ruta\": \"validadores.py\", \"contexto\": 15})  (0.0 s)\n[5] 214 tok · 315.1 s · 1 llamadas\n  El error está en la línea 419: `return 0 < v < 65535` usa `<` en el extremo superior, así que 65535 se rechaza. La docstring dice claramente \"AMBOS extremos incluidos\".\n  ✓ editar({\"ruta\": \"validadores.py\", \"cambios\": [{\"buscar\": \"    return 0 < v < 65535\", \"poner\": \"    return 0 < v <= 65535\"}]})  (0.0 s)\n[6] 27 tok · 34.8 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[7] 115 tok · 63.1 s\n  Corregido. En `valida_puerto` (línea 419) la comparación era `0 < v < 65535`, que excluye el 65535. La docstring del propio validador dice \"entero entre 1 y 65535, **AMBOS extremos incluidos**\", así que el límite superior debe ser `<=`. Con el cambio a `0 < v <= 65535` la prueba pasa 10/10.\n   ✓ PASA · fin · 7 vueltas · 686 tok · 2372.5 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 686.0\nCIFRA segundos_media 2372.5\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1122_lazo-C42.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 11:28",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 686.0,
+    "espero": "<800"
+  },
+  "leccion": "CONFIRMA.\nEl umbral de 800 tokens se supera con un margen de 114 tokens.\nLa medición registró una media exacta de 686 tokens.\nEl 100% de éxito se mantuvo sin intervenciones.\nLa causa es la eficiencia del modelo gguf en la tarea n2/aguja.\nEl tope de 1200 tokens resultó holgado para el flujo real.\nLa métrica de tiempo (2372.5 s) no afectó el conteo de tokens.\nMedir la varianza de tokens en 10 repeticiones para validar estabilidad.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 10:42",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 10:42",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 10:42",
+      "que": "predicho tokens_media <800"
+    },
+    {
+      "cuando": "2026-08-26 11:22",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 11:28",
+      "que": "veredicto: CONFIRMA (tokens_media=686.0)"
+    }
+  ]
+}

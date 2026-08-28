@@ -1,0 +1,61 @@
+{
+  "id": "C46",
+  "pregunta": "¿El tope de tokens de 1200 permite completar n2/aguja con menos de 700 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 14:54",
+  "revision": {
+    "cuando": "2026-08-26 14:54",
+    "texto": "C42 ya midió n2/aguja con tokens_media. C43 midió cupones en 957. C44 midió tres en 881. C45 midió version en 1215. La lección de C43 indica que cupones es pesado. Aguja es la tarea n2 más ligera esperada. No se puede repetir la métrica de C42."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 14:54",
+    "metrica": "segundos_media",
+    "espero": "<900",
+    "porque": "C44 (tres) fue 922.8s. C45 (version) fue 1159.1s. C43 (cupones) fue 1036.8s. Aguja es una búsqueda simple, no una reescritura. Se espera que sea más rápida que tres. Un umbral de 900s da un margen de ~15% sobre el baseline de ruido y separa de tres (922.8s)."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 15:32",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --etiqueta lazo-C46 --tarea aguja --tope-vueltas 16 --tope-tokens 1200 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 2323.2,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 686.0,
+      "segundos_media": 2322.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── aguja\n[1] 107 tok · 389.9 s · 2 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n  ✓ bash({\"comando\": \"find . -name '*.py' -type f | head -30\"})  (0.0 s)\n[2] 63 tok · 75.9 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"validadores.py\"})  (0.0 s)\n[3] 55 tok · 1474.0 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 prueba.py 2>&1\"})  (0.1 s)\n[4] 105 tok · 72.3 s · 1 llamadas\n  ✓ grep({\"patron\": \"def valida_puerto\", \"ruta\": \"validadores.py\", \"contexto\": 15})  (0.0 s)\n[5] 214 tok · 206.8 s · 1 llamadas\n  El error está en la línea 419: `return 0 < v < 65535` usa `<` en el extremo superior, así que 65535 se rechaza. La docstring dice claramente \"AMBOS extremos incluidos\".\n  ✓ editar({\"ruta\": \"validadores.py\", \"cambios\": [{\"buscar\": \"    return 0 < v < 65535\", \"poner\": \"    return 0 < v <= 65535\"}]})  (0.0 s)\n[6] 27 tok · 34.3 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[7] 115 tok · 65.5 s\n  Corregido. En `valida_puerto` (línea 419) la comparación era `0 < v < 65535`, que excluye el 65535. La docstring del propio validador dice \"entero entre 1 y 65535, **AMBOS extremos incluidos**\", así que el límite superior debe ser `<=`. Con el cambio a `0 < v <= 65535` la prueba pasa 10/10.\n   ✓ PASA · fin · 7 vueltas · 686 tok · 2322.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 686.0\nCIFRA segundos_media 2322.1\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1532_lazo-C46.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 15:39",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 2322.1,
+    "espero": "<900"
+  },
+  "leccion": "REFUTA. El tiempo medio de 2322.1 segundos supera el umbral de 900 segundos en 1422.1 segundos. La causa más probable es la ejecución de un comando fallido que consumió 1474.0 segundos en la vuelta 3. El tope de 1200 tokens permitió completar la tarea con 686 tokens medios, cumpliendo el objetivo de menos de 700. El éxito se mantuvo al 100% con 0 intervenciones. La métrica de tokens se mantuvo estable bajo el tope. El tiempo total de 2323.2 segundos confirma la ineficiencia temporal. Se debe medir el tiempo de ejecución de comandos bash para aislar cuellos de botella.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 14:54",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 14:54",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 14:54",
+      "que": "predicho segundos_media <900"
+    },
+    {
+      "cuando": "2026-08-26 15:32",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 15:39",
+      "que": "veredicto: REFUTA (segundos_media=2322.1)"
+    }
+  ]
+}

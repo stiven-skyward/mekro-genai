@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_0826",
+  "nivel": "n0",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "humo",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 345,
+      "tokens_entrada": 7269,
+      "segundos": 625.8,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-humo-gakuqokd/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 345.0,
+    "segundos_media": 625.8,
+    "intervenciones": 0
+  }
+}

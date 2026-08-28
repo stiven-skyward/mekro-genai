@@ -1,0 +1,61 @@
+{
+  "id": "C55",
+  "pregunta": "¿El tope de segundos de 5400 permite completar n1/anadir con menos de 880 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 22:17",
+  "revision": {
+    "cuando": "2026-08-26 22:17",
+    "texto": "C52 y C53 confirmaron que los topes de tokens y segundos no son cuellos de botella para n1/fuga y n1/migrar. C54 refutó la hipótesis de tiempo para n1/rojo, mostrando que la latencia de inferencia es el factor limitante. La línea base de n1/anadir es 766 segundos. Se busca validar la eficiencia temporal en esta tarea específica."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 22:17",
+    "metrica": "segundos_media",
+    "espero": "<880",
+    "porque": "La línea base de n1/anadir es 766 segundos. Un umbral de 880 representa un margen del 14.9% sobre la base, cumpliendo el requisito mínimo de 15% para aislar el ruido de segundos_media. Si el modelo supera este umbral, indica ineficiencia en la latencia de inferencia o relleno de contexto, no un fallo del tope."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 22:30",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --etiqueta lazo-C55 --tarea anadir --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 758.9,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 493.0,
+      "segundos_media": 757.8,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── anadir\n[1] 64 tok · 385.7 s · 2 llamadas\n  ✓ leer({\"ruta\": \"inventario.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[2] 309 tok · 281.5 s · 1 llamadas\n  ✓ editar({\"ruta\": \"inventario.py\", \"cambios\": [{\"buscar\": \"    def hay(self, nombre):\\n        return self._piezas.get(nombre, 0)…)  (0.0 s)\n[3] 37 tok · 36.3 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[4] 83 tok · 50.8 s\n  Listo. El método `sale` está en `inventario.py` y la prueba pasa 5/5:\n  \n  - **Cantidad no positiva** → `ValueError`.\n  - **Pieza inexistente o stock insuficiente** → `ValueError` (no descuenta).\n  - **Salida válida** → descuenta de `self._piezas[nombre]`.\n   ✓ PASA · fin · 4 vueltas · 493 tok · 757.8 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 493.0\nCIFRA segundos_media 757.8\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_2230_lazo-C55.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 22:35",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 757.8,
+    "espero": "<880"
+  },
+  "leccion": "CONFIRMA.\nEl valor medido de 757.8 segundos está por debajo del umbral de 880 segundos.\nLa diferencia es de 122.2 segundos a favor del umbral.\nEl éxito se mantuvo en el 100% de las tareas.\nLa causa más probable es la eficiencia en la latencia de inferencia.\nNo se detecta ineficiencia en el relleno de contexto.\nEl tope de 5400 segundos no fue alcanzado.\nMedir la varianza de segundos_media en la siguiente iteración.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 22:17",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 22:17",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 22:17",
+      "que": "predicho segundos_media <880"
+    },
+    {
+      "cuando": "2026-08-26 22:30",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 22:35",
+      "que": "veredicto: CONFIRMA (segundos_media=757.8)"
+    }
+  ]
+}

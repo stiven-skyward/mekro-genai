@@ -1,0 +1,77 @@
+{
+  "id": "C27",
+  "pregunta": "¿resuelve el cerebro de trabajo la primera tarea n2 —crear un módulo que la prueba ya importa e integrarlo cruzando un paquete de cuatro ficheros—?",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 14:08",
+  "revision": {
+    "cuando": "2026-08-25 14:08",
+    "texto": "n2/cupones es la forma mínima de «añadir una función que cruza el paquete»: la prueba importa cupones.py, que NO existe (el rojo es ModuleNotFoundError, distinto a todo lo anterior: no hay traceback de lógica que leer, hay que entender que falta una pieza), y caja.cobrar debe ganar cupon=None sin mutar el carro; catalogo.py es intocable. eco lo pasa 1/1 con exigir-todo (registro 2026-08-25_1408). Piezas ya demostradas por separado: crear fichero desde contrato de prueba (C23 crear), edición coordinada (C25 cadena), respetar lo intocable (C24 migrar). Lo NO demostrado: juntarlas en un paquete de 5 ficheros con más contexto en juego. Cambios del arnés desde C25: contexto_max 8.192→16.384 (C26: cuesta 0,5 GB; el modelo se entrenó a 262.144) — la presión de contexto deja de ser riesgo en esta tarea. Control del día ya medido: humo 726,1 s (×1,33 sobre C22), registro n0-gguf-humo-control-C25; la carrera va ~1h después, se asume el mismo factor."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 14:09",
+    "metrica": "tareas_pct",
+    "espero": "==100",
+    "porque": "Todas las piezas estan demostradas por separado y el modelo no ha fallado ni una tarea en 11 intentos con 0 intervenciones, asi que predigo pleno tambien aqui: la novedad real es solo ORIENTARSE (entender que el ModuleNotFoundError significa crear la pieza que falta, no arreglar ninguna). El riesgo que me haria fallar: que edite catalogo.py (intocable, suspenso por verificar_intacto) o que escriba cupones.py sin leer antes el contrato exacto de la prueba (los valores 0.5/0.1 y el ValueError estan SOLO ahi). Lo que decide: 100 confirma que el arnes con este cerebro entra en territorio n2 y M3 tiene banco donde subir puntuacion; 0 con fallo de CRITERIO (catalogo tocado, contrato inventado) acota el techo del cerebro de trabajo y n2 pasa a necesitar el campeon de H1; 0 con fallo de FORMA (llamada malformada en el escribir largo) reabre H5 con datos — el contenido de cupones.py son ~10 lineas dentro de un JSON, el punto exacto donde C24 vio romperse los saltos de linea. Secundario: espero 4-8 vueltas y 1.200-2.200 s crudos con la maquina de hoy (control humo 726,1 s, x1,33); el escribir de un fichero entero es la generacion mas larga que el banco haya pedido."
+  },
+  "sonda": {
+    "cuando": "2026-08-25 14:08",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n2 --cerebro eco --modo lista --callado --exigir-todo --etiqueta n2-eco-sonda-C27",
+    "codigo": 0,
+    "segundos": 0.4,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 358.0,
+      "segundos_media": 0.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro eco · modo lista · 1 tareas ==\n\n── cupones\n   ✓ PASA · fin · 5 vueltas · 358 tok · 0.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 358.0\nCIFRA segundos_media 0.1\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-25_1408_n2-eco-sonda-C27.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-25 14:29",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --tope-vueltas 16 --tope-tokens 8000 --tope-segundos 5400 --etiqueta n2-gguf-primera",
+    "codigo": 0,
+    "segundos": 1200.3,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 960.0,
+      "segundos_media": 1199.2,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── cupones\n[1] 73 tok · 425.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la && echo '---' && find . -name '*.py' -not -path './.git/*' | head -40\"})  (0.0 s)\n[2] 95 tok · 117.1 s · 4 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"caja.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"carro.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"catalogo.py\"})  (0.0 s)\n[3] 620 tok · 535.0 s · 2 llamadas\n  Tengo el contrato claro. El carro suma 2×2 + 5 = 9.00; con MITAD → 9×0.5 = 4.50; con DIEZ → 9×0.9 = 8.10. Creo `cupones.py` y actualizo `caja.py` en una sola pasada.\n  ✓ escribir({\"ruta\": \"cupones.py\", \"contenido\": \"\\\"\\\"\\\"Cupones de descuento de la tienda.\\\"\\\"\\\"\\n\\n_CUPONES = {\\\"MITAD\\\": 0.5, \\\"DIE…)  (0.0 s)\n  ✓ editar({\"ruta\": \"caja.py\", \"cambios\": [{\"buscar\": \"def cobrar(carro):\\n    return f\\\"TOTAL: {carro.total():.2f}\\\"\", \"poner\": \"d…)  (0.0 s)\n[4] 27 tok · 36.0 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 145 tok · 83.4 s\n  7/7 asertos en verde. Resumen de lo hecho:\n  \n  - **`cupones.py`** (nuevo): `descuento(codigo)` devuelve `0.5` para `\"MITAD\"`, `0.1` para `\"DIEZ\"` y levanta `ValueError` para cualquier otro código.\n  - **`caja.py`**: `cobrar` ahora acepta `cupon=None`; si se pasa un cupón, importa `descuento` y multiplica el total por `1 - descuento(cupon)`. Sin cupón el comportamiento es idéntico al anterior.\n  \n  No se to\n   ✓ PASA · fin · 5 vueltas · 960 tok · 1199.2 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 960.0\nCIFRA segundos_media 1199.2\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-25_1429_n2-gguf-primera.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 14:29",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 100.0,
+    "espero": "==100"
+  },
+  "leccion": "CONFIRMADO —tareas_pct 100, predicho ==100—: la primera tarea n2 cae en 5 vueltas y 1.199,2 s (borde bajo de la banda 1.200-2.200; ~900 corregida por el control del dia). El guion del modelo fue de manual: explorar, leer los CUATRO modulos en una vuelta, calcular los totales esperados en prosa (9.00, 4.50, 8.10) ANTES de tocar nada, y crear cupones.py + editar caja.py en una sola pasada; catalogo.py intacto. El riesgo señalado en la prediccion —el escribir multi-linea dentro del JSON, donde C24 vio romperse los saltos de linea— salio LIMPIO en un turno de 620 tokens: con max_tokens=1024 el think y las dos llamadas cupieron enteros, y H5 sigue sin ganarse la urgencia. Con esto el marcador historico del cerebro de trabajo queda 12/12 con 0 intervenciones en tres niveles del banco. Y ese pleno ES el aviso que deja este ciclo: el banco todavia no ha encontrado el BORDE del cerebro —ninguna tarea le ha hecho fallar— y M3 exige un banco donde la puntuacion tenga sitio para SUBIR. Un banco en 100 no informa: el siguiente trabajo del banco no es acumular tareas que pasan, es buscar el fallo reproducible (estado entre ejecuciones, ficheros grandes que no caben de una lectura, presupuesto apretado, ambiguedad real). El borde es informacion; sin el, H6 no tiene gradiente que escalar.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 14:08",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 14:08",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 14:08",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-25 14:09",
+      "que": "predicho tareas_pct ==100"
+    },
+    {
+      "cuando": "2026-08-25 14:29",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 14:29",
+      "que": "veredicto: CONFIRMA (tareas_pct=100.0)"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "id": "C24",
+  "pregunta": "¿resuelve el cerebro de trabajo tareas de ingeniería n1 —donde el arreglo NO se deduce del encargo— y a qué coste?",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 09:21",
+  "revision": {
+    "cuando": "2026-08-25 09:21",
+    "texto": "C23 dejó demostrado el criterio de HERRAMIENTAS en n0 (5/5: consolidar cambios, escribir desde cero, grep antes de leer, índice de símbolos). n1 sube un peldaño distinto: en rojo el encargo no dice ni dónde ni cuál es el fallo (hay que leer el traceback y un contrato de borde en prosa), en anadir el contrato son tres ValueError que solo están en la prueba, y en migrar el TypeError señala a la biblioteca pero lo intocable es la biblioteca (formato.py va en verificar_intacto: «arreglarla» es suspenso). Precedente a favor: en crear (C23) el modelo ya escribió una clase entera leyendo el contrato de la prueba. Cambios del arnés desde C23, medidos allí: el prompt de sistema ahora avisa python3-nunca-python y sin-cd, y la lista blanca admite python3 -c (4 intervenciones y ~600 s perdidos en C23 por esto): las vueltas de fricción deberían desaparecer. eco pasa n1 3/3 con exigir-todo (cierre de H3, registro 2026-08-25_0920): el arnés no es el sospechoso si algo cae. Regla de C23: carrera con tarea-control ya medida — antes de medir se corre humo (n0) con el GGUF para calibrar la máquina del día (C22: 544,3 s; C23: 1.124,8 el mismo guion)."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 09:21",
+    "metrica": "tareas_pct",
+    "espero": ">=66",
+    "porque": "Espero que caiga A LO SUMO UNA de tres. A favor: C23 probo que el modelo lee contratos desde la prueba (crear: clase entera desde prueba.py) y que no abandona ante el error, y las dos fricciones del arnes que quemaban vueltas estan arregladas y anotadas. En contra: en n1 el arreglo no se deduce del encargo, y eso mide algo que n0 no midio —interpretar un traceback y un contrato en prosa (rojo), inferir tres ValueError de una prueba (anadir), y resistir la tentacion de tocar lo intocable cuando el error apunta alli (migrar)—. La mas arriesgada es migrar: si el modelo edita formato.py, verificar_intacto lo suspende aunque la prueba pase, y esa trampa es EXACTAMENTE lo que la tarea mide. La barra: 100 confirma que n1 esta dentro del alcance del cerebro de 2,83 bits y M2 deja de ser teorico; 66 confirma con aviso (mirar CUAL cayo y si fue criterio o forma); <66 —una o ninguna— refuta que este cerebro pueda con ingenieria n1 y la siguiente palanca es el modelo (H1/H5), no el banco. Secundario sin barra: espero 4-7 vueltas y 500-1.300 s por tarea segun la maquina del dia; el control humo previo (C22: 544,3 s, C23: 1.124,8 s el mismo guion) da el factor para leer el reloj. Si las vueltas python-vs-python3 reaparecen pese al prompt nuevo, apuntarlo: significaria que el modelo no lee esa linea del sistema."
+  },
+  "sonda": {
+    "cuando": "2026-08-25 09:21",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n1 --cerebro eco --modo lista --callado --exigir-todo --etiqueta n1-eco-sonda-C24",
+    "codigo": 0,
+    "segundos": 1.5,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 211.3,
+      "segundos_media": 0.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro eco · modo lista · 3 tareas ==\n\n── anadir\n   ✓ PASA · fin · 5 vueltas · 236 tok · 0.1 s · 0 interv.\n\n── migrar\n   ✓ PASA · fin · 6 vueltas · 222 tok · 0.1 s · 0 interv.\n\n── rojo\n   ✓ PASA · fin · 5 vueltas · 176 tok · 0.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 211.3\nCIFRA segundos_media 0.1\nCIFRA intervenciones 0\n\n3/3 tareas · registro → registros/2026-08-25_0921_n1-eco-sonda-C24.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-25 10:29",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --tope-vueltas 16 --tope-tokens 8000 --tope-segundos 5400 --etiqueta n1-gguf-primera",
+    "codigo": 0,
+    "segundos": 3005.0,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 596.7,
+      "segundos_media": 1000.8,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "   ✓ PASA · fin · 4 vueltas · 493 tok · 969.2 s · 0 interv.\n\n── migrar\n[1] 157 tok · 504.5 s · 3 llamadas\n  ✓ grep({\"patron\": \"etiqueta\", \"ruta\": \"formato.py\", \"contexto\": 3})  (0.0 s)\n  ✓ grep({\"patron\": \"etiqueta\", \"ruta\": \"informe.py\", \"contexto\": 3})  (0.0 s)\n  ✓ holos({})  (0.1 s)\n[2] 266 tok · 281.4 s · 1 llamadas\n  ✓ editar({\"ruta\": \"informe.py\", \"cambios\": [{\"buscar\": \"    return etiqueta(titulo, True, True)\", \"poner\": \"    return etiqueta(t…)  (0.0 s)\n[3] 66 tok · 56.0 s\n  tool_call con JSON inválido (Expecting ',' delimiter): {\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 -c \\\"\\nfrom informe import cabecera, nota\\nprint(repr(cabecera('hola mundo')))\\nprint(repr(nota('  hola  ')))\n   ✓ PASA · fin · 3 vueltas · 489 tok · 845.1 s · 0 interv.\n\n── rojo\n[1] 50 tok · 427.6 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py 2>&1 | head -80\"})  (0.1 s)\n[2] 49 tok · 71.5 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"turnos.py\"})  (0.0 s)\n[3] 512 tok · 421.6 s\n  El problema es claro: `solapan` usa `<=` en vez de `<`, así que tocarse en el borde se cuenta como solaparse. Con intervalos de fin excluido, la condición correcta es `a[0] < b[1] and b[0] < a[1]`.\n  \n  <tool_call>\n  {\"name\": \"editar\", \"arguments\": {\"ruta\": \"turnos.py\", \"cambios\": [{\"buscar\": \"return a[0] <= b[1] and b[0] <= a[1]\", \"poner\": \"return a[0] < b[1] and b[0] < a[1]\n  tool_call sin cerrar: la ge\n[4] 82 tok · 62.0 s · 1 llamadas\n  ✓ editar({\"ruta\": \"turnos.py\", \"cambios\": [{\"buscar\": \"return a[0] <= b[1] and b[0] <= a[1]\", \"poner\": \"return a[0] < b[1] and b[…)  (0.0 s)\n[5] 27 tok · 38.2 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[6] 88 tok · 164.4 s\n  Corregido. El cambio: en `solapan` se sustituyeron los `<=` por `<` en la condición de solape. Como los turnos son intervalos con fin excluido, tocarse en el borde (p. ej. `(0,10)` y `(10,20)`) ya no se cuenta como pisarse. La prueba pasa 5/5.\n   ✓ PASA · fin · 6 vueltas · 808 tok · 1188.0 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 596.7\nCIFRA segundos_media 1000.8\nCIFRA intervenciones 0\n\n3/3 tareas · registro → registros/2026-08-25_1029_n1-gguf-primera.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 10:30",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 100.0,
+    "espero": ">=66"
+  },
+  "leccion": "CONFIRMADO en la rama alta —tareas_pct 100 frente a >=66—: PLENO 3 de 3 en la primera carrera n1 de la historia del arnes. El cerebro de 2,83 bits hace ingenieria de nivel 1: rojo leyo el traceback (con un 'head -80' de cosecha propia para acotar la salida), entendio el contrato en prosa «fin excluido, tocarse no es pisarse» y cambio <= por < (6 vueltas, 1.188,0 s); anadir infirio los tres ValueError leyendo la prueba y escribio el metodo entero en UNA llamada (4 vueltas, 969,2 s); migrar ESQUIVO LA TRAMPA —el TypeError apunta a formato.py, que es intocable— usando grep sobre ambos ficheros y migrando solo los llamadores (3 vueltas, 845,1 s). Reloj: segundos_media 1.000,8 con la maquina a x1,95 de C22 (control humo del dia: 1.058,8 frente a 544,3); corregida, ~515 s/tarea: n1 cuesta lo que humo. CERO intervenciones: las dos fricciones de C23 (python-vs-python3 y la lista blanca) desaparecieron con la linea nueva del prompt y python3 -c en la lista — el arreglo barato valio exactamente lo que C23 predijo. Lo nuevo que este nivel destapo, y es munición medida para H5: DOS llamadas malformadas en 13 vueltas, ambas del mismo tipo estructural —una con saltos de linea crudos dentro del JSON (migrar v3), otra truncada por el tope de 512 tokens en mitad del tool_call (rojo v3)—. El arnes no adivino ninguna (politica de plantilla.py), el modelo reemitio o el verificador cerro, y el coste fue ~1 vuelta (~400-500 s) cada una: la decodificacion restringida por gramatica y/o subir max_tokens por vuelta las eliminarian. M2 dice >=50% del banco: n0 100% y n1 100% lo dejan superado en su primera medicion — lo que falta para declararlo es engordar n1 hasta que deje de ser facil (tareas de dos ficheros con estado, la cola larga).",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 09:21",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 09:21",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 09:21",
+      "que": "predicho tareas_pct >=66"
+    },
+    {
+      "cuando": "2026-08-25 09:21",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-25 10:29",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 10:30",
+      "que": "veredicto: CONFIRMA (tareas_pct=100.0)"
+    }
+  ]
+}

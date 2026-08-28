@@ -1,0 +1,68 @@
+{
+  "id": "C9",
+  "pregunta": "¿sube α con el tamaño del borrador, o está la curva plana en 0,54-0,56 y D2 es inalcanzable en esta máquina?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 07:48",
+  "revision": {
+    "cuando": "2026-08-23 07:48",
+    "texto": "Dos puntos medidos de la curva alfa(borrador) contra el mismo BF16 y el mismo corpus: campeon Qwen3.8-27B a 2 bits (27,8 G parametros, 8 GB residentes) da 0,5631 en codigo; Qwen3.5-0.8B (0,8 G, 1,6 GB) da 0,5401. Solo 0,023 de diferencia entre dos modelos que se llevan un factor 35 en parametros y que ni siquiera comparten historia de entrenamiento. D2 exige alfa >= 0,821 y D3 alfa >= 0,911 (META.md, con el pase de 5,6 s de C3). C4 dejo escrito que gamma no es palanca: el techo es 1/(1-alfa). El candidato que falta y que todavia cabe en RAM junto a la cache de pagina del pase grande es Qwen3.5-2B (4,3 GB en BF16, ya descargado); el 4B serian 8 GB y competiria con la cache de pagina. El pase del BF16 esta cacheado en registros/cache-grande-C4corpus.pt (top-1024 y masa de cola, 2004 s ya pagados), asi que este ciclo cuesta solo el pase del 2B."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 07:48",
+    "metrica": "acuerdo_greedy_codigo",
+    "espero": "<0.65",
+    "porque": "Predigo que la curva esta PLANA, o sea que el 2B se queda por debajo de 0,65 pese a tener 2,5 veces los parametros del 0,8B. La razon: los dos puntos que ya hay se llevan un factor 35 de tamano y solo 0,023 de alfa, asi que el tamano del borrador explica muy poco de la varianza en este rango; lo que domina es la distancia irreducible entre el objetivo y cualquier modelo que no sea el. Si acierto, ningun borrador que quepa en esta maquina llega a 0,821 y hay que DECIR que D2 no se alcanza aqui en vez de seguir puliendo el lector: la via densa se queda en 0,3-0,4 tok/s y el proyecto vuelve entero a la via cuantizada (H1). Si me equivoco y el 2B pasa de 0,65, la curva sube con el tamano, merece la pena medir el 4B y D2 sigue vivo. Uso <0,65 y no <0,821 porque 0,65 es donde la curva dejaria de estar plana; exigir 0,821 seria una prediccion que nadie duda que falla."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-23 07:59",
+    "comando": "python3 scripts/medir_aceptacion.py --ventana 512 --ventanas 8 --gamma 8 --borrador /home/forge/modelos/qwen3.5-2b --cache registros/cache-grande-C4corpus.pt --salida registros/2026-08-23_C9-2b.json",
+    "codigo": 0,
+    "segundos": 633.5,
+    "cifras": {
+      "acuerdo_greedy_codigo": 0.5692,
+      "alfa_t1_codigo": 0.5859,
+      "tokens_por_pase_codigo": 2.259,
+      "ppl_grande_codigo": 6.132,
+      "ppl_borrador_codigo": 15.524,
+      "acuerdo_greedy_espanol": 0.535,
+      "alfa_t1_espanol": 0.5493,
+      "tokens_por_pase_espanol": 2.13,
+      "ppl_grande_espanol": 8.997,
+      "ppl_borrador_espanol": 24.797,
+      "segundos_pase_grande": 2004.6
+    },
+    "salida_cola": "    \"acuerdo_greedy\": 0.5692,\n    \"alfa_t1\": 0.5859,\n    \"alfa_t1_cota_alta\": 0.5977,\n    \"ppl_grande\": 6.132,\n    \"ppl_borrador\": 15.524,\n    \"tokens_por_pase_g4\": 2.113,\n    \"iid_g4\": 2.183,\n    \"tokens_por_pase_g8\": 2.259,\n    \"iid_g8\": 2.307,\n    \"tokens_por_pase_g16\": 2.311,\n    \"iid_g16\": 2.321\n  },\n  \"espanol\": {\n    \"tokens\": 4088,\n    \"acuerdo_greedy\": 0.535,\n    \"alfa_t1\": 0.5493,\n    \"alfa_t1_cota_alta\": 0.5655,\n    \"ppl_grande\": 8.997,\n    \"ppl_borrador\": 24.797,\n    \"tokens_por_pase_g4\": 2.025,\n    \"iid_g4\": 2.056,\n    \"tokens_por_pase_g8\": 2.13,\n    \"iid_g8\": 2.143,\n    \"tokens_por_pase_g16\": 2.149,\n    \"iid_g16\": 2.15\n  }\n}\nCIFRA acuerdo_greedy_codigo 0.5692\nCIFRA alfa_t1_codigo 0.5859\nCIFRA tokens_por_pase_codigo 2.259\nCIFRA ppl_grande_codigo 6.132\nCIFRA ppl_borrador_codigo 15.524\nCIFRA acuerdo_greedy_espanol 0.535\nCIFRA alfa_t1_espanol 0.5493\nCIFRA tokens_por_pase_espanol 2.13\nCIFRA ppl_grande_espanol 8.997\nCIFRA ppl_borrador_espanol 24.797\nCIFRA segundos_pase_grande 2004.6\n\nregistro: registros/2026-08-23_C9-2b.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 08:00",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "acuerdo_greedy_codigo",
+    "valor": 0.5692,
+    "espero": "<0.65"
+  },
+  "leccion": "CONFIRMA, y con esto la via densa queda acotada por arriba. La curva alfa(tamano del borrador) sobre el mismo BF16 y el mismo corpus de codigo es PLANA: Qwen3.5-0.8B (0,8 G) da 0,5401; Qwen3.5-2B (2,0 G) da 0,5692; el campeon de 27,8 G a 2 bits da 0,5631. Un factor 35 en parametros mueve alfa 0,029. Extrapolar es honesto aqui porque la pendiente medida es de +0,029 por cada x2,5 de tamano: para pasar de 0,569 a los 0,821 que exige D2 harian falta del orden de mil veces mas parametros que el 2B, o sea un modelo mucho mayor que el propio objetivo. NO HAY BORRADOR QUE QUEPA EN ESTA MAQUINA QUE ALCANCE D2. El presupuesto real de las tres configuraciones, con el pase de 5,6 s y el ancho de banda de RAM medido hoy (24,6 GB/s de trafico, o sea ~12,3 GB/s efectivos de lectura), eligiendo el gamma optimo de cada una: campeon 0,255 tok/s; 2B 0,302 tok/s; 0,8B 0,328 tok/s, todas con gamma=4. El mejor borrador es el mas PEQUENO de los tres, y aun asi la via densa se queda en un TERCIO de la barra de D2 y en un sexto de la de D3. CONSECUENCIA PARA EL PROYECTO: D2 no se alcanza en esta maquina por esta via, y hay que decirlo en vez de seguir puliendo H7. Lo que la via densa SI es, y no es poco, es el patron de oro: el BF16 corriendo en CPU es la referencia contra la que se mide cualquier cuantizacion, y ya esta medido y cacheado. El camino critico vuelve entero a la via cuantizada: H1, empaquetar el campeon a ~8 GB, donde el factor no es 2,2 sino ~250 porque los pesos dejan de leerse del disco. LECCION DE METODO, la que hay que recordar: tres ciclos (C4, C7, C9) han medido lo mismo desde tres angulos y los tres dan alfa entre 0,54 y 0,57. Cuando tres borradores que no se parecen en nada convergen al mismo numero, el numero no habla del borrador: habla del OBJETIVO. La entropia del BF16 sobre este corpus (PPL 6,132 en codigo) es la que fija el techo, y ninguna eleccion de borrador la esquiva. Haber medido el 4B habria costado otros 20 min para mover el tercer decimal.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 07:48",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 07:48",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 07:48",
+      "que": "predicho acuerdo_greedy_codigo <0.65"
+    },
+    {
+      "cuando": "2026-08-23 07:59",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 08:00",
+      "que": "veredicto: CONFIRMA (acuerdo_greedy_codigo=0.5692)"
+    }
+  ]
+}

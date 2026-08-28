@@ -1,0 +1,22 @@
+{
+  "capa": 45,
+  "tensor": "linear_attn.in_proj_qkv",
+  "g": 16,
+  "forma": [
+    10240,
+    5120
+  ],
+  "grupos": 3276800,
+  "puentes": 246882,
+  "aristas_redundantes": 236643,
+  "filas": 10240,
+  "filas_conectadas": 10240,
+  "frac_filas_conectadas": 1.0,
+  "cierre_mediano": 0.003808,
+  "cierre_p90": 0.009271,
+  "cierre_p99": 0.014483,
+  "beta_min": 0.653658,
+  "beta_max": 2.086846,
+  "segundos": 9.5,
+  "cierre_mediano_control": 0.378369
+}

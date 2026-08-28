@@ -1,0 +1,8 @@
+# El arnés en sí no necesita nada: bucle, herramientas, permisos y hologramas son
+# biblioteca estándar a propósito. Cuanto menos haya entre el modelo y el disco, menos
+# hay que depurar cuando una carrera de horas se tuerce.
+#
+# Lo de abajo hace falta solo para el CEREBRO LOCAL (cerebro/local_*.py y las sondas):
+torch>=2.4          # CPU. En esta máquina la GPU está vetada por decisión del autor.
+safetensors>=0.4    # leer los shards del campeón sin cargarlos enteros
+transformers>=4.44  # config, tokenizador y chat_template.jinja del checkpoint

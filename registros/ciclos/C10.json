@@ -1,0 +1,77 @@
+{
+  "id": "C10",
+  "pregunta": "¿sigue el retículo C1+C2 en los pesos deshechos del campeón, mirado de forma invariante a la escala de fila?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 12:42",
+  "revision": {
+    "cuando": "2026-08-23 12:42",
+    "texto": "C1 pregunto esto mismo y salio REFUTADO (frac_exacta 0,000325 sobre capa-30 mlp.up_proj, 69 s de CPU), pero su propia leccion dejo escrito que el fallo fue de la SONDA y no forzosamente de la hipotesis: estimaba alfa como el RMS de la fila, y se verifico despues en reconstruir_v12.py:36-45 que la reconstruccion que convirtio h13a en h13b aplica _EscalaFila, o sea W*exp(s) con un parametro por fila, que NO es el RMS. Con una alfa equivocada no se recupera ningun reticulo aunque este intacto. La segunda leccion de C1 fue que razon_residuo 0,543 no era evidencia de nada: para vectores gaussianos de 16 dimensiones con 4096 codigos la cota tasa-distorsion da 0,60, o sea que lo medido estaba donde estaria cualquier nube. De ahi que esta sonda lleve DOS controles y que la cifra del veredicto sea un cociente y no un valor absoluto. La idea nueva: una escala por fila no mueve DIRECCIONES, asi que normalizando cada grupo de 16 a norma unidad la incognita beta_fila desaparece del problema entera en vez de estimarse. Se compara la matriz del campeon contra la MISMA matriz del BF16 (control real, misma estadistica de pesos, sin reticulo) y contra ruido gaussiano (suelo). HERMETIC2.json dice afinar:60, y ese es el riesgo real: si el afinado movio pesos sueltos el reticulo esta roto; si movio solo los libros, sigue ahi con otros codigos. Vale la pena porque decide entre la salida (a) —horas de CPU— y la salida (b), que son 24,3 horas de GPU y la GPU esta vetada en este proyecto y ademas ocupada."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 12:42",
+    "metrica": "razon_vecinos_vs_bf16",
+    "espero": ">=10",
+    "porque": "Si el reticulo sigue, las direcciones de los grupos del campeon caen en unos pocos miles de cumulos apretados —los 4096 codigos de C1, perturbados por C2 que es de magnitud mucho menor— mientras que las del BF16, que nunca se cuantizo, forman una nube continua en la esfera de 16 dimensiones. Con 40.000 direcciones muestreadas y 4096 cumulos, cada cumulo recibiria una decena de miembros y casi todas las direcciones tendrian un vecino a distancia casi nula; en el BF16 la distancia al vecino mas cercano en 16 dimensiones con 40.000 puntos deberia ser de orden 0,4, o sea que practicamente ninguna caeria por debajo de 0,02. Por eso el cociente deberia ser de ordenes de magnitud y no de un factor 2, y pongo la barra en 10, que es conservadora. Lo que decide: si sale >=10 el reticulo sobrevivio al afinado y la salida (a) es viable, o sea que H1 cuesta horas de CPU; si sale cerca de 1 el afinado movio pesos sueltos, la arqueologia esta muerta y H1 pasa por la salida (b), que exige tocar cuantizar_v2.py en QuantModels y 24,3 horas de GPU que hoy no hay. En ese caso NO hay que insistir con mas sondas: hay que pedir el cambio en QuantModels."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 12:42",
+    "comando": "python3 scripts/sondear_direcciones.py --capa 30 --tensor mlp.up_proj --g 16 --n 40000 --salida registros/2026-08-23_C10-direcciones.json",
+    "codigo": 0,
+    "segundos": 31.8,
+    "cifras": {
+      "razon_vecinos_vs_bf16": 1000000000.0,
+      "frac_cerca_campeon": 0.0033,
+      "frac_cerca_bf16": 0.0,
+      "vecino_mediano_campeon": 0.552
+    },
+    "salida_cola": "capa 30 · mlp.up_proj · (17408, 5120) · g=16 · 5570560 grupos, muestra 40000\n  campeon    {\"vecino_mediano\": 0.552, \"vecino_p01\": 0.39131, \"frac_cerca\": 0.0033}\n  bf16       {\"vecino_mediano\": 0.5799, \"vecino_p01\": 0.43052, \"frac_cerca\": 0.0}\n  gaussiana  {\"vecino_mediano\": 0.57991, \"vecino_p01\": 0.43189, \"frac_cerca\": 0.0}\n\nCIFRA razon_vecinos_vs_bf16 1000000000.0\nCIFRA frac_cerca_campeon 0.0033\nCIFRA frac_cerca_bf16 0.0\nCIFRA vecino_mediano_campeon 0.552\n\nregistro: registros/2026-08-23_C10-direcciones.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-23 12:47",
+    "comando": "python3 scripts/sondear_direcciones.py --capa 45 --tensor linear_attn.out_proj --g 16 --n 80000 --salida registros/2026-08-23_C10-medicion.json",
+    "codigo": 0,
+    "segundos": 62.6,
+    "cifras": {
+      "razon_vecinos_vs_bf16": 1000000000.0,
+      "frac_cerca_campeon": 0.005288,
+      "frac_cerca_bf16": 0.0,
+      "vecino_mediano_campeon": 0.52084
+    },
+    "salida_cola": "capa 45 · linear_attn.out_proj · (5120, 6144) · g=16 · 1966080 grupos, muestra 80000\n  campeon    {\"vecino_mediano\": 0.52084, \"vecino_p01\": 0.35923, \"frac_cerca\": 0.005288}\n  bf16       {\"vecino_mediano\": 0.55171, \"vecino_p01\": 0.40969, \"frac_cerca\": 0.0}\n  gaussiana  {\"vecino_mediano\": 0.55224, \"vecino_p01\": 0.41073, \"frac_cerca\": 0.0}\n\nCIFRA razon_vecinos_vs_bf16 1000000000.0\nCIFRA frac_cerca_campeon 0.005288\nCIFRA frac_cerca_bf16 0.0\nCIFRA vecino_mediano_campeon 0.52084\n\nregistro: registros/2026-08-23_C10-medicion.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 12:47",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "razon_vecinos_vs_bf16",
+    "valor": 1000000000.0,
+    "espero": ">=10"
+  },
+  "leccion": "CONFIRMA el umbral, PERO el metro estaba mal disenado y el mecanismo que escribi era falso. Las dos cosas hay que decirlas. DEFECTO DEL METRO: predije razon_vecinos_vs_bf16 >= 10 y salio 1e9 porque el denominador es EXACTAMENTE 0 — el control BF16 no tiene ni una direccion duplicada. Un cociente con denominador cero confirma cualquier cosa: no distingue 'hay reticulo' de 'hubo una coincidencia por azar'. El ciclo no puede detectarlo porque solo sabe comparar numeros; lo detecta quien lee. MECANISMO FALSO: escribi que si el reticulo seguia 'casi todas las direcciones tendrian un vecino a distancia casi nula', frac_cerca ~1, suponiendo C2 mucho menor que C1 y 4096 cumulos. Es falso, y lo desmiente la leccion de C1 en el mismo documento: la cota tasa-distorsion para 16 dimensiones con 4096 codigos da ~0,60 de residuo, luego la etapa 2 de un RVQ no es una perturbacion pequena y las direcciones de C1[i]+C2[j] se reparten por hasta 4096x4096 = 16.777.216 valores, no por 4096 cumulos. LO QUE DICEN LOS NUMEROS: sonda sobre capa-30 mlp.up_proj, 40.000 direcciones, frac_cerca 0,00330; medicion sobre una matriz no tocada antes, capa-45 linear_attn.out_proj, 80.000 direcciones, frac_cerca 0,005288. Los controles BF16 y gaussiano dan 0,000000 en las dos. La ley del cumpleanos con |D| = 4096^2 predice 0,00238 y 0,00477: lo medido esta a factor 1,4 y 1,1 de eso, y ademas casi se dobla al doblar n, que es lo que exige la ley. Barrido previo para descartar desajuste de agrupacion: g=8 y g=16, up_proj y down_proj, capas 0, 30 y 63; en las seis el campeon da entre 0,0006 y 0,0033 y los dos controles dan cero. Y verificado en scripts/reconstruir_v12.py que _EscalaFila es s de forma (out_features,1) —escala por FILA y nada mas, con los pesos del Linear congelados salvo por esa parametrizacion—, luego las direcciones se conservan exactas y la prueba invariante a escala es valida. CONCLUSION: el reticulo apunta a estar INTACTO, justo al reves de lo que concluyo C1, y la salida (a) vuelve a estar viva. Pero esa lectura es POST HOC: la cuenta del cumpleanos se hizo despues de ver el numero y por tanto no falsa nada todavia. Se registra como hipotesis y se mide en C11, que predice ANTES que estimando |D| = n/frac_cerca a varios n saldra del orden de 4096^2 y que frac_cerca crece LINEALMENTE con n. Si sale, el tamano del libro se habra recuperado contando duplicados. LECCION DE METODO, la cara: un metro debe estar disenado para que 'confirma' y 'ocurrio el mecanismo que dije' sean lo mismo; aqui no lo eran. Lo que salvo la lectura no fue el metro sino EL CONTROL —la misma matriz sin cuantizar dando cero exacto—. Sin control, 0,0033 no habria significado nada, igual que el 0,543 de C1.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 12:42",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 12:42",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 12:42",
+      "que": "predicho razon_vecinos_vs_bf16 >=10"
+    },
+    {
+      "cuando": "2026-08-23 12:42",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 12:47",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 12:47",
+      "que": "veredicto: CONFIRMA (razon_vecinos_vs_bf16=1000000000.0)"
+    }
+  ]
+}

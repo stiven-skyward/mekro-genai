@@ -1,0 +1,61 @@
+{
+  "id": "C44",
+  "pregunta": "¿El tope de tokens de 1200 permite completar n2/tres con menos de 1000 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 12:40",
+  "revision": {
+    "cuando": "2026-08-26 12:40",
+    "texto": "C42 confirmó que n2/aguña usa 686 tokens. C43 refutó que n2/cupones baje de 800 (usó 957). La tarea 'tres' es nueva en n2. Basado en la complejidad de cupones (957), se espera que 'tres' requiera más contexto que aguja pero menos que cupones, situándose por debajo de 1000 tokens."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 12:40",
+    "metrica": "tokens_media",
+    "espero": "<1000",
+    "porque": "El baseline de aguja es 686. Cupones sube a 957. 'Tres' implica lógica de conteo o estado, probablemente intermedia. Un umbral de 1000 da un margen de ~4% sobre cupones y ~46% sobre aguja, cubriendo la variabilidad esperada sin ser trivial."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 12:56",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --etiqueta lazo-C44 --tarea tres --tope-vueltas 16 --tope-tokens 1200 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 923.8,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 881.0,
+      "segundos_media": 922.8,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── tres\n[1] 101 tok · 384.4 s · 2 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n  ✓ bash({\"comando\": \"python3 -m pytest -x --tb=short 2>&1 | head -80\"})  (0.2 s)\n[2] 71 tok · 98.0 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"agenda.py\"})  (0.0 s)\n[3] 546 tok · 321.6 s · 1 llamadas\n  Tres bugs claros:\n  \n  1. **`alta`** no limpia espacios en bordes → `\"  ana \"` se guarda tal cual.\n  2. **`busca`** aplica `.upper()` al prefijo → el contrato dice *tal cual, sensible a mayúsculas*.\n  3. **`listado`** ordena con `reverse=True` → el contrato dice *ascendente*.\n  ✓ editar({\"ruta\": \"agenda.py\", \"cambios\": [{\"buscar\": \"    agenda[nombre] = telefono\", \"poner\": \"    nombre = nombre.strip()\\n   …)  (0.0 s)\n[4] 27 tok · 46.2 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 136 tok · 69.1 s\n  Los tres asertos pasan. Resumen de los cambios en `agenda.py`:\n  \n  | Función | Bug | Fix |\n  |---|---|---|\n  | `alta` | Guardaba el nombre sin limpiar espacios en bordes | `nombre = nombre.strip()` antes de insertar |\n  | `busca` | Convertía el prefijo a mayúsculas (`prefijo.upper()`) | Compara `prefijo` tal cual, sensible a mayúsculas |\n  | `listado` | Ordenaba con `reverse=True` (descendente) | Ordena `sor\n   ✓ PASA · fin · 5 vueltas · 881 tok · 922.8 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 881.0\nCIFRA segundos_media 922.8\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1256_lazo-C44.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 13:02",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 881.0,
+    "espero": "<1000"
+  },
+  "leccion": "CONFIRMA.\nEl umbral de 1200 tokens supera el límite de 1000 con un margen de 200 tokens.\nLa medición registró una media de 881 tokens, quedando 119 por debajo del objetivo.\nEl éxito se mantuvo al 100% sin intervenciones humanas.\nLa causa probable es que la lógica de conteo de \"tres\" requiere solo 5 vueltas.\nEl tope de 1200 tokens cubre la variabilidad esperada sin sobrecargar el contexto.\nLa eficiencia temporal fue de 922.8 segundos por tarea.\nDebes medir la varianza de tokens en 10 iteraciones adicionales.\nVerifica si el tope de 1200 se mantiene estable con tareas de mayor complejidad.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 12:40",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 12:40",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 12:40",
+      "que": "predicho tokens_media <1000"
+    },
+    {
+      "cuando": "2026-08-26 12:56",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 13:02",
+      "que": "veredicto: CONFIRMA (tokens_media=881.0)"
+    }
+  ]
+}

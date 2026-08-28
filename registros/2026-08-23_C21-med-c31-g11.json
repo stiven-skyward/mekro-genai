@@ -1,0 +1,42 @@
+{
+  "capa": 31,
+  "bloque": 128,
+  "grado": 11,
+  "forma_K": [
+    512,
+    1024
+  ],
+  "bloques": [
+    {
+      "desde": 0,
+      "real": 0.6058,
+      "barajado": 0.7048,
+      "media": 0.7372
+    },
+    {
+      "desde": 128,
+      "real": 0.6107,
+      "barajado": 0.7157,
+      "media": 0.7467
+    },
+    {
+      "desde": 256,
+      "real": 0.6149,
+      "barajado": 0.7051,
+      "media": 0.7379
+    },
+    {
+      "desde": 384,
+      "real": 0.6104,
+      "barajado": 0.719,
+      "media": 0.7538
+    }
+  ],
+  "err_real": 0.6104,
+  "err_barajado": 0.7112,
+  "err_media_bloque": 0.7439,
+  "razon_cheby_vs_barajado": 0.8584,
+  "err_ancla_ternario": 0.4106,
+  "err_ternario_sin_ancla": 0.5511,
+  "segundos": 91.8
+}

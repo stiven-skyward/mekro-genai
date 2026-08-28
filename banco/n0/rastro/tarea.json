@@ -1,0 +1,16 @@
+{
+  "id": "rastro",
+  "nivel": "n0",
+  "encargo": "El test `prueba.py` falla: en algún fichero del paquete `conf/` hay un límite mal puesto. Encuéntralo y corrígelo a 100. No toques la prueba.",
+  "verificar": "python3 prueba.py",
+  "verificar_intacto": [
+    "prueba.py"
+  ],
+  "porque": "Obliga a BUSCAR antes de leer: cuatro ficheros y sólo uno tiene el fallo. Leerlos todos gastaría el presupuesto de contexto que META.md §puerta 1 dice que hay que ahorrar.",
+  "guion": [
+    "<tool_call>\n{\"name\": \"grep\", \"arguments\": {\"patron\": \"LIMITE\", \"ruta\": \"conf\"}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"conf/red.py\", \"cambios\": [{\"buscar\": \"LIMITE = 7\", \"poner\": \"LIMITE = 100\"}]}}\n</tool_call>",
+    "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+    "`conf/red.py` tenía el límite en 7 en vez de 100. Corregido y verificado: 2/2 asertos."
+  ]
+}

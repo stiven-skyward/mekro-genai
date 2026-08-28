@@ -1,0 +1,17 @@
+{
+ "id": "rojo",
+ "nivel": "n1",
+ "encargo": "La prueba `prueba.py` falla. El fallo está en `turnos.py`. Arréglalo. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "La prueba en rojo manda: el encargo no dice DÓNDE está el fallo ni cuál es. Mide leer un traceback, localizar el aserto que cae y entender un contrato de borde escrito en prosa («tocarse en el borde no es pisarse»). Es la primera tarea cuyo arreglo no se deduce del encargo.",
+ "guion": [
+  "<think>Primero la prueba: que el traceback diga qué aserto cae.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"turnos.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"turnos.py\", \"cambios\": [{\"buscar\": \"    return a[0] <= b[1] and b[0] <= a[1]\", \"poner\": \"    return a[0] < b[1] and b[0] < a[1]\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "El aserto que caía era `not solapan((0, 10), (10, 20))`: la comparación usaba `<=` y contaba el borde como solape, contra el contrato del docstring. Con `<` estricto la prueba pasa 5/5."
+ ]
+}

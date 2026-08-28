@@ -1,0 +1,30 @@
+{
+  "capa": 45,
+  "tensor": "linear_attn.out_proj",
+  "g": 16,
+  "n": 80000,
+  "eps": 0.02,
+  "forma": [
+    5120,
+    6144
+  ],
+  "por_fuente": {
+    "campeon": {
+      "vecino_mediano": 0.52084,
+      "vecino_p01": 0.35923,
+      "frac_cerca": 0.005288
+    },
+    "bf16": {
+      "vecino_mediano": 0.55171,
+      "vecino_p01": 0.40969,
+      "frac_cerca": 0.0
+    },
+    "gaussiana": {
+      "vecino_mediano": 0.55224,
+      "vecino_p01": 0.41073,
+      "frac_cerca": 0.0
+    }
+  },
+  "razon_vecinos_vs_bf16": 1000000000.0,
+  "segundos": 60.9
+}

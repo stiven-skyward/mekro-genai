@@ -1,0 +1,30 @@
+{
+  "capas": [
+    20,
+    30,
+    40,
+    50
+  ],
+  "nll_control": 2.81685,
+  "curva": [
+    {
+      "eps": 0.1,
+      "nll": 2.82475,
+      "delta_nats_por_capa": 0.001973
+    },
+    {
+      "eps": 0.2,
+      "nll": 2.8381,
+      "delta_nats_por_capa": 0.005312
+    },
+    {
+      "eps": 0.3765,
+      "nll": 2.87935,
+      "delta_nats_por_capa": 0.015624
+    }
+  ],
+  "exponente": 1.5587,
+  "nivel_validacion": 0.3765,
+  "razon_ruido_vs_rvq": 0.718,
+  "segundos": 1787501221.0
+}

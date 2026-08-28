@@ -1,0 +1,17 @@
+{
+ "id": "cadena",
+ "nivel": "n1",
+ "encargo": "Llegaron los descuentos: `precio_final` debe aceptar `descuento=0.0` (fracción, aplicada ANTES del IVA) y `linea` debe poder pasarlo. La prueba dice el contrato exacto y hoy falla. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "Dos ediciones COORDINADAS en dos ficheros: cambiar la firma en tarifas.py sin propagarla a factura.py deja la prueba en rojo igual. Mide sostener un cambio que cruza la frontera de un fichero, la forma mínima de lo que en un proyecto real es tocar una API con llamadores.",
+ "guion": [
+  "<think>La prueba manda: veo qué contrato pide antes de tocar nada.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"tarifas.py\"}}\n</tool_call>\n<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"factura.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"tarifas.py\", \"cambios\": [{\"buscar\": \"def precio_final(base, iva):\\n    return base * (1 + iva)\", \"poner\": \"def precio_final(base, iva, descuento=0.0):\\n    return base * (1 - descuento) * (1 + iva)\"}]}}\n</tool_call>\n<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"factura.py\", \"cambios\": [{\"buscar\": \"def linea(concepto, base, iva):\\n    return f\\\"{concepto}: {precio_final(base, iva):.2f}\\\"\", \"poner\": \"def linea(concepto, base, iva, descuento=0.0):\\n    return f\\\"{concepto}: {precio_final(base, iva, descuento=descuento):.2f}\\\"\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "Firma propagada: `precio_final` acepta `descuento` (antes del IVA) y `linea` lo pasa tal cual. Las llamadas viejas siguen valiendo por el valor por defecto. 5/5."
+ ]
+}

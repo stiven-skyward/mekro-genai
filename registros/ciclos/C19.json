@@ -1,0 +1,61 @@
+{
+  "id": "C19",
+  "pregunta": "¿cuánto reloj devuelve la caché de prefijo, que es la idea 1 de horizonte y ahora tiene cifra: el 94 % del tiempo es prefill rehecho?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 21:20",
+  "revision": {
+    "cuando": "2026-08-23 21:20",
+    "texto": "La primera carrera del banco n0 con cerebro real (GGUF Q2_K_XL, registro 2026-08-23_2048_gguf-q2kxl.json) paso con las cuatro cifras: 100% de tareas, 471 tokens de salida, 10.526 de entrada, 2759,4 s de reloj y 0 intervenciones, en 6 vueltas. El reparto del reloj es lo que importa: generar 471 tokens a los 2,876 tok/s medidos son 164 s, o sea el 5,9%; los otros 2595 s son prefill, el 94,1%. Y sale a 0,247 s por token de entrada, casi lo mismo que cuesta generar uno. Eso no es un fallo de implementacion sino aritmetica: generar esta limitado por memoria (9,15 GB entre 24,6 GB/s medidos = 0,37 s/token) y el prefill por computo (55,6 GFLOP por token). Ninguno de los dos se puede acelerar en esta maquina. La UNICA palanca es no rehacer el prefill, y es viable porque entre dos vueltas el contexto solo crece por el final: la observacion de la herramienta se anade al final y todo lo anterior es identico. docs/horizonte.md lo tiene como idea numero 1 desde el principio, pero era una hipotesis sin cifra; ahora tiene una. Con llama.cpp la reutilizacion de prefijo es configuracion (LlamaRAMCache), no investigacion."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 21:20",
+    "metrica": "segundos_media",
+    "espero": "<1800",
+    "porque": "Con cache de prefijo, el prefill total deja de ser la suma de los contextos de las 6 vueltas (10.526 tokens rehechos) y pasa a ser el contexto FINAL una sola vez, del orden de 4.000 tokens, porque cada vuelta solo anade la observacion de la herramienta al final. A los 0,247 s por token de entrada medidos, eso son 1.605 s de ahorro y un reloj esperado de ~1.154 s. Pongo la barra en 1.800 y no en 1.200 por tres razones concretas: la cache de llama-cpp-python copia el estado y esas copias cuestan tiempo y RAM; el prompt del sistema con nueve herramientas ocupa ~2.000 tokens que se prefillan igual la primera vez; y el guion del modelo puede variar de una carrera a otra, asi que el numero de vueltas y de tokens no sera identico. Lo que decide: por debajo de 1.800 la cache es la palanca que dice el reparto del reloj y hay que dejarla puesta; entre 1.800 y 2.500 devuelve algo pero mucho menos de lo que la aritmetica promete, y habria que mirar si la copia de estado se come la ganancia; por encima de 2.700 no devuelve nada y la reutilizacion de prefijo no esta ocurriendo, con lo que habria que comprobar si create_completion reinicia el contexto en cada llamada."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-23 22:01",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --tope-vueltas 16 --tope-tokens 8000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 2436.8,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 471.0,
+      "segundos_media": 2435.2,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n0 · cerebro gguf · modo lista · 1 tareas ==\n\n── humo\n[1] 82 tok · 388.9 s · 2 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"suma.py\"})  (0.0 s)\n[2] 137 tok · 491.8 s · 1 llamadas\n  ✓ editar({\"ruta\": \"suma.py\", \"cambios\": [{\"buscar\": \"return a - b\", \"poner\": \"return a + b\"}]})  (0.0 s)\n[3] 26 tok · 476.3 s · 1 llamadas\n  ✗ bash({\"comando\": \"python prueba.py\"})  (0.0 s)\n[4] 23 tok · 474.9 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 27 tok · 40.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[6] 176 tok · 551.7 s\n  Listo. El bug era en `suma.py`: la función `sumar` hacía `a - b` en vez de `a + b`. Con ese cambio, `doblar(x)` (que delega en `sumar(x, x)`) también queda correcto.\n  \n  Verificado: `python3 prueba.py` → **3/3 asertos ✓** (código 0).\n   ✓ PASA · fin · 6 vueltas · 471 tok · 2435.2 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 471.0\nCIFRA segundos_media 2435.2\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-23_2201_n0-gguf.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 22:15",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 2435.2,
+    "espero": "<1800"
+  },
+  "leccion": "REFUTADO —2435,2 s frente a <1800— y cae en la rama intermedia que la prediccion describio: la cache devuelve algo pero mucho menos de lo que promete la aritmetica. Medido sobre la misma tarea y el mismo cerebro: 2759,4 s sin cache y 2435,2 s con ella, o sea 324 s de ahorro cuando la cuenta prometia 1605. Un 20% de lo prometido, y el reparto del reloj sigue dominado por el prefill. LA CAUSA, que la propia prediccion senalo como sospechosa: LlamaRAMCache de llama-cpp-python no reutiliza el contexto vivo, sino que GUARDA Y RESTAURA el estado completo del modelo en cada llamada. Copiar la cache KV entera de un modelo de 27B son cientos de MB por vuelta, y esa copia se come casi toda la ganancia de no rehacer el prefill. El mecanismo correcto no es cachear estados: es NO TOCAR el contexto. Entre dos vueltas la secuencia de tokens solo crece por el final, asi que basta con calcular el prefijo comun con la vuelta anterior y evaluar UNICAMENTE los tokens nuevos, sin reset y sin copias. Eso exige bajar de create_completion a la API de bajo nivel (llm.eval y llm.sample) y llevar la secuencia en el propio cerebro. LO QUE SE APRENDE, y es general: 'poner la cache' y 'no rehacer el trabajo' no son lo mismo. Una cache que serializa y deserializa el estado paga un coste proporcional al TAMANO DEL ESTADO en cada uso, y con un modelo de 9,15 GB ese coste es del orden del trabajo que ahorra. La palanca no era configurar una cache: era no reiniciar el contexto. Queda medido que la version facil devuelve el 20%, asi que la version correcta merece su propio ciclo. AVISO PARA QUIEN LO ESCRIBA: al evaluar solo el delta hay que verificar que la salida es IDENTICA a la de rehacer el prefill entero, con temperatura 0 y misma semilla, porque un prefijo comun mal calculado produce un contexto silenciosamente corrupto y el modelo sigue respondiendo, solo que peor.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 21:20",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 21:20",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 21:20",
+      "que": "predicho segundos_media <1800"
+    },
+    {
+      "cuando": "2026-08-23 22:01",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 22:15",
+      "que": "veredicto: REFUTA (segundos_media=2435.2)"
+    }
+  ]
+}

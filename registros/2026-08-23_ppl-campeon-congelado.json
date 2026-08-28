@@ -1,0 +1,18 @@
+{
+  "modelo": "/home/forge/modelos/qwen38-h13b",
+  "etiqueta": "campeon v13 1,9995 bits",
+  "corpus": "c6c95a4dfc70188d",
+  "ventana": 512,
+  "ventanas_por_dominio": 4,
+  "por_dominio": {
+    "codigo": {
+      "nll": 2.28784,
+      "ppl": 9.8536
+    },
+    "espanol": {
+      "nll": 3.30001,
+      "ppl": 27.113
+    }
+  },
+  "segundos": 1118.4
+}

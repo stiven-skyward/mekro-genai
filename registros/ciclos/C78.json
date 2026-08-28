@@ -1,0 +1,61 @@
+{
+  "id": "C78",
+  "pregunta": "revisión tras la racha C74-C77: ¿comprime la ventana encogida (--contexto 8000, vía renacimiento) los tokens de n3/lista por debajo del listón de adopción (<1906), manteniendo 100% y 0 intervenciones?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 21:39",
+  "revision": {
+    "cuando": "2026-08-27 21:39",
+    "texto": "La racha C74-C77 fue una búsqueda de frontera honesta que el vigilante paró bien: quedó MEDIDO que la compresión por topes no alcanza el listón en lista (rompe a 1.050 con 0% gastando 1.171; el par C40/C73 enseñó que 1.600 es lotería; el 10% exige <1.906 y la franja viable no existe) ni en larga (ignora la restricción). El mando causal que SÍ comprime sin romper estaba en C72: --contexto 8000 fuerza el renacimiento y el contexto compacto acorta los think — 1.365 tokens (−35,5% frente a la base 2.118) con 100%... y 1 intervención, que es lo que este ciclo debe limpiar. MANDOS de adopción ampliados con contexto y su regla de mordida (0 < contexto < 16384), dentro de la puerta del autor (banderas de carrera). Si confirma con 100% y 0 intervenciones, la adopción salta sola y M3 queda a una carrera oficial."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 21:39",
+    "metrica": "tokens_media",
+    "espero": "<1906",
+    "porque": "La evidencia directa es C72-ter: misma tarea, mismo mando, 1.365 tokens con 100% — un 39% bajo el liston de 1.906, margen que absorbe cuatro suelos de ruido. El riesgo no es la cifra: es la guarda — C72 tuvo 1 intervencion (un rechazo de lista blanca) y la adopcion exige 0; si reaparece, el numero confirmara pero la adopcion NO saltara y habra que mirar QUE comando rechazo la lista para decidir si ampliarla (como en C23). Lo que decide: <1906 con 100% y 0 intervenciones dispara la adopcion automatica del primer mando descubierto por el ciclo (C72 fue una vuelta del programa de M5 corrida por el arnes, y la busqueda C74-C77 que descarto los topes fue enteramente autonoma) y M3 queda a una carrera oficial de declararse; <1906 con intervenciones>0 pide la ampliacion de lista blanca antes de reintentar; >=1906 refutaria la reproducibilidad de C72 y a mirar la transcripcion."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 22:03",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n3 --tarea lista --cerebro gguf --modo lista --contexto 8000 --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400 --etiqueta m3-revision-contexto",
+    "codigo": 0,
+    "segundos": 1443.2,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 2069.0,
+      "segundos_media": 1442.2,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 80.9 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 485.2 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(x)` - adds an item\n     - `pendientes()` - returns list of pending items\n     - `tachar(x)` - marks an item as done (removed from pending)\n     - Data stored in `lista.jsonl`\n  \n  2. `orden.py` is a CLI:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds item\n     - `tachar <x>` - marks item as done; if item\n  ·· turno cortado sin llamadas: se le pide continuar\n[4] 443 tok · 179.8 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"lista.py\", \"contenido\": \"import json\\nimport os\\n\\nARCHIVO = \\\"lista.jsonl\\\"\\n\\n\\ndef _leer():\\n    if not os.…)  (0.0 s)\n[5] 295 tok · 123.0 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"orden.py\", \"contenido\": \"import sys\\nfrom lista import anadir, pendientes, tachar\\n\\n\\ndef main():\\n    if len…)  (0.0 s)\n[6] 27 tok · 28.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.1 s)\n[7] 133 tok · 67.6 s\n  Los 6 asertos pasan. Resumen de lo construido:\n  \n  - **`lista.py`** — módulo con `anadir`, `pendientes`, `tachar`; persiste en `lista.jsonl` (una línea JSON por artículo, con campo `hecho`).\n  - **`orden.py`** — CLI: `ver` imprime pendientes una por línea; `anadir <x>` añade; `tachar <x>` marca como hecho y, si el artículo no está pendiente, termina con código 1.\n  \n  La persistencia cruza procesos porque \n   ✓ PASA · fin · 7 vueltas · 2069 tok · 1442.2 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 2069.0\nCIFRA segundos_media 1442.2\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-27_2203_m3-revision-contexto.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 22:04",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 2069.0,
+    "espero": "<1906"
+  },
+  "leccion": "REFUTADO —2.069 frente a <1906, con 100% y 0 intervenciones— y con ello queda FALSADA LA VIA ENTERA de mandos pasivos para M3, en cinco mediciones: los topes rompen antes de mejorar (C73: adopcion revertida; C77: 0% a tope 1.050) y la ventana encogida comprime por azar del camino, no por construccion (C72: 1.365; C78: 2.069 — misma configuracion, ±35% de varianza, contra un liston del 10%). El renacimiento ni siquiera salto esta vez: el camino de 7 vueltas cupo en 8.000. La leccion de fondo: en un modelo determinista-caotico (C31), un mando solo es adoptable si actua EN CADA carrera, no si depende del camino — los topes actuan solo al morder (y entonces rompen) y el contexto solo si el guion desborda. El mando activo que actua SIEMPRE y nadie ha medido en el banco: sin-pensar (el prellenado enable_thinking=false de fabrica, ya construido en M5.5), que elimina la fraccion dominante de los tokens en cada vuelta por construccion. Riesgo real y falsable: el criterio puede degradarse sin el think (C29 enseño que el diseño largo lo necesita; un arreglo simple quiza no). C79 lo mide en n1/anadir — el banco de M2, la letra exacta de M3.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 21:39",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 21:39",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 21:39",
+      "que": "predicho tokens_media <1906"
+    },
+    {
+      "cuando": "2026-08-27 22:03",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 22:04",
+      "que": "veredicto: REFUTA (tokens_media=2069.0)"
+    }
+  ]
+}

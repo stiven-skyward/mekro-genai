@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_1222",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 32,
+    "tope_tokens": 8000,
+    "tope_segundos": 10800
+  },
+  "tareas": [
+    {
+      "id": "larga",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 14,
+      "intervenciones": 0,
+      "tokens_salida": 992,
+      "tokens_entrada": 64045,
+      "segundos": 1802.6,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-larga-r94_m2xx/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 992.0,
+    "segundos_media": 1802.6,
+    "intervenciones": 0
+  }
+}

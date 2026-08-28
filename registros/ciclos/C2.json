@@ -1,0 +1,80 @@
+{
+  "id": "C2",
+  "pregunta": "¿Verificar 8 tokens de golpe cuesta lo mismo que 1? (si si, la decodificacion especulativa es la palanca de la via densa)",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 03:16",
+  "revision": {
+    "cuando": "2026-08-23 03:16",
+    "texto": "Decodificar denso tiene intensidad aritmetica ~1 FLOP por byte leido: el hardware esta hecho para lo contrario. Medido hoy: NVMe ext4 6.77 GB/s, RAM 38.3 GB/s, 9p 0.20 GB/s. Un pase por los 52 GB son 7.7 s desde NVMe y 1.4 s desde RAM. La decodificacion especulativa es sin perdida por construccion (el muestreo especulativo reproduce exactamente la distribucion del modelo grande), luego no compite con la meta de cero perdida de calidad."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 03:16",
+    "metrica": "razon_8_vs_1",
+    "espero": "<=1.5",
+    "porque": "el GEMV de lote 1 esta limitado por memoria, no por calculo: los pesos se leen una vez y se usan una vez. Con lote 8 los mismos pesos se reutilizan 8 veces desde cache L2/L3, asi que el tiempo deberia crecer muy por debajo de 8x; si crece cerca de 8x es que ya estabamos limitados por calculo y la especulacion no regala nada"
+  },
+  "sonda": {
+    "cuando": "2026-08-23 03:16",
+    "comando": "python3 scripts/medir_computo.py",
+    "codigo": 0,
+    "segundos": 3.2,
+    "cifras": {
+      "razon_8_vs_1": 0.8115,
+      "gbs_efectivo": 15.705,
+      "gflops_lote32": 530.9
+    },
+    "salida_cola": "W (17408, 5120) bfloat16 = 178 MB · 16 hilos\n\n  lote   ms/pase   ms/token   GB/s efectivo   GFLOP/s\n     1     11.35      11.35            15.7        16\n     2      8.44       4.22            21.1        42\n     4     10.65       2.66            16.7        67\n     8      9.21       1.15            19.4       155\n    16     11.07       0.69            16.1       258\n    32     10.74       0.34            16.6       531\n    64     12.48       0.19            14.3       914\n\n  extrapolado al modelo completo (56 GB residentes):\n    1 token por pase    3.54 s/token\n    8 tokens por pase   0.36 s/token  (si se aceptan los 8)\n\nCIFRA razon_8_vs_1 0.8115\nCIFRA gbs_efectivo 15.705\nCIFRA gflops_lote32 530.9"
+  },
+  "medicion": {
+    "cuando": "2026-08-23 03:33",
+    "comando": "python3 scripts/medir_computo.py --desde-modelo /home/forge/modelos/qwen3.8-27b --capas 30,31",
+    "codigo": 0,
+    "segundos": 7.1,
+    "cifras": {
+      "razon_8_vs_1": 0.8791,
+      "gbs_efectivo": 11.745,
+      "seg_token_lote1": 4.1141,
+      "seg_token_lote8": 0.4521
+    },
+    "salida_cola": "13 matrices reales de las capas [30, 31] · 1.51 GB · 16 hilos\n\n    30.mlp.down_proj.weight                      (5120, 17408)\n    30.mlp.gate_proj.weight                      (17408, 5120)\n    30.mlp.up_proj.weight                        (17408, 5120)\n    31.mlp.down_proj.weight                      (5120, 17408)\n    31.mlp.gate_proj.weight                      (17408, 5120)\n    31.mlp.up_proj.weight                        (17408, 5120)\n    31.self_attn.q_proj.weight                   (12288, 5120)\n    30.linear_attn.in_proj_qkv.weight            (10240, 5120)\n\n  lote   ms/pase   ms/token   GB/s efectivo\n     1     128.6     128.56            11.7\n     2     121.7      60.83            12.4\n     4     118.5      29.63            12.7\n     8     113.0      14.13            13.4\n    16     114.0       7.12            13.3\n    32     123.1       3.85            12.3\n\n  extrapolado a 64 capas (×32), pesos residentes:\n    1 token por pase     4.11 s/token   (0.24 tok/s)\n     4 tokens por pase   0.95 s/token   (1.05 tok/s) si se aceptan los 4\n     8 tokens por pase   0.45 s/token   (2.21 tok/s) si se aceptan los 8\n    16 tokens por pase   0.23 s/token   (4.39 tok/s) si se aceptan los 16\n\nCIFRA razon_8_vs_1 0.8791\nCIFRA gbs_efectivo 11.745\nCIFRA seg_token_lote1 4.1141\nCIFRA seg_token_lote8 0.4521"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 03:34",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "razon_8_vs_1",
+    "valor": 0.8791,
+    "espero": "<=1.5"
+  },
+  "leccion": "Sobre las matrices reales de una capa deltanet y una de atencion, el lote 8 cuesta 0,879x lo que el lote 1 (y el lote 16, 0,886x): verificar tokens de golpe es gratis hasta al menos 16. Con pesos residentes eso son 4,11 s/token en lote 1 frente a 0,45 s/token en lote 8. La consecuencia es que la palanca de la via densa no es leer mas rapido sino sacar mas tokens de cada pase, y la unica tecnica que hace eso SIN perder calidad es la decodificacion especulativa (el muestreo especulativo reproduce exactamente la distribucion del modelo grande). Aviso: esto mide solo los GEMM de los pesos; no incluye atencion, estado recurrente, normas ni la tasa de aceptacion real, que es C4.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 03:16",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 03:16",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 03:16",
+      "que": "predicho razon_8_vs_1 <=1.5"
+    },
+    {
+      "cuando": "2026-08-23 03:16",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 03:33",
+      "que": "medido: código 1"
+    },
+    {
+      "cuando": "2026-08-23 03:33",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 03:34",
+      "que": "veredicto: CONFIRMA (razon_8_vs_1=0.8791)"
+    }
+  ]
+}

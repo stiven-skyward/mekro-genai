@@ -1,0 +1,61 @@
+{
+  "id": "C49",
+  "pregunta": "recalibración tras el alto del vigilante: ¿repite n1/anadir sus ~493 tokens medios, anclando el umbral en la línea base como el proponente deberá hacer desde ahora?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 17:50",
+  "revision": {
+    "cuando": "2026-08-26 17:50",
+    "texto": "Este ciclo es la REVISIÓN HUMANA (Claude como revisor delegado del autor) que el vigilante exigió al parar el lazo en racha 4 (C45-C48). El diagnóstico de la racha: un solo sesgo repetido cuatro veces — el proponente predecía segundos_media ignorando las líneas base ya medidas (tres <800 con 922,8 medidos; aguja <900 con 2.290 medidos). El arreglo aplicado: el contexto del proponente lleva ahora una tabla de LÍNEAS BASE por tarea (última medición de segundos y tokens) con la instrucción de anclar umbrales ahí con 15-30% de margen. Este ciclo rompe la racha COMO DEBE romperse: con una predicción anclada — n1/anadir midió 493 tokens en C24 y C25 (guion estable, editar único); el umbral <700 lleva 42% de margen sobre esa base, muy por encima del suelo de ruido del ~9%. La combinación (n1/anadir, tokens_media) no está medida: pasa los guardias."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 17:50",
+    "metrica": "tokens_media",
+    "espero": "<700",
+    "porque": "Linea base medida: 493 tokens en C24 y C25 con guion casi identico entre carreras (leer x2, editar unico, verificar, cierre). El 42% de margen cubre el suelo de ruido (~9%) y cualquier deriva de guion razonable. Si REFUTA pese al margen, lo roto no es el proponente: seria una regresion del arnes o una deriva nueva del modelo, y habria que mirar la transcripcion antes de tocar nada. Confirmando, la racha vuelve a 0 y el supervisor rearranca con la tabla de lineas base puesta."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 18:03",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --tarea anadir --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400 --etiqueta recalibracion-C49",
+    "codigo": 0,
+    "segundos": 767.1,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 493.0,
+      "segundos_media": 766.0,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── anadir\n[1] 64 tok · 388.1 s · 2 llamadas\n  ✓ leer({\"ruta\": \"inventario.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[2] 309 tok · 285.7 s · 1 llamadas\n  ✓ editar({\"ruta\": \"inventario.py\", \"cambios\": [{\"buscar\": \"    def hay(self, nombre):\\n        return self._piezas.get(nombre, 0)…)  (0.0 s)\n[3] 37 tok · 36.2 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[4] 83 tok · 52.5 s\n  Listo. El método `sale` está en `inventario.py` y la prueba pasa 5/5:\n  \n  - **Cantidad no positiva** → `ValueError`.\n  - **Pieza inexistente o stock insuficiente** → `ValueError` (no descuenta).\n  - **Salida válida** → descuenta de `self._piezas[nombre]`.\n   ✓ PASA · fin · 4 vueltas · 493 tok · 766.0 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 493.0\nCIFRA segundos_media 766.0\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1803_recalibracion-C49.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 18:17",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 493.0,
+    "espero": "<700"
+  },
+  "leccion": "CONFIRMADO —493,0 tokens frente a <700, y ademas EXACTAMENTE la linea base: el guion de anadir repitio al token entre C24, C25 y hoy—. Este ciclo fue la revision humana que el vigilante exigio al parar el lazo en racha 4 (C45-C48), y deja tres cosas: (1) el diagnostico de la racha confirmado — era UN sesgo repetido cuatro veces, predecir segundos ignorando lineas base conocidas, no cuatro fallos distintos; (2) el arreglo puesto — el contexto del proponente lleva ahora la tabla de LINEAS BASE por tarea con la instruccion de anclar umbrales con 15-30% de margen; (3) la salida de una racha codificada como doctrina: se sale con una prediccion ANCLADA que confirma, no con un override del umbral — el vigilante no se toca, se le da la razon. Secundario y valioso: segundos_media 766,0 con la maquina de mediodia, frente a 969,2 de la primera medicion de anadir — el mundo reproducible mantiene el guion clavado mientras el reloj baila con la maquina, una demostracion mas de que tokens_media es la metrica estable y segundos_media necesita control del dia.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 17:50",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 17:50",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 17:50",
+      "que": "predicho tokens_media <700"
+    },
+    {
+      "cuando": "2026-08-26 18:03",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 18:17",
+      "que": "veredicto: CONFIRMA (tokens_media=493.0)"
+    }
+  ]
+}

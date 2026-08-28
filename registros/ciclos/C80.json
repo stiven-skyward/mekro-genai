@@ -1,0 +1,61 @@
+{
+  "id": "C80",
+  "pregunta": "M3, síntesis final: ¿baja --pensar-vueltas 2 (think solo en el diagnóstico) los tokens de n1/anadir más de un 10% MANTENIENDO el 100% que sin-pensar total rompió?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 22:25",
+  "revision": {
+    "cuando": "2026-08-27 22:25",
+    "texto": "La autopsia de C79 es el fundamento: sin think total, anadir gastó 202 tokens (-59%) pero FALLÓ en 2 vueltas — el criterio se forma en el razonamiento del diagnóstico. La síntesis: think en las 2 primeras vueltas (leer el contrato, entender qué ValueError se piden) y apagado en las mecánicas (editar ya decidido, verificar, cerrar), donde solo cuesta. Cableado como bandera de carrera (--pensar-vueltas N, turno() lo aplica por vuelta, adoptable con mordida propia; 59 asertos del bucle en verde, humo eco limpio). Es el OCTAVO y último intento del revisor sobre el espacio de mandos: si falla, el informe al autor es que M3 con banderas y este cerebro está medido como inalcanzable y la palanca es M1."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 22:25",
+    "metrica": "tokens_media",
+    "espero": "<430",
+    "porque": "Aritmetica desde las dos puntas medidas: con think pleno anadir gasta 493 (el think del diagnostico ~150-250 esta en las vueltas 1-2, que se CONSERVAN); sin think nada gasta 202 pero muere. El hibrido conserva el razonamiento donde C79 demostro que hace falta y lo quita donde solo costaba: espero ~280-380. La barra en 430 (-12,8%) supera el suelo de ruido con margen. Lo que decide: <430 con 100% y 0 intervenciones dispara la adopcion automatica en el banco de M2 y M3 queda a una carrera oficial; el fallo de tarea diria que el criterio tambien vive en vueltas tardias (improbable: en anadir son un editar ya decidido y un python3) y cerraria el mapa con OCHO mediciones — el informe final al autor en cualquier caso."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 23:00",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n1 --tarea anadir --cerebro gguf --modo lista --pensar-vueltas 2 --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400 --etiqueta m3-pensarvueltas-anadir",
+    "codigo": 0,
+    "segundos": 2100.0,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 544.0,
+      "segundos_media": 2098.9,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── anadir\n[1] 84 tok · 448.8 s · 3 llamadas\n  ✓ leer({\"ruta\": \".\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"inventario.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[2] 345 tok · 295.4 s · 1 llamadas\n  ✓ editar({\"ruta\": \"inventario.py\", \"cambios\": [{\"buscar\": \"    def hay(self, nombre):\\n        return self._piezas.get(nombre, 0)…)  (0.0 s)\n[3] 23 tok · 645.9 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[4] 92 tok · 705.3 s\n  Listo. He añadido el método `sale(nombre, cantidad)` a `inventario.py`:\n  \n  - **Valida** que `cantidad` sea positiva (si no, `ValueError`).\n  - **Valida** que haya stock suficiente (si no, `ValueError` y no descuenta nada).\n  - **Descuenta** de `self._piezas[nombre]`.\n  \n  La prueba pasa: `5/5 asertos ✓`.\n   ✓ PASA · fin · 4 vueltas · 544 tok · 2098.9 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 544.0\nCIFRA segundos_media 2098.9\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-27_2300_m3-pensarvueltas-anadir.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 23:01",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 544.0,
+    "espero": "<430"
+  },
+  "leccion": "REFUTADO —544 frente a <430, con 100% y 0 intervenciones— y con ello EL MAPA DE M3 SOBRE MANDOS DE CARRERA QUEDA COMPLETO EN OCHO MEDICIONES (C73-C80), con una simetria final que lo explica todo: (1) los topes rompen antes de mejorar (C73 adopcion revertida; C77 0% a tope 1.050); (2) la ventana encogida comprime por azar del camino, no por construccion (1.365 contra 2.069 con la misma configuracion: ±35% de varianza contra un liston del 10%); (3) quitar el think entero ahorra un 59% pero mata el criterio (C79: 202 tokens, 0%); (4) y quitarlo solo de las vueltas mecanicas conserva el criterio pero no ahorra (C80: 544 ≥ 493), porque EL GASTO Y EL CRITERIO VIVEN EN EL MISMO SITIO — el razonamiento del diagnostico es a la vez la fraccion dominante de los tokens y la fuente de la correccion. Conclusion MEDIDA, no conjeturada: con el cerebro de trabajo de 2,83 bits, una mejora estable ≥10% en tokens del banco via banderas de carrera NO EXISTE — la densidad de razonamiento por token de este cerebro es la que es, y la palanca real de M3 es M1: un cerebro mejor piensa lo mismo en menos tokens. Lo que SI quedo construido y probado en produccion es la maquinaria entera de M3: adopcion con cuatro reglas de honestidad, reversion automatica (C73), vigilante de rachas, y un espacio de mandos activo (sin-pensar, pensar-vueltas, contexto) listo para el dia que el campeon exista. El dia que M1 aterrice, esta misma bateria de ocho preguntas se recorre en una noche de lazo autonomo.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 22:25",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 22:25",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 22:25",
+      "que": "predicho tokens_media <430"
+    },
+    {
+      "cuando": "2026-08-27 23:00",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 23:01",
+      "que": "veredicto: REFUTA (tokens_media=544.0)"
+    }
+  ]
+}

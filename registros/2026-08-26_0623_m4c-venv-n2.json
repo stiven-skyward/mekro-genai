@@ -1,0 +1,71 @@
+{
+  "cuando": "2026-08-26_0623",
+  "nivel": "n2",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "aguja",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 177,
+      "tokens_entrada": 7228,
+      "segundos": 0.4,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-aguja-yzoqqlwx/caja"
+    },
+    {
+      "id": "cupones",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 358,
+      "tokens_entrada": 8267,
+      "segundos": 0.4,
+      "verificador": "7/7 asertos ✓",
+      "trabajo": "/tmp/banco-cupones-ntmem6tq/caja"
+    },
+    {
+      "id": "tres",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 272,
+      "tokens_entrada": 7913,
+      "segundos": 0.3,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-tres-elfevanv/caja"
+    },
+    {
+      "id": "version",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 226,
+      "tokens_entrada": 8320,
+      "segundos": 0.5,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-version-3pscg4fh/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 258.2,
+    "segundos_media": 0.4,
+    "intervenciones": 0
+  }
+}

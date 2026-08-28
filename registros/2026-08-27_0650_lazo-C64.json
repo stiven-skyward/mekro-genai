@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_0650",
+  "nivel": "n1",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "bitacora",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 654,
+      "tokens_entrada": 12519,
+      "segundos": 829.5,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-bitacora-x0ahztsy/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 654.0,
+    "segundos_media": 829.5,
+    "intervenciones": 0
+  }
+}

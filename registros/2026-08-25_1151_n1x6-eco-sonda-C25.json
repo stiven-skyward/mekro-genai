@@ -1,0 +1,97 @@
+{
+  "cuando": "2026-08-25_1151",
+  "nivel": "n1",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 236,
+      "tokens_entrada": 8189,
+      "segundos": 0.0,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-rie3fb82"
+    },
+    {
+      "id": "bitacora",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 265,
+      "tokens_entrada": 8028,
+      "segundos": 0.1,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-bitacora-_qle2i2l"
+    },
+    {
+      "id": "cadena",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 293,
+      "tokens_entrada": 7710,
+      "segundos": 0.1,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-cadena-lbhqkzxy"
+    },
+    {
+      "id": "fuga",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 200,
+      "tokens_entrada": 7120,
+      "segundos": 0.1,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-fuga-bcxl_30w"
+    },
+    {
+      "id": "migrar",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 222,
+      "tokens_entrada": 9455,
+      "segundos": 0.1,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-migrar-qiq3o1g9"
+    },
+    {
+      "id": "rojo",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 176,
+      "tokens_entrada": 7375,
+      "segundos": 0.1,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-rojo-6e_ifld9"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 232.0,
+    "segundos_media": 0.1,
+    "intervenciones": 0
+  }
+}

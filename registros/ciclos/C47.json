@@ -1,0 +1,61 @@
+{
+  "id": "C47",
+  "pregunta": "¿El tope de tokens de 1200 permite completar n2/cupones con menos de 1100 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 16:15",
+  "revision": {
+    "cuando": "2026-08-26 16:15",
+    "texto": "C46 midió n2/aguja en 2322 segundos (refutación por tiempo). C45 midió n2/version en 1159 segundos. Cupones no tiene métrica de segundos medida. El suelo de ruido es ~10%, así que el umbral debe tener margen. Basado en la variabilidad de n2, 1100 es un umbral conservador que permite medir si cupones es más rápido que version."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 16:15",
+    "metrica": "segundos_media",
+    "espero": "<1100",
+    "porque": "Version midió 1159 segundos. Cupones es una tarea de edición de lista, similar en complejidad a version pero potencialmente más estructurada. Si cupones es <1100, indica que la estructura de lista permite una ejecución más rápida que la reescritura completa de version. El umbral de 1100 deja un margen de 100 segundos sobre el 10% de ruido respecto a un baseline hipotético de 1000, y está por debajo de la medición de version (1159), lo que permite distinguir si cupones es inherentemente más rápido."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 16:35",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --etiqueta lazo-C47 --tarea cupones --tope-vueltas 16 --tope-tokens 1200 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1205.8,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 957.0,
+      "segundos_media": 1204.6,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── cupones\n[1] 73 tok · 445.9 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la && echo '---' && find . -name '*.py' -not -path './.git/*' | head -40\"})  (0.0 s)\n[2] 95 tok · 114.0 s · 4 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"caja.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"carro.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"catalogo.py\"})  (0.0 s)\n[3] 620 tok · 480.6 s · 2 llamadas\n  Tengo el contrato claro. El carro suma 2×2 + 5 = 9.00; con MITAD → 9×0.5 = 4.50; con DIEZ → 9×0.9 = 8.10. Creo `cupones.py` y actualizo `caja.py` en una sola pasada.\n  ✓ escribir({\"ruta\": \"cupones.py\", \"contenido\": \"\\\"\\\"\\\"Cupones de descuento de la tienda.\\\"\\\"\\\"\\n\\n_CUPONES = {\\\"MITAD\\\": 0.5, \\\"DIE…)  (0.0 s)\n  ✓ editar({\"ruta\": \"caja.py\", \"cambios\": [{\"buscar\": \"def cobrar(carro):\\n    return f\\\"TOTAL: {carro.total():.2f}\\\"\", \"poner\": \"d…)  (0.0 s)\n[4] 27 tok · 36.6 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 142 tok · 119.5 s\n  7/7 asertos en verde. Resumen de lo hecho:\n  \n  - **`cupones.py`** (nuevo): `descuento(codigo)` devuelve `0.5` para `\"MITAD\"`, `0.1` para `\"DIEZ\"` y levanta `ValueError` para cualquier otro código.\n  - **`caja.py`**: `cobrar` ahora acepta `cupon=None`; si se pasa un cupón, importa `descuento` y multiplica el total por `1 - descuento`. Sin cupón el comportamiento es idéntico al anterior.\n  \n  No se tocó `pru\n   ✓ PASA · fin · 5 vueltas · 957 tok · 1204.6 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 957.0\nCIFRA segundos_media 1204.6\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1635_lazo-C47.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 16:47",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 1204.6,
+    "espero": "<1100"
+  },
+  "leccion": "REFUTA.\nEl tiempo medio de 1204.6 segundos supera el umbral de 1100 segundos.\nLa causa probable es la sobrecarga de inferencia en la vuelta 3 (480.6 s) para generar el código.\nEl tope de 1200 tokens no impidió el éxito, manteniendo el 100% de tareas completadas.\nSe registraron 957 tokens medios, muy por debajo del límite de 1200.\nNo hubo intervenciones humanas, confirmando la autonomía del proceso.\nLa métrica de tiempo no valida la hipótesis de velocidad superior a version.\nMedir la latencia de inferencia por token para aislar el cuello de botella.\nEvaluar si reducir el contexto de entrada acelera la generación de código.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 16:15",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 16:15",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 16:15",
+      "que": "predicho segundos_media <1100"
+    },
+    {
+      "cuando": "2026-08-26 16:35",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 16:47",
+      "que": "veredicto: REFUTA (segundos_media=1204.6)"
+    }
+  ]
+}

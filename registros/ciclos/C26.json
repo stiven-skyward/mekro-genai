@@ -1,0 +1,59 @@
+{
+  "id": "C26",
+  "pregunta": "¿cabe la ventana doblada a 16.384 en la RAM de esta máquina con el GGUF, y cuánta memoria cuesta?",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 14:05",
+  "revision": {
+    "cuando": "2026-08-25 14:05",
+    "texto": "La ventana de 8.192 es la factura pendiente que C22 dejó anotada: el think crudo se queda en la caché (alquiler del append-exacto) y en n2 —multi-fichero, observaciones más largas— la presión subirá. Si doblar n_ctx cabe en RAM, n2 respira sin diseñar compactación (que con esta caché cuesta un arranque en frío entero, C20). Datos: el GGUF son 9,4 GB en disco y se carga por mmap; la máquina tiene 30 GB con ~20-25 disponibles; la caché es de las que no admiten borrado parcial (¿híbrida/recurrente?), y esas suelen tener huella de KV chica por token. La carga con n_ctx=1024 imprimió un buffer de cómputo de 521 MiB. Lo que no se sabe y esta sonda mide: el tamaño del buffer KV que llama.cpp reserva a 8.192 y a 16.384, y el RSS total del proceso en cada caso."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 14:05",
+    "metrica": "kv_gb",
+    "espero": "<4",
+    "porque": "Si la arquitectura es híbrida con pocas capas de atención completa, la KV por token es una fracción de la de un 27B clásico (que a 16k rondaría 3-6 GB con GQA). Apuesto a que a 16.384 la reserva queda por debajo de 4 GB, con lo que 9,4 del modelo + <4 de KV + el arnés caben holgados en 20 GB disponibles y contexto_max puede doblarse sin tocar nada más. Lo que decide: <4 GB se dobla la ventana y n2 arranca con ella; 4-8 GB se dobla igual pero vigilando el RSS en carrera (el margen para el bash de las tareas se estrecha); >8 GB no cabe con el escritorio abierto y la palanca de n2 vuelve a ser la compactación holográfica (META §puerta 1), que habrá que diseñar ANTES de n2. La sonda es dos cargas de un minuto leyendo lo que el propio llama.cpp imprime al reservar."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-25 14:06",
+    "comando": "python3 -u scripts/sondear_ventana.py",
+    "codigo": 0,
+    "segundos": 14.9,
+    "cifras": {
+      "kv_gb": 1.15,
+      "rss_gb": 0.2
+    },
+    "salida_cola": "── carga a 8192 (la ventana de hoy)\n~llama_context:        CPU compute buffer size is 525.0157 MiB, matches expectation of 525.0157 MiB\n   [8192] llama_kv_cache:        CPU KV buffer size =   512.00 MiB\n   [8192] llama_memory_recurrent:        CPU RS buffer size =   149.62 MiB\n   buffers de memoria: 0.65 GB\n── carga a 16384 (la doblada)\n~llama_context:        CPU compute buffer size is 870.0157 MiB, matches expectation of 870.0157 MiB\n   [16384] llama_kv_cache:        CPU KV buffer size =  1024.00 MiB\n   [16384] llama_memory_recurrent:        CPU RS buffer size =   149.62 MiB\n   buffers de memoria: 1.15 GB · RSS 0.2 GB\n\nCIFRA kv_gb 1.15\nCIFRA rss_gb 0.2"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 14:07",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "kv_gb",
+    "valor": 1.15,
+    "espero": "<4"
+  },
+  "leccion": "CONFIRMADO con holgura: los buffers de memoria a 16.384 son 1,15 GB (512 MiB de KV por cada 8k de ventana mas 149,6 MiB FIJOS de estado recurrente), contra los <4 predichos. Doblar la ventana cuesta 0,5 GB: nada en los ~20 disponibles. Dos regalos de la sonda: (1) el motor imprime llama_memory_recurrent — la arquitectura ES hibrida-recurrente, confirmacion directa de la causa raiz que C20 diagnostico por conducta (por eso no hay borrado parcial de cache y el contexto solo puede crecer por el final); (2) n_ctx_train = 262.144 en los metadatos (arch qwen35): 16.384 queda 16 veces por debajo del contexto de entrenamiento, sin riesgo de degradacion por RoPE. La KV chica es propiedad de la arquitectura (pocas capas de atencion completa): incluso 32k costaria ~2,2 GB, asi que si n2 pide mas ventana, hay margen. contexto_max pasa de 8.192 a 16.384 en local_gguf.py citando este ciclo. El limite practico de contexto ya no es la RAM: es el RELOJ del prefill en frio (a 0,25-0,33 s/token, llenar 16k desde cero son ~70-90 minutos), otra razon por la que el append-exacto de C22 es LA arquitectura y no una optimizacion.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 14:05",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 14:05",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 14:05",
+      "que": "predicho kv_gb <4"
+    },
+    {
+      "cuando": "2026-08-25 14:06",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 14:07",
+      "que": "veredicto: CONFIRMA (kv_gb=1.15)"
+    }
+  ]
+}

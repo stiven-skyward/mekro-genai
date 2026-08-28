@@ -1,0 +1,77 @@
+{
+  "id": "C23",
+  "pregunta": "¿pasa el cerebro de trabajo el banco n0 ENTERO —cinco tareas, cuatro nunca vistas— y a qué coste por tarea?",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 01:21",
+  "revision": {
+    "cuando": "2026-08-25 01:21",
+    "texto": "Lo sabido: humo pasa 3 de 3 carreras con el GGUF y C22 la dejó en 544,3 s (append-exacto puesto). Las otras cuatro tareas nunca corrieron con cerebro real y ejercitan justo lo que humo no toca: atomo pide TRES cambios en UNA llamada a editar (grano grueso, puerta 3 de META.md), crear escribe pila.py desde cero con escribir, rastro obliga a grep antes de leer (4 ficheros, 1 malo), simbolo obliga al índice de símbolos (5 módulos). C8 dejó medido que el andamiaje Hermes sobrevive a los 2,83 bits (0,9318 de acuerdo frente a 0,9773 del BF16): la duda no es la FORMA sino el CRITERIO —elegir la herramienta cara, no repetir llamadas fallidas—. correr_banco instancia el cerebro POR TAREA: cada tarea arranca en frío y el append-exacto solo ahorra dentro de una tarea, no entre tareas. La ventana no aprieta: en humo el contexto final fue ~2.400 de 8.192 y ninguna tarea n0 es mayor. El reloj esperado por tarea, si el guion se parece al de humo (4-6 vueltas), es del orden de 450-700 s; una tarea que doble eso está desperdiciando vueltas por criterio, no por palanca."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 01:21",
+    "metrica": "tareas_pct",
+    "espero": ">=80",
+    "porque": "La forma esta medida (C8: el andamiaje Hermes sobrevive a los 2,83 bits) y humo demuestra que el bucle completo leer-editar-verificar cierra 3 de 3 veces. Lo no medido es el criterio en cuatro situaciones nuevas: consolidar tres cambios en una llamada (atomo), escribir un modulo entero (crear), buscar antes de leer (rastro) y usar el indice de simbolos (simbolo). Espero que caiga a lo sumo UNA: crear es la mas arriesgada porque un modulo desde cero da mas superficie de error que un parche, y simbolo la segunda si el modelo ignora la herramienta simbolos e intenta grep a ciegas. La barra: >=80 significa 4 o 5 de 5 y confirma que el cerebro de trabajo sirve para avanzar el arnes hacia n1; 60 es zona gris (2 caidas: mirar CUALES y por que antes de concluir); <60 refuta que este GGUF tenga criterio para el banco y el problema pasa a ser el cerebro, no el arnes. Secundario, sin barra: espero segundos_media 450-700 s por la aritmetica de C22 (cada tarea arranca en frio ~330 s mas vueltas incrementales de decenas de segundos); una tarea que doble eso esta quemando vueltas por criterio —repetir llamadas fallidas— y hay que leer su transcripcion, no culpar a la palanca. GUARDA: la sonda previa es el banco entero con eco —si una tarea no pasa ni con guion, esta mal escrita y no mide nada—."
+  },
+  "sonda": {
+    "cuando": "2026-08-25 01:22",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n0 --cerebro eco --modo lista --callado --etiqueta n0-eco-sonda-C23",
+    "codigo": 0,
+    "segundos": 1.3,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 129.2,
+      "segundos_media": 0.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n0 · cerebro eco · modo lista · 5 tareas ==\n\n── atomo\n   ✓ PASA · fin · 4 vueltas · 124 tok · 0.1 s · 0 interv.\n\n── crear\n   ✓ PASA · fin · 4 vueltas · 153 tok · 0.1 s · 0 interv.\n\n── humo\n   ✓ PASA · fin · 5 vueltas · 134 tok · 0.3 s · 0 interv.\n\n── rastro\n   ✓ PASA · fin · 4 vueltas · 102 tok · 0.1 s · 0 interv.\n\n── simbolo\n   ✓ PASA · fin · 5 vueltas · 133 tok · 0.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 129.2\nCIFRA segundos_media 0.1\nCIFRA intervenciones 0\n\n5/5 tareas · registro → registros/2026-08-25_0122_n0-eco-sonda-C23.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-25 03:01",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n0 --cerebro gguf --modo lista --tope-vueltas 16 --tope-tokens 8000 --tope-segundos 5400 --etiqueta n0-gguf-completo",
+    "codigo": 0,
+    "segundos": 5961.2,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 441.2,
+      "segundos_media": 1191.1,
+      "intervenciones": 4.0
+    },
+    "salida_cola": "[5] 27 tok · 87.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[6] 46 tok · 116.1 s\n  Corregido. En `conf/red.py` el valor era `LIMITE = 7`; lo puse a `100`. La prueba pasa: `2/2 asertos ✓`.\n   ✓ PASA · fin · 6 vueltas · 325 tok · 1270.1 s · 0 interv.\n\n── simbolo\n[1] 108 tok · 857.6 s · 1 llamadas\n  ✓ simbolos({\"aguja\": \"normalizar\", \"ruta\": \"app/\"})  (0.0 s)\n[2] 28 tok · 24.5 s · 1 llamadas\n  ✓ leer({\"ruta\": \"app/util/texto.py\"})  (0.0 s)\n[3] 118 tok · 152.4 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/util/texto.py\", \"cambios\": [{\"buscar\": \"    return s\", \"poner\": \"    return s.strip().lower()\"}]})  (0.0 s)\n[4] 68 tok · 134.2 s · 1 llamadas\n  ✗ bash({\"comando\": \"cd /root && python -c \\\"from app.util.texto import normalizar; assert normalizar('  Hello  ') == 'hello'; a…) → modo «lista»: «cd /root» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[5] 64 tok · 141.9 s · 1 llamadas\n  ✗ bash({\"comando\": \"python -c \\\"from app.util.texto import normalizar; assert normalizar('  Hello  ') == 'hello'; assert normal…) → modo «lista»: «python -c \"from app.util.texto import normalizar» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[6] 43 tok · 34.8 s · 1 llamadas\n  ✓ bash({\"comando\": \"python -m pytest app/tests/ -x -q 2>&1 | tail -20\"})  (0.0 s)\n[7] 44 tok · 49.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 -m pytest app/tests/ -x -q 2>&1 | tail -20\"})  (0.2 s)\n[8] 47 tok · 54.6 s · 1 llamadas\n  ✓ bash({\"comando\": \"find . -name \\\"*test*\\\" -o -name \\\"*prueba*\\\" | head -20\"})  (0.0 s)\n[9] 38 tok · 44.7 s · 1 llamadas\n  ✗ bash({\"comando\": \"python3 -m pytest prueba.py -x -q 2>&1\"})  (0.2 s)\n[10] 26 tok · 38.9 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[11] 27 tok · 66.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[12] 55 tok · 47.1 s\n  Listo. La función `normalizar` en `app/util/texto.py` ahora hace `s.strip().lower()` en lugar de devolver el valor tal cual. La prueba (`prueba.py`) pasa los 3 asertos sin tocarla.\n   ✓ PASA · fin · 12 vueltas · 666 tok · 1650.1 s · 2 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 441.2\nCIFRA segundos_media 1191.1\nCIFRA intervenciones 4\n\n5/5 tareas · registro → registros/2026-08-25_0301_n0-gguf-completo.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 03:02",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 100.0,
+    "espero": ">=80"
+  },
+  "leccion": "CONFIRMADO —tareas_pct 100 frente a >=80—: PLENO 5 de 5. El cerebro de trabajo tiene CRITERIO para todo n0, no solo forma: atomo consolido TRES cambios en UNA llamada a editar (la puerta 3 de META.md funcionando), crear escribio pila.py desde cero y paso limpia en 5 vueltas (era mi apuesta a caer), rastro hizo find→grep→editar sin leerse los cuatro ficheros, y simbolo eligio la herramienta simbolos A LA PRIMERA para encontrar app/util/texto.py entre cinco modulos. El reloj: segundos_media 1.191,1, por encima de la banda secundaria 450-700, y el CONTROL INTERNO explica por que: humo repitio su guion de C22 exacto —5 vueltas, 400 tokens— a x2,07 de reloj (1.124,8 frente a 544,3). La maquina, no el arnes. Corregida por ese factor, la media queda ~575: dentro de banda. REGLA que deja esto: cada carrera de banco lleve una tarea-control ya medida antes; separa maquina de mecanismo gratis. El despilfarro real, dos patrones medidos y AMBOS del arnes: (1) python contra python3 quema una vuelta en casi toda tarea (90-500 s cada una); (2) la lista blanca del modo lista rechazo 'python -c', 'python3 -c' y 'cd' (4 intervenciones, ~600 s entre atomo y simbolo), y el modelo NO abandono: reformulo hasta pasar, que es lo que las 12 vueltas de simbolo son —cola de friccion, no incapacidad—. Arreglo barato para antes de n1: una linea en el prompt de sistema (python3 nunca python, sin cd, verifica con python3 prueba.py) y valorar python3 -c en la lista. M0 con cerebro real queda demostrado; lo siguiente es H3, el banco n1.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 01:21",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 01:21",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 01:21",
+      "que": "predicho tareas_pct >=80"
+    },
+    {
+      "cuando": "2026-08-25 01:22",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-25 03:01",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 03:02",
+      "que": "veredicto: CONFIRMA (tareas_pct=100.0)"
+    }
+  ]
+}

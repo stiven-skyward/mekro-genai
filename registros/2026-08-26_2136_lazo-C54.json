@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-26_2136",
+  "nivel": "n1",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "rojo",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 682,
+      "tokens_entrada": 10197,
+      "segundos": 1356.0,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-rojo-4r3iw7vd/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 682.0,
+    "segundos_media": 1356.0,
+    "intervenciones": 0
+  }
+}

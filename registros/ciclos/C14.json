@@ -1,0 +1,77 @@
+{
+  "id": "C14",
+  "pregunta": "¿se repite cientos de veces la MISMA diferencia entre dos cúmulos, como exige que sean trasladados el uno del otro?",
+  "fase": "cerrado",
+  "abierto": "2026-08-23 13:36",
+  "revision": {
+    "cuando": "2026-08-23 13:36",
+    "texto": "C13 dejo tres cosas. Una: con beta recuperada el ajuste RVQ codicioso baja a err_relativo 0,12275 frente a 0,39906 del control, o sea factor 3,25 por debajo del suelo del azar — el reticulo se nota. Dos: no lo separa, y la traza seguia bajando en la octava iteracion, luego el metodo converge a un RVQ valido pero DISTINTO del original; insistir con mas iteraciones es escalar computo contra un metodo que no puede acertar, porque H1 no necesita 0,05 sino CERO. Tres: la desescalada esta bien, porque si beta estuviera mal el campeon estaria donde el control. C11 midio que el libro tiene 15,73 M = 0,938 x 4096^2 entradas y C12 recupero beta de los puentes de duplicados con cierre 0,0034-0,0040. La estructura que el k-means ignora: para un i fijo, {C1[i]+C2[j] : j} es un TRASLADADO de C2, luego dos cumulos verdaderos son el mismo conjunto desplazado por d = C1[i]-C1[i'], y esa diferencia se repite una vez por cada j que ambos usan. Con ~1360 puntos por cumulo sobre 5,57 M grupos y 4096 codigos de segunda etapa, los j compartidos son del orden de 1360^2/4096 = 450. Entre dos nubes cualesquiera cada diferencia aparece una vez. Se cuenta con la misma firma de signos de C12, exigiendo ademas que coincida la MAGNITUD y no solo la direccion, porque una traslacion repite el vector entero."
+  },
+  "prediccion": {
+    "cuando": "2026-08-23 13:36",
+    "metrica": "multiplicidad_max_campeon",
+    "espero": ">=50",
+    "porque": "Si los cumulos del k-means son razonablemente puros en el indice de primera etapa, la diferencia d = C1[i]-C1[i2] entre los dos cumulos mayores aparece una vez por cada j que ambos comparten, y la cuenta ideal es 1360^2/4096 = 450. Pongo la barra en 50, casi diez veces por debajo del ideal, porque los cumulos NO son puros: el ajuste de C13 se quedo en err_relativo 0,123, asi que una parte de los puntos esta mal asignada y diluye la traslacion. Aun con una pureza del 30% quedarian mas de 40 repeticiones. Lo que hace la cifra decisiva es que el azar no puede producirla: entre dos nubes continuas de 16 dimensiones cada diferencia aparece UNA vez, y el control —el mismo procedimiento sobre la misma matriz del BF16, con k-means identico— deberia dar 1 o 2. Lo que decide: si sale >=50 la traslacion existe y se puede recuperar C1 entero encadenando cumulos por sus desplazamientos, con lo que el sumset se separa sin resolver ningun problema de optimizacion; si sale por debajo de 10 y el control esta al mismo nivel, los cumulos del k-means son demasiado impuros para servir de punto de partida y hay que encontrar los trasladados sin cumulos previos, por ejemplo verificando candidatos a d con el recuento |U interseccion (U+d)|."
+  },
+  "sonda": {
+    "cuando": "2026-08-23 13:47",
+    "comando": "python3 scripts/sondear_traslacion.py --capa 45 --tensor mlp.up_proj --n-kmeans 400000 --tope-cumulo 1500 --salida registros/2026-08-23_C14-traslacion.json",
+    "codigo": 0,
+    "segundos": 280.7,
+    "cifras": {
+      "multiplicidad_max_campeon": 162.0,
+      "multiplicidad_max_control": 2.0
+    },
+    "salida_cola": "[campeon] k-means k=4096 sobre 400,000 · 11s\n[campeon] asignando los 5,570,560 grupos · 92s\n[campeon] cúmulos [3899, 1534] de 2230 y 2229 puntos · usados 1500 y 1500\n[campeon] multiplicidad máxima 162 · top [162, 83, 42, 38, 18] sobre 2,250,000 diferencias · 148s\n\n[bf16] k-means k=4096 sobre 400,000 · 148s\n[bf16] asignando los 5,570,560 grupos · 224s\n[bf16] cúmulos [571, 3887] de 2694 y 2373 puntos · usados 1500 y 1500\n[bf16] multiplicidad máxima 2 · top [2, 2, 2, 2, 2] sobre 2,250,000 diferencias · 279s\n\nCIFRA multiplicidad_max_campeon 162\nCIFRA multiplicidad_max_control 2\n\nregistro: registros/2026-08-23_C14-traslacion.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-23 13:53",
+    "comando": "python3 scripts/sondear_traslacion.py --capa 30 --tensor mlp.gate_proj --n-kmeans 600000 --tope-cumulo 3000 --salida registros/2026-08-23_C14-medicion.json",
+    "codigo": 0,
+    "segundos": 325.0,
+    "cifras": {
+      "multiplicidad_max_campeon": 242.0,
+      "multiplicidad_max_control": 2.0
+    },
+    "salida_cola": "[campeon] k-means k=4096 sobre 600,000 · 11s\n[campeon] asignando los 5,570,560 grupos · 77s\n[campeon] cúmulos [3818, 1417] de 2293 y 2271 puntos · usados 2293 y 2271\n[campeon] multiplicidad máxima 242 · top [107, 80, 80, 76, 62] sobre 5,207,403 diferencias · 136s\n\n[bf16] k-means k=4096 sobre 600,000 · 137s\n[bf16] asignando los 5,570,560 grupos · 260s\n[bf16] cúmulos [1653, 369] de 2881 y 2674 puntos · usados 2881 y 2674\n[bf16] multiplicidad máxima 2 · top [2, 2, 2, 2, 2] sobre 7,703,794 diferencias · 323s\n\nCIFRA multiplicidad_max_campeon 242\nCIFRA multiplicidad_max_control 2\n\nregistro: registros/2026-08-23_C14-medicion.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-23 13:54",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "multiplicidad_max_campeon",
+    "valor": 242.0,
+    "espero": ">=50"
+  },
+  "leccion": "CONFIRMA: multiplicidad maxima 242 en el campeon frente a 2 en el control, sobre capa-30 mlp.gate_proj —matriz distinta de la de la sonda— y 5,2 millones de diferencias. Factor 121. El perfil es lo que mas dice: en el campeon unas pocas traslaciones fuertes y luego caida (top [107, 80, 80, 76, 62] en el primer desplazamiento de rejilla, maximo 242 en otro), que son los desplazamientos entre los i verdaderos mezclados dentro de cada cumulo impuro; en el control un llano de doses sobre 7,7 millones de diferencias, o sea un suelo de ruido plano que hace la lectura inequivoca. LAS TRASLACIONES EXISTEN Y SE MIDEN, luego C1 se puede recuperar encadenando cumulos por sus desplazamientos en vez de resolver el problema de optimizacion donde el k-means se atasca. LA LECCION CARA ES DE INSTRUMENTO, y estuvo a punto de costar el ciclo entero. La primera version de la sonda reutilizaba la firma de signos que resolvio C12 y dio multiplicidad 2 contra 1 del control: un refutado perfectamente creible. Lo que la delato NO fue el resultado sino un numero secundario que no encajaba: el cubo mayor tenia 10.096 diferencias de 2,25 millones cuando con 24 bits lo esperado es 0,13. La causa: las diferencias entre dos cumulos apuntan casi todas en la misma direccion —la que une los centroides—, asi que una firma que solo mira orientacion no discrimina nada, y ademas el codigo comparaba contra un elemento arbitrario del cubo en vez de buscar la moda. Sobre LOS MISMOS DATOS, el instrumento roto dijo 2 y el corregido dice 162. GENERALIZANDO: una tecnica que funciono en un ciclo anterior NO se hereda sin comprobar que su supuesto sigue valiendo. La firma de signos servia en C12 porque alli las direcciones estaban repartidas por la esfera; aqui estan concentradas y el mismo truco se vuelve ciego. Y el habito que lo salvo: mirar SIEMPRE los numeros secundarios de la sonda, no solo la cifra del veredicto. LO QUE SUSTITUYO A LA FIRMA: rejilla sobre el vector COMPLETO con varios desplazamientos aleatorios. Es segura por los dos lados a la vez: la rejilla puede ser gruesa —basta que supere el ruido de bf16, ~0,002 relativo— porque en 16 dimensiones hay del orden de 30^16 = 4e23 celdas y dos diferencias distintas no coinciden por azar; los desplazamientos evitan que una traslacion verdadera caiga en una frontera. AVISO SOBRE LA PUREZA, que no se tapa: la multiplicidad crecio de 162 a 242 al pasar de 2,25 a 5,2 millones de diferencias, o sea x1,49, cuando el ideal crecia x2,31. La pureza de los cumulos del k-means baja del 30% al 19% en esta matriz. Es suficiente para detectar la traslacion pero NO para reconstruir: el siguiente paso no puede apoyarse en cumulos impuros, tiene que tejer las traslaciones entre si y comprobarlas por cierre, como se hizo con las escalas en C12.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-23 13:36",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-23 13:36",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-23 13:36",
+      "que": "predicho multiplicidad_max_campeon >=50"
+    },
+    {
+      "cuando": "2026-08-23 13:41",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 13:47",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-23 13:53",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-23 13:54",
+      "que": "veredicto: CONFIRMA (multiplicidad_max_campeon=242.0)"
+    }
+  ]
+}

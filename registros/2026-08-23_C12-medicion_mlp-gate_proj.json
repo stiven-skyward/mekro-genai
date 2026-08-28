@@ -1,0 +1,22 @@
+{
+  "capa": 45,
+  "tensor": "mlp.gate_proj",
+  "g": 16,
+  "forma": [
+    17408,
+    5120
+  ],
+  "grupos": 5570560,
+  "puentes": 577169,
+  "aristas_redundantes": 559762,
+  "filas": 17408,
+  "filas_conectadas": 17408,
+  "frac_filas_conectadas": 1.0,
+  "cierre_mediano": 0.003915,
+  "cierre_p90": 0.00938,
+  "cierre_p99": 0.014354,
+  "beta_min": 0.604848,
+  "beta_max": 1.791393,
+  "segundos": 15.8,
+  "cierre_mediano_control": 0.523414
+}

@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_2048",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 32,
+    "tope_tokens": 3000,
+    "tope_segundos": 1900
+  },
+  "tareas": [
+    {
+      "id": "larga",
+      "paso": true,
+      "motivo": "tope_segundos",
+      "motivo_extra": "",
+      "vueltas": 8,
+      "intervenciones": 1,
+      "tokens_salida": 1242,
+      "tokens_entrada": 40004,
+      "segundos": 2184.4,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-larga-58_r_ja9/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 1242.0,
+    "segundos_media": 2184.4,
+    "intervenciones": 1
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "C38",
+  "pregunta": "¿El tope de tokens de 1500 fuerza un recorte que baja tokens_media por debajo de 1600 en n3/lista?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 07:07",
+  "revision": {
+    "cuando": "2026-08-26 07:07",
+    "texto": "C37 midió 1933 tokens con tope 2500 y refutó el umbral 1600. C35 y C36 confirmaron estabilidad en segundos e intervenciones. El baseline es 1933. El ruido es ~10%, así que 1600 tiene margen de 17% sobre el baseline. El tope 1500 es más agresivo que 2500 y debería forzar el recorte si el modelo respeta el límite."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 07:07",
+    "metrica": "tokens_media",
+    "espero": "<1600",
+    "porque": "El baseline es 1933. El umbral 1600 está a 17% por debajo, superando el margen de ruido del 10%. El tope 1500 es inferior al baseline, lo que obliga al arnés a recortar o al modelo a ser más eficiente. Si el modelo no recorta, el tope 1500 podría causar fallos, pero la métrica tokens_media medirá el resultado final. La hipótesis asume que el sistema respeta el tope y reduce el gasto."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 07:27",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n3 --cerebro gguf --modo lista --etiqueta lazo-C38 --tarea lista --tope-vueltas 16 --tope-tokens 1500 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1155.2,
+    "cifras": {
+      "tareas_pct": 0.0,
+      "tokens_media": 1511.0,
+      "segundos_media": 1154.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n3 · cerebro gguf · modo lista · 1 tareas ==\n\n── lista\n[1] 165 tok · 432.5 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[2] 26 tok · 45.6 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[3] 1024 tok · 497.7 s\n  <think>\n  Now I understand the contract:\n  \n  1. `lista.py` has functions:\n     - `anadir(item)` - adds an item to the list\n     - `pendientes()` - returns a list of pending (not yet checked) items\n     - `tachar(item)` - marks an item as done (checked)\n  \n     Data is persisted in `lista.jsonl`.\n  \n  2. `orden.py` is a CLI script:\n     - `ver` - prints pending items one per line\n     - `anadir <x>` - adds item x\n     - `t\n  ·· turno cortado sin llamadas: se le pide continuar\n[4] 296 tok · 174.9 s · 1 llamadas\n  ✓ escribir({\"ruta\": \"lista.py\", \"contenido\": \"import json\\nimport os\\n\\nRUTA = \\\"lista.jsonl\\\"\\n\\n\\ndef _leer():\\n    if not os.pat…)  (0.0 s)\n   ✗ FALLA · tope_tokens · 4 vueltas · 1511 tok · 1154.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 0.0\nCIFRA tokens_media 1511.0\nCIFRA segundos_media 1154.1\nCIFRA intervenciones 0\n\n0/1 tareas · registro → registros/2026-08-26_0727_lazo-C38.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 07:31",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 1511.0,
+    "espero": "<1600"
+  },
+  "leccion": "CONFIRMA.\nEl valor medido de 1511 tokens supera el umbral de 1600 por 89 unidades.\nLa causa es el tope de 1500 tokens que trunca la ejecución.\nEl sistema respeta el límite y evita el gasto del baseline de 1933.\nLa tarea falló al agotar el tope sin completar el objetivo.\nEl recorte forzado baja la media por debajo del umbral previsto.\nMedir la tasa de éxito con el tope en 1800 tokens.\nVerificar si el modelo recupera la eficiencia sin truncamiento.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 07:07",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 07:07",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 07:07",
+      "que": "predicho tokens_media <1600"
+    },
+    {
+      "cuando": "2026-08-26 07:27",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 07:31",
+      "que": "veredicto: CONFIRMA (tokens_media=1511.0)"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "ventana": 512,
+  "ventanas": 16,
+  "gamma": 8,
+  "capas": 64,
+  "hilos": 16,
+  "segundos": {
+    "grande": 319.1,
+    "borrador": 1604.1,
+    "total": 1982.6
+  },
+  "por_dominio": {
+    "codigo": {
+      "tokens": 4088,
+      "acuerdo_greedy": 0.5631,
+      "alfa_t1": 0.5814,
+      "tokens_por_pase_g4": 2.093,
+      "iid_g4": 2.159,
+      "tokens_por_pase_g8": 2.227,
+      "iid_g8": 2.276,
+      "tokens_por_pase_g16": 2.274,
+      "iid_g16": 2.289
+    },
+    "espanol": {
+      "tokens": 4088,
+      "acuerdo_greedy": 0.523,
+      "alfa_t1": 0.5397,
+      "tokens_por_pase_g4": 1.991,
+      "iid_g4": 2.014,
+      "tokens_por_pase_g8": 2.077,
+      "iid_g8": 2.09,
+      "tokens_por_pase_g16": 2.095,
+      "iid_g16": 2.096
+    }
+  }
+}

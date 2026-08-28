@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-27_0323",
+  "nivel": "n0",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 3000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "crear",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 278,
+      "tokens_entrada": 6456,
+      "segundos": 549.1,
+      "verificador": "4/4 asertos ✓",
+      "trabajo": "/tmp/banco-crear-91dr1l9h/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 278.0,
+    "segundos_media": 549.1,
+    "intervenciones": 0
+  }
+}

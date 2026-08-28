@@ -1,0 +1,77 @@
+{
+  "id": "C28",
+  "pregunta": "¿dónde está el BORDE del cerebro de trabajo? Tres tareas n2 apuntadas a ejes no probados: fichero que no cabe en una lectura, idempotencia que solo falla a la segunda ejecución, y tres bugs revelados de uno en uno",
+  "fase": "cerrado",
+  "abierto": "2026-08-25 14:34",
+  "revision": {
+    "cuando": "2026-08-25 14:34",
+    "texto": "C27 dejó el aviso: 12/12 histórico y el banco sin encontrar el borde — M3 necesita un banco donde la puntuación pueda subir. Las tres tareas nuevas aprietan ejes vírgenes: aguja pone el bug (valida_puerto, carácter 14.510 de validadores.py) PASADO el truncado de 12.000 de leer — leerlo entero no sirve, la puerta 1 de META.md deja de ser economía y pasa a ser la única vía; version esconde el bug en la SEGUNDA ejecución (idempotencia: la primera migración sale perfecta); tres obliga a elegir entre consolidar tres arreglos leyendo contratos —como hizo en atomo— o pagar tres ciclos de arreglar-correr. cupones queda dentro como control del nivel. eco pasa 4/4 con exigir-todo (registro 2026-08-25_1434). El fallo, si aparece, es INFORMACIÓN: acota qué eje necesita el campeón de H1, o gramática (H5), o mejor arnés — y le da a H6 el gradiente que hoy no existe."
+  },
+  "prediccion": {
+    "cuando": "2026-08-25 14:34",
+    "metrica": "tareas_pct",
+    "espero": "<=75",
+    "porque": "Predigo que AL MENOS UNA de las cuatro cae — lo contrario de todas mis predicciones anteriores, y por diseño: las tareas estan apuntadas a donde el cerebro no ha sido probado. Mi orden de riesgo: version la primera (el bug de idempotencia exige leer la prueba hasta el segundo migrar() y razonar sobre una ejecucion que aun no ha pasado; nada en 12 tareas ha pedido eso); aguja la segunda (si el modelo lee el fichero entero, el truncado le esconde el bug y puede alucinar un arreglo; solo se salva si va con grep desde el traceback, que si sabe hacer); tres la tercera (consolidar ya lo hizo en atomo; el riesgo es solo presupuesto si va de uno en uno); cupones deberia repetir (control). Lo que decide: <=75 confirma que el borde existe y DONDE esta — la tarea caida es el primer gradiente real para H6/M3; 100 REFUTA mi diseño del borde: el cerebro de trabajo es mas capaz de lo que estas tareas miden y hay que buscar mas arriba (estado mas grande, ambiguedad, presupuesto de verdad apretado). Ambos resultados informan; lo que no informa es dejar de buscar. Secundario: espero 1.000-2.500 s/tarea crudos; el control humo del dia se corre antes."
+  },
+  "sonda": {
+    "cuando": "2026-08-25 14:34",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n2 --cerebro eco --modo lista --callado --exigir-todo --etiqueta n2x4-eco-sonda-C28",
+    "codigo": 0,
+    "segundos": 0.8,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 258.2,
+      "segundos_media": 0.1,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n2 · cerebro eco · modo lista · 4 tareas ==\n\n── aguja\n   ✓ PASA · fin · 5 vueltas · 177 tok · 0.1 s · 0 interv.\n\n── cupones\n   ✓ PASA · fin · 5 vueltas · 358 tok · 0.1 s · 0 interv.\n\n── tres\n   ✓ PASA · fin · 5 vueltas · 272 tok · 0.1 s · 0 interv.\n\n── version\n   ✓ PASA · fin · 5 vueltas · 226 tok · 0.1 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 258.2\nCIFRA segundos_media 0.1\nCIFRA intervenciones 0\n\n4/4 tareas · registro → registros/2026-08-25_1434_n2x4-eco-sonda-C28.json"
+  },
+  "medicion": {
+    "cuando": "2026-08-25 16:25",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n2 --cerebro gguf --modo lista --tope-vueltas 16 --tope-tokens 8000 --tope-segundos 5400 --etiqueta n2x4-gguf",
+    "codigo": 0,
+    "segundos": 5885.9,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 960.5,
+      "segundos_media": 1470.2,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "  3. **`listado`** ordena con `reverse=True` → el contrato dice *ascendente*.\n  ✓ editar({\"ruta\": \"agenda.py\", \"cambios\": [{\"buscar\": \"    agenda[nombre] = telefono\", \"poner\": \"    agenda[nombre.strip()] = tel…)  (0.0 s)\n[4] 27 tok · 45.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[5] 138 tok · 84.8 s\n  Los tres asertos pasan. Resumen de lo corregido en `agenda.py`:\n  \n  | Función | Bug | Fix |\n  |---|---|---|\n  | `alta` | Guardaba el nombre sin limpiar espacios en bordes | `nombre.strip()` antes de usarlo como clave |\n  | `busca` | Convertía el prefijo a mayúsculas (`prefijo.upper()`) | Compara el prefijo **tal cual** (sensible a mayúsculas) |\n  | `listado` | Ordenaba con `reverse=True` (descendente) | Orde\n   ✓ PASA · fin · 5 vueltas · 869 tok · 1043.2 s · 0 interv.\n\n── version\n[1] 103 tok · 418.6 s · 1 llamadas\n  ✓ bash({\"comando\": \"find . -name \\\"migrador*\\\" -o -name \\\"test*migrador*\\\" -o -name \\\"*migrador*test*\\\" | head -20\"})  (0.0 s)\n[2] 45 tok · 47.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"find . -name \\\"test*\\\" -o -name \\\"*_test*\\\" | head -20\"})  (0.0 s)\n[3] 26 tok · 34.7 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls -la\"})  (0.0 s)\n[4] 50 tok · 76.1 s · 2 llamadas\n  ✓ leer({\"ruta\": \"migrador.py\"})  (0.0 s)\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[5] 938 tok · 660.8 s · 1 llamadas\n  El problema es claro: `migrar()` no es idempotente. Al relanzarla, vuelve a multiplicar `puntos` por 100 y recalcula `nivel` sobre el valor ya migrado. La solución: si la ficha ya tiene `\"v\": 2`, saltarla.\n  ✓ editar({\"ruta\": \"migrador.py\", \"cambios\": [{\"buscar\": \"    for ficha in cargar():\\n        ficha[\\\"v\\\"] = 2\\n        ficha[\\\"ni…)  (0.0 s)\n[6] 27 tok · 33.5 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[7] 65 tok · 55.0 s\n  Los tres asertos pasan. El cambio: en `migrar()`, si la ficha ya tiene `\"v\": 2` se deja tal cual (`continue`), de modo que relanzar la migración es un no-op y no vuelve a multiplicar ni a recalcular el nivel.\n   ✓ PASA · fin · 7 vueltas · 1254 tok · 1329.5 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 960.5\nCIFRA segundos_media 1470.2\nCIFRA intervenciones 0\n\n4/4 tareas · registro → registros/2026-08-25_1625_n2x4-gguf.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-25 16:26",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 100.0,
+    "espero": "<=75"
+  },
+  "leccion": "REFUTADO —tareas_pct 100 frente a <=75— y es la refutacion que mas informa: mi diseño del borde estaba POR DEBAJO del cerebro. Las tres trampas cayeron del lado del modelo: en aguja leyo el fichero entero (error tactico), NOTO el truncado a 12.000, fue con grep contexto=15 a las dos funciones sospechosas y arreglo citando el docstring contra el < estricto — pero el error tactico costo el reloj: 2.345,6 s la tarea, con 1.356,6 s en la vuelta que cargo la observacion truncada. La disciplina de la puerta 1 tiene ahora PRECIO medido: leer entero lo que no cabe cuesta ~1.400 s mas que ir con grep primero. En tres consolido los tres arreglos en UN editar tras enumerarlos en prosa (y uso pytest --tb=short por iniciativa propia). En version —mi apuesta numero uno— entendio la idempotencia en un turno de 938 tokens y protegio las fichas ya migradas. cupones repitio como control (5 vueltas). CERO intervenciones; 16/16 historico en cuatro niveles de dificultad. Lo que esta refutacion acota: el borde del cerebro de trabajo NO esta en bugs de logica local, contratos en pruebas, navegacion de paquetes ni razonamiento de segunda ejecucion. Donde buscar mas arriba, en orden de fidelidad a la meta: (1) n3 = crear un proyecto ENTERO desde un encargo en prosa —paquete, CLI y pruebas desde cero—, que es literalmente la mision del arnes; (2) presupuesto de verdad apretado (tope_tokens 2-3K como dice META §muro, no 8K); (3) ambiguedad real que obligue a decidir sin contrato. Y si n3 tampoco encuentra borde, la conclusion sube de nivel: el cerebro de trabajo BASTA para el banco y el gradiente de M3/H6 hay que buscarlo en el reloj (tokens y segundos por tarea), no en la tasa de acierto.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-25 14:34",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-25 14:34",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-25 14:34",
+      "que": "predicho tareas_pct <=75"
+    },
+    {
+      "cuando": "2026-08-25 14:34",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-25 16:25",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-25 16:26",
+      "que": "veredicto: REFUTA (tareas_pct=100.0)"
+    }
+  ]
+}

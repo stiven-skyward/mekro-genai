@@ -1,0 +1,61 @@
+{
+  "id": "C51",
+  "pregunta": "¿El tope de tokens de 3000 permite completar n1/cadena con menos de 600 tokens medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 19:12",
+  "revision": {
+    "cuando": "2026-08-26 19:12",
+    "texto": "C49 ancló n1/anadir en 493 tokens. C50 midió n1/bitacora en 654 tokens. n1/cadena no tiene línea base de tokens. El ruido es ~10%, así que un umbral de 600 (12% sobre 493) es seguro para predecir si la tarea es más barata que bitacora."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 19:12",
+    "metrica": "tokens_media",
+    "espero": "<600",
+    "porque": "Se asume que n1/cadena es estructuralmente más simple que n1/bitacora (654 tokens) y similar a n1/anadir (493 tokens). Un umbral de 600 tokens deja un margen del 21% sobre la línea base de anadir (493), cubriendo el ruido del 10% y validando si la tarea de cadena es eficiente en uso de contexto."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 19:36",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --etiqueta lazo-C51 --tarea cadena --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 1438.8,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 953.0,
+      "segundos_media": 1437.7,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── cadena\n[1] 91 tok · 461.0 s · 3 llamadas\n  ✓ holos({})  (0.1 s)\n  ✓ grep({\"patron\": \"precio_final\", \"glob\": \"*.py\"})  (0.0 s)\n  ✓ grep({\"patron\": \"descuento\", \"glob\": \"*.py\"})  (0.0 s)\n[2] 719 tok · 864.1 s · 2 llamadas\n  ✓ editar({\"ruta\": \"tarifas.py\", \"cambios\": [{\"buscar\": \"def precio_final(base, iva):\\n    return base * (1 + iva)\", \"poner\": \"def…)  (0.0 s)\n  ✓ editar({\"ruta\": \"factura.py\", \"cambios\": [{\"buscar\": \"def linea(concepto, base, iva):\\n    return f\\\"{concepto}: {precio_final(…)  (0.0 s)\n[3] 27 tok · 42.3 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[4] 116 tok · 66.5 s\n  Listo. Los dos cambios:\n  \n  - **`tarifas.py`** → `precio_final(base, iva, descuento=0.0)` ahora aplica la fracción de descuento **antes** del IVA: `base * (1 - descuento) * (1 + iva)`.\n  - **`factura.py`** → `linea(concepto, base, iva, descuento=0.0)` reenvía el parámetro a `precio_final`.\n  \n  La prueba pasa 5/5 sin tocarla.\n   ✓ PASA · fin · 4 vueltas · 953 tok · 1437.7 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 953.0\nCIFRA segundos_media 1437.7\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_1936_lazo-C51.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 19:42",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tokens_media",
+    "valor": 953.0,
+    "espero": "<600"
+  },
+  "leccion": "REFUTA.\nEl umbral de 3000 tokens no impide el éxito, pero la métrica de tokens_media es 953.0, superando el umbral de 600.\nEl 100% de éxito se mantiene con 0 intervenciones, validando la funcionalidad.\nLa causa probable es que la tarea de cadena requiere más contexto que la línea base de 493 tokens.\nEl margen del 21% sobre la línea base de anadir resultó insuficiente para la complejidad real.\nSe midieron 4 vueltas con un total de 953 tokens, confirmando la sobrecarga estructural.\nEl tiempo medio de 1437.7 segundos indica que la eficiencia no se ve reflejada en velocidad.\nLa hipótesis de similitud con n1/anadir fue incorrecta al subestimar la carga de contexto.\nMedir la desviación estándar de tokens en 10 repeticiones para estabilizar la media.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 19:12",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 19:12",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 19:12",
+      "que": "predicho tokens_media <600"
+    },
+    {
+      "cuando": "2026-08-26 19:36",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 19:42",
+      "que": "veredicto: REFUTA (tokens_media=953.0)"
+    }
+  ]
+}

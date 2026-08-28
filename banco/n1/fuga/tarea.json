@@ -1,0 +1,17 @@
+{
+ "id": "fuga",
+ "nivel": "n1",
+ "encargo": "La prueba falla: la segunda cesta sale contaminada con la compra de la primera. El fallo está en `cesta.py`. Arréglalo. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "El fallo no está en ninguna línea que se ejecute mal: está en la SEMÁNTICA del argumento por defecto mutable, que solo asoma en la segunda llamada. Leer el aserto que cae no basta; hay que saber POR QUÉ el estado sobrevive entre llamadas. Es la primera tarea del banco cuyo bug es de clase, no de línea.",
+ "guion": [
+  "<think>Contaminación entre llamadas huele a estado compartido. Confirmo con la prueba y miro la función.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"cesta.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"cesta.py\", \"cambios\": [{\"buscar\": \"def agrupar(palabras, grupos={}):\\n    for p in palabras:\", \"poner\": \"def agrupar(palabras, grupos=None):\\n    if grupos is None:\\n        grupos = {}\\n    for p in palabras:\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "El `grupos={}` por defecto se evalúa UNA vez y sobrevive entre llamadas: cada cesta heredaba la anterior. Con `None` centinela cada llamada parte de cero. 3/3."
+ ]
+}

@@ -1,0 +1,61 @@
+{
+  "id": "C53",
+  "pregunta": "¿El tope de segundos de 5400 permite completar n1/migrar con menos de 1000 segundos medios manteniendo el 100% de éxito?",
+  "fase": "cerrado",
+  "abierto": "2026-08-26 20:37",
+  "revision": {
+    "cuando": "2026-08-26 20:37",
+    "texto": "Se midió n1/migrar con 839.2 segundos medios y 489 tokens. El tope de 5400 segundos es amplio. Se busca validar la estabilidad temporal de la tarea migrar bajo el cerebro gguf."
+  },
+  "prediccion": {
+    "cuando": "2026-08-26 20:37",
+    "metrica": "segundos_media",
+    "espero": "<1000",
+    "porque": "La línea base es 839.2 segundos. Un umbral de 1000 segundos representa un margen del 19% sobre la línea base, superando el mínimo de 15% para absorber la varianza de ruido del 10%."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-26 20:51",
+    "comando": "/usr/bin/python3 -u /mnt/e/Mekro-Genai/scripts/correr_banco.py --nivel n1 --cerebro gguf --modo lista --etiqueta lazo-C53 --tarea migrar --tope-vueltas 16 --tope-tokens 3000 --tope-segundos 5400",
+    "codigo": 0,
+    "segundos": 823.7,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 489.0,
+      "segundos_media": 822.5,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "== banco n1 · cerebro gguf · modo lista · 1 tareas ==\n\n── migrar\n[1] 157 tok · 521.1 s · 3 llamadas\n  ✓ grep({\"patron\": \"etiqueta\", \"ruta\": \"formato.py\", \"contexto\": 3})  (0.0 s)\n  ✓ grep({\"patron\": \"etiqueta\", \"ruta\": \"informe.py\", \"contexto\": 3})  (0.0 s)\n  ✓ holos({})  (0.1 s)\n[2] 266 tok · 242.7 s · 1 llamadas\n  ✓ editar({\"ruta\": \"informe.py\", \"cambios\": [{\"buscar\": \"    return etiqueta(titulo, True, True)\", \"poner\": \"    return etiqueta(t…)  (0.0 s)\n[3] 66 tok · 55.3 s\n  tool_call con JSON inválido (Expecting ',' delimiter): {\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 -c \\\"\\nfrom informe import cabecera, nota\\nprint(repr(cabecera('hola mundo')))\\nprint(repr(nota('  hola  ')))\n   ✓ PASA · fin · 3 vueltas · 489 tok · 822.5 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 489.0\nCIFRA segundos_media 822.5\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-26_2051_lazo-C53.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-26 20:56",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 822.5,
+    "espero": "<1000"
+  },
+  "leccion": "CONFIRMA.\nEl valor medido de 822.5 segundos supera el umbral de 1000 segundos.\nLa diferencia es de 177.5 segundos a favor del objetivo.\nEl éxito se mantuvo al 100% con 0 intervenciones.\nLa causa probable es la eficiencia del modelo gguf en la tarea migrar.\nEl tope de 5400 segundos resultó sobredimensionado para este caso.\nSe recomienda medir la varianza con 10 iteraciones adicionales.\nEl siguiente paso es validar la estabilidad del tiempo medio.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-26 20:37",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-26 20:37",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-26 20:37",
+      "que": "predicho segundos_media <1000"
+    },
+    {
+      "cuando": "2026-08-26 20:51",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-26 20:56",
+      "que": "veredicto: CONFIRMA (segundos_media=822.5)"
+    }
+  ]
+}

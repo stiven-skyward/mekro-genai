@@ -1,0 +1,18 @@
+{
+ "id": "cupones",
+ "nivel": "n2",
+ "encargo": "Los cupones llegan a la tienda. Crea `cupones.py` con `descuento(codigo)` —MITAD vale 0.5, DIEZ vale 0.1, y un código desconocido levanta ValueError— y haz que `caja.cobrar` acepte `cupon=None`, aplicando el descuento al total. La prueba dice el contrato exacto y hoy falla. No toques ni la prueba ni `catalogo.py`.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py",
+  "catalogo.py"
+ ],
+ "porque": "Primera tarea n2: un paquete de cuatro módulos donde hay que ORIENTARSE (qué toca cada fichero), CREAR uno nuevo que la prueba ya importa y EDITAR la caja para integrarlo sin mutar el carro. Es la forma mínima de «añadir una función que cruza el paquete», que es lo que un proyecto real pide a diario. Sube la presión de contexto: cinco ficheros en juego.",
+ "guion": [
+  "<think>La prueba ya importa cupones.py, que no existe. La leo y miro qué hay.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"prueba.py\"}}\n</tool_call>\n<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"caja.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"escribir\", \"arguments\": {\"ruta\": \"cupones.py\", \"contenido\": \"\\\"\\\"\\\"Cupones de descuento: código → fracción que se resta del total.\\\"\\\"\\\"\\n\\n_CUPONES = {\\\"MITAD\\\": 0.5, \\\"DIEZ\\\": 0.1}\\n\\n\\ndef descuento(codigo):\\n    if codigo not in _CUPONES:\\n        raise ValueError(f\\\"cupón desconocido: {codigo}\\\")\\n    return _CUPONES[codigo]\\n\"}}\n</tool_call>\n<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"caja.py\", \"cambios\": [{\"buscar\": \"\\\"\\\"\\\"La caja: convierte un carro en el total cobrable.\\\"\\\"\\\"\\n\\n\\ndef cobrar(carro):\\n    return f\\\"TOTAL: {carro.total():.2f}\\\"\", \"poner\": \"\\\"\\\"\\\"La caja: convierte un carro en el total cobrable.\\\"\\\"\\\"\\nfrom cupones import descuento\\n\\n\\ndef cobrar(carro, cupon=None):\\n    total = carro.total()\\n    if cupon is not None:\\n        total *= 1 - descuento(cupon)\\n    return f\\\"TOTAL: {total:.2f}\\\"\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "Hecho: `cupones.py` nuevo con la tabla y el ValueError, y `caja.cobrar` acepta `cupon=None` aplicando la fracción al total sin tocar el carro. 7/7."
+ ]
+}

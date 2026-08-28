@@ -1,0 +1,77 @@
+{
+  "id": "C72",
+  "pregunta": "M5.1 de verdad: con la ventana encogida a 8.000, ¿dispara la tarea larga el renacimiento Y termina al 100%?",
+  "fase": "cerrado",
+  "abierto": "2026-08-27 12:23",
+  "revision": {
+    "cuando": "2026-08-27 14:38",
+    "texto": "SEGUNDA MUERTE EN EL MISMO TOKEN (7.730/8.000) y con ella el diagnóstico completo, en tres capas peladas una a una: (1) presion() sobre contenido crudo no ve la sobrecarga absoluta → regla de hueco (aprieta); (2) aprieta sobre contenido no ve el JSON de llamadas ni los envoltorios → conteo exacto sobre montar+firmas en el bucle; (3) y la de verdad: EL CAMINO INCREMENTAL ARRASTRA EL THINK CRUDO que montar no remonta — el 7.730 es la caché viva, invisible para cualquier conteo desde la transcripción. Arreglo final: el cerebro expone tokens_en_contexto() (la caché real) y olvidar() (tras renacer, para no encadenar renaceres con el conteo viejo); el bucle toma el MÁXIMO de ambas vistas más el sufijo nuevo. Probado en frío: 57 asertos, incluido un cerebro con caché fingida de 7.600 que dispara el renacer con transcripción chica y olvida después. Tercera medición, misma predicción intacta."
+  },
+  "prediccion": {
+    "cuando": "2026-08-27 12:23",
+    "metrica": "tareas_pct",
+    "espero": "==100",
+    "porque": "Con ventana 8.000 el umbral de 6.400 se cruza hacia la vuelta 9-10 del camino que C71 ya enseñó, así que habrá AL MENOS un renacimiento (probablemente 2). Tras cada uno, el resumen mecánico lleva la lista de llamadas ya ejecutadas y los ficheros ya tocados: el modelo debería continuar por el módulo siguiente sin repetir. Lo que decide: 100 CON >=1 renacimiento en la traza CIERRA la brecha M5.1 con número; 0 por tope_vueltas con ediciones repetidas acusa al resumen mecánico (siguiente palanca: resumen escrito por el cerebro); 0 por SystemExit acusa al cableado del renacer con el cerebro real (mirar si el umbral 0.8 llega tarde: presion() estima sin plantilla ni preámbulo y con ventana chica ese margen pesa más). Guarda igual que C71: sin renacimiento en la traza, el número no cuenta."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-27 15:27",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n3 --tarea larga --cerebro gguf --modo lista --contexto 8000 --tope-vueltas 32 --tope-tokens 8000 --tope-segundos 10800 --etiqueta m5-1-larga-c8000-ter",
+    "codigo": 0,
+    "segundos": 2979.0,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 1365.0,
+      "segundos_media": 2975.7,
+      "intervenciones": 1.0
+    },
+    "salida_cola": "[1] 78 tok · 457.4 s · 1 llamadas\n  ✓ bash({\"comando\": \"ls app/\"})  (0.0 s)\n[2] 64 tok · 51.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"cat app/m0.py app/m1.py app/m2.py app/m3.py app/m4.py app/m5.py app/m6.py app/m7.py app/m8.py app/m9.py\"})  (0.0 s)\n[3] 108 tok · 988.2 s · 1 llamadas\n  ✓ bash({\"comando\": \"grep -n \\\"calcula\\\" app/m*.py | head -20\"})  (0.0 s)\n[4] 43 tok · 123.6 s · 1 llamadas\n  ✗ bash({\"comando\": \"grep -n \\\"return\\\" app/m*.py | grep \\\"calcula\\\\|x +\\\"\"}) → modo «lista»: «x +\"» no está en la lista blanca. Usa una herramienta específica o pide que se amplíe la lista (y que quede justificado).\n[5] 74 tok · 53.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"grep -n \\\"return\\\" app/m0.py app/m1.py app/m2.py app/m3.py app/m4.py app/m5.py app/m6.py app/m7.py app/m8.p…)  (0.0 s)\n[6] 109 tok · 114.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"find . -name \\\"*test*\\\" -o -name \\\"*prueba*\\\" | head -10\"})  (0.0 s)\n[7] 26 tok · 34.1 s · 1 llamadas\n  ✓ leer({\"ruta\": \"prueba.py\"})  (0.0 s)\n[8] 740 tok · 448.1 s · 10 llamadas\n  La prueba espera `calcula(5) == 5 + i`, es decir, `x + i` sin negación. Corrijo los diez módulos:\n  ✓ editar({\"ruta\": \"app/m0.py\", \"cambios\": [{\"buscar\": \"    return -(x + 0)\", \"poner\": \"    return x + 0\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m1.py\", \"cambios\": [{\"buscar\": \"    return -(x + 1)\", \"poner\": \"    return x + 1\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m2.py\", \"cambios\": [{\"buscar\": \"    return -(x + 2)\", \"poner\": \"    return x + 2\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m3.py\", \"cambios\": [{\"buscar\": \"    return -(x + 3)\", \"poner\": \"    return x + 3\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m4.py\", \"cambios\": [{\"buscar\": \"    return -(x + 4)\", \"poner\": \"    return x + 4\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m5.py\", \"cambios\": [{\"buscar\": \"    return -(x + 5)\", \"poner\": \"    return x + 5\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m6.py\", \"cambios\": [{\"buscar\": \"    return -(x + 6)\", \"poner\": \"    return x + 6\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m7.py\", \"cambios\": [{\"buscar\": \"    return -(x + 7)\", \"poner\": \"    return x + 7\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m8.py\", \"cambios\": [{\"buscar\": \"    return -(x + 8)\", \"poner\": \"    return x + 8\"}]})  (0.0 s)\n  ✓ editar({\"ruta\": \"app/m9.py\", \"cambios\": [{\"buscar\": \"    return -(x + 9)\", \"poner\": \"    return x + 9\"}]})  (0.0 s)\n  ·· renacimiento: 13026 caracteres resumidos\n[9] 71 tok · 650.1 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[10] 52 tok · 43.9 s\n  Los diez módulos están corregidos: cada `calcula` devuelve ahora `x + N` (sin el signo negativo) en lugar de `-(x + N)`. La prueba pasa 10/10 asertos. ✓\n   ✓ PASA · fin · 10 vueltas · 1365 tok · 2975.7 s · 1 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 1365.0\nCIFRA segundos_media 2975.7\nCIFRA intervenciones 1\n\n1/1 tareas · registro → registros/2026-08-27_1527_m5-1-larga-c8000-ter.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-27 15:28",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 100.0,
+    "espero": "==100"
+  },
+  "leccion": "CONFIRMADO CON LA GUARDA CUMPLIDA —tareas_pct 100 Y un renacimiento real en la traza (13.026 caracteres resumidos)—: LA BRECHA M5.1 QUEDA CERRADA CON NUMERO. La sesion renacio tras el mega-turno de los 10 editar, el modelo continuo desde el resumen mecanico sin repetir trabajo, verifico y cerro en 10 vueltas (1.365 tok, 2.975,7 s, 1 intervencion menor). El camino hasta aqui vale tanto como el destino y queda en las revisiones: el desbordamiento tenia TRES capas y las tres se pelaron con evidencia, no con conjetura — la fraccion no ve la sobrecarga absoluta; el contenido crudo no ve el JSON de llamadas ni los envoltorios; y la capa real, invisible para CUALQUIER conteo desde la transcripcion, es el think crudo que el camino incremental arrastra en la cache — por eso el arreglo final pregunta al CEREBRO (tokens_en_contexto) y toma el maximo de ambas vistas, con olvidar() tras renacer para no encadenar renaceres. Regla que queda para siempre: en un arnes con cache append-exacta, el guardian del contexto tiene que mirar LA CACHE, no la transcripcion. Con esto Mekro-Genai sostiene tareas que desbordan su ventana: la capacidad que el autor llamo «el hueco mas profundo» frente a Claude Code.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-27 12:23",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-27 12:23",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 12:23",
+      "que": "predicho tareas_pct ==100"
+    },
+    {
+      "cuando": "2026-08-27 13:01",
+      "que": "medido: código 1"
+    },
+    {
+      "cuando": "2026-08-27 13:30",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 14:08",
+      "que": "medido: código 1"
+    },
+    {
+      "cuando": "2026-08-27 14:38",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-27 15:27",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-27 15:28",
+      "que": "veredicto: CONFIRMA (tareas_pct=100.0)"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "capa": 30,
+  "tensor": "mlp.gate_proj",
+  "candidatos": 4000,
+  "criba": 20000,
+  "confirma": 200000,
+  "umbral": 8,
+  "fuentes": {
+    "bf16": {
+      "cribados": 3831,
+      "validos": 4,
+      "mediana_aciertos": 42.0,
+      "mejores_aciertos": [
+        72,
+        71,
+        70,
+        70,
+        69,
+        69,
+        69,
+        69,
+        68,
+        68
+      ],
+      "segundos": 121.6
+    },
+    "campeon": {
+      "cribados": 3324,
+      "validos": 0,
+      "mediana_aciertos": 27.0,
+      "mejores_aciertos": [
+        69,
+        68,
+        67,
+        64,
+        64,
+        64,
+        62,
+        61,
+        60,
+        60
+      ],
+      "segundos": 249.0
+    }
+  },
+  "suelo_empirico": 69,
+  "segundos": 249.1
+}

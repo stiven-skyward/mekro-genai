@@ -1,0 +1,30 @@
+{
+  "capa": 30,
+  "tensor": "mlp.up_proj",
+  "g": 16,
+  "n": 40000,
+  "eps": 0.02,
+  "forma": [
+    17408,
+    5120
+  ],
+  "por_fuente": {
+    "campeon": {
+      "vecino_mediano": 0.552,
+      "vecino_p01": 0.39131,
+      "frac_cerca": 0.0033
+    },
+    "bf16": {
+      "vecino_mediano": 0.5799,
+      "vecino_p01": 0.43052,
+      "frac_cerca": 0.0
+    },
+    "gaussiana": {
+      "vecino_mediano": 0.57991,
+      "vecino_p01": 0.43189,
+      "frac_cerca": 0.0
+    }
+  },
+  "razon_vecinos_vs_bf16": 1000000000.0,
+  "segundos": 28.8
+}

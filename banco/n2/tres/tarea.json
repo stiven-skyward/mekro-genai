@@ -1,0 +1,17 @@
+{
+ "id": "tres",
+ "nivel": "n2",
+ "encargo": "La prueba de `agenda.py` falla. Arregla el módulo entero: los contratos de cada función están en su docstring. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "TRES bugs independientes que la prueba revela DE UNO EN UNO (cada aserto caído tapa los siguientes). Mide dos cosas: si consolida los tres arreglos leyendo los contratos de una vez —como hizo en atomo— o si paga el ciclo arreglar-correr-arreglar tres veces, que a ~0,3 s/token del prefill es el triple de reloj.",
+ "guion": [
+  "<think>Un aserto caído puede tapar otros: leo módulo y prueba enteros y arreglo TODO de una vez.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"agenda.py\"}}\n</tool_call>\n<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"agenda.py\", \"cambios\": [{\"buscar\": \"    agenda[nombre] = telefono\", \"poner\": \"    agenda[nombre.strip()] = telefono\"}, {\"buscar\": \"    return sorted(n for n in agenda if n.startswith(prefijo.upper()))\", \"poner\": \"    return sorted(n for n in agenda if n.startswith(prefijo))\"}, {\"buscar\": \"    return [f\\\"{n}: {t}\\\" for n, t in sorted(agenda.items(), reverse=True)]\", \"poner\": \"    return [f\\\"{n}: {t}\\\" for n, t in sorted(agenda.items())]\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "Tres bugs, tres contratos del docstring: `alta` no limpiaba espacios, `busca` forzaba mayúsculas y `listado` salía descendente. Un solo `editar`. 3/3."
+ ]
+}
