@@ -151,6 +151,25 @@ def main(argv: list[str] | None = None) -> int:
     if a.peticion[0] == "google":
         from . import google_cuenta as G
         sub = a.peticion[1] if len(a.peticion) > 1 else "estado"
+        if sub == "url":
+            u, q = G.url_de_entrada()
+            if q:
+                print(q)
+                return 1
+            print("\n  1. Abre esto y entra con tu cuenta de Google:\n")
+            print(f"  {u}\n")
+            print("  2. Al aceptar, el navegador irá a localhost:8765 y dirá que NO")
+            print("     PUEDE CONECTAR. Es lo esperado: no hay nada escuchando ahí.")
+            print("     Copia la URL entera de la barra de direcciones.\n")
+            print("  3. Y pégala aquí:")
+            print("     genai google pegar \"http://localhost:8765/?code=...\"\n")
+            return 0
+        if sub == "pegar":
+            ok, msg = G.completar(" ".join(a.peticion[2:]))
+            print(("\u2713 " if ok else "\u2717 ") + msg)
+            if ok:
+                print("  Comprueba con: genai google")
+            return 0 if ok else 1
         if sub == "entrar":
             ok, msg = G.entrar()
             print(("✓ " if ok else "✗ ") + msg)
@@ -158,6 +177,17 @@ def main(argv: list[str] | None = None) -> int:
                 print("  Ya puedes: genai tarea \"...\" --cerebro nube:google")
                 print("  Usa la cuota de tu cuenta, no una clave de API.")
             return 0 if ok else 1
+        if sub == "proyecto":
+            if len(a.peticion) < 3:
+                print("uso: genai google proyecto <id-de-tu-proyecto-gcp>")
+                return 2
+            d = G._leer()
+            d["proyecto_dado"] = a.peticion[2]
+            d.pop("proyecto", None)
+            G._guardar(d)
+            print(f"proyecto fijado: {a.peticion[2]}")
+            print(G.estado())
+            return 0
         if sub == "salir":
             print(G.salir())
             return 0

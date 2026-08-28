@@ -226,7 +226,28 @@ mismo patrón que los proveedores compatibles con OpenAI:
 `{q}`, `{n}` y `{clave}` se sustituyen. Para POST, añade `"metodo": "POST"` y un
 `"cuerpo": {...}` con las mismas marcas.
 
-## Con tu suscripción de Google, sin clave
+## Con tu cuenta de Google (Code Assist) — ⚠ cerrado para cuentas personales
+
+**Medido con una cuenta real el 2026-08-28: para una cuenta personal esto ya no
+funciona, y no es culpa del código.** Google retiró el nivel gratuito de Code Assist
+para individuos:
+
+```
+free-tier      INELEGIBLE · "This client is no longer supported for Gemini Code
+               Assist for individuals. Migrate to the Antigravity suite."
+standard-tier  403 · "You do not have a valid license of this product."
+```
+
+No es un bloqueo a terceros: **`gemini-cli` 0.57.0 ya ni ofrece OAuth personal** —solo
+acepta `GEMINI_API_KEY`, Vertex o Code Assist con licencia—. La puerta se cerró para
+todos, y esta medición es la prueba.
+
+Sigue sirviendo si **tienes licencia de Gemini Code Assist** (Standard/Enterprise) y un
+proyecto de Google Cloud: `genai google proyecto <id>`.
+
+**Si no la tienes, usa una clave de AI Studio.** Tiene nivel gratuito, funciona hoy y no
+depende de nada de esto. Es lo que hemos medido toda la sesión.
+
 
 ```bash
 genai google entrar      # abres una URL, entras con tu cuenta

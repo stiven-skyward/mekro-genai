@@ -1,9 +1,25 @@
-"""Entrar con tu cuenta de Google y usar la cuota de tu suscripción, no una clave.
+"""Entrar con tu cuenta de Google y usar la cuota de Code Assist, no una clave.
 
-**Qué es esto.** Google AI Pro/Ultra —y también la cuenta gratuita— traen cuota de
-*Code Assist*, que es la que usa `gemini-cli`. Entrando con tu cuenta se usa esa cuota
-en vez de pagar tokens de la API. La clave de AI Studio sigue funcionando y no se toca:
-esto es una alternativa, no un reemplazo.
+    ⚠ MEDIDO CON UNA CUENTA REAL EL 2026-08-28: PARA UNA CUENTA PERSONAL,
+      ESTO YA NO FUNCIONA, Y NO ES CULPA DEL CÓDIGO.
+
+      Google retiró el nivel gratuito de Code Assist para individuos. `loadCodeAssist`
+      devuelve `free-tier` como INELEGIBLE con «UNSUPPORTED_CLIENT — this client is no
+      longer supported for Gemini Code Assist for individuals; migrate to Antigravity»,
+      y el `standard-tier` que queda responde 403 «You do not have a valid license».
+
+      No es un bloqueo a terceros: el propio `gemini-cli` 0.57.0 ya ni ofrece OAuth
+      personal —solo acepta GEMINI_API_KEY, Vertex o Code Assist con licencia—. La
+      puerta se cerró para todos.
+
+      Sirve si TIENES licencia de Gemini Code Assist (Standard/Enterprise) y un
+      proyecto de Google Cloud: pon `genai google proyecto <id>`.
+      Si no: **usa una clave de AI Studio**, que tiene nivel gratuito, funciona hoy y
+      no depende de nada de esto.
+
+**Qué es esto.** Code Assist es la cuota que usaba `gemini-cli` al entrar con la cuenta.
+Este módulo hace ese mismo camino. La clave de AI Studio sigue funcionando y no se toca:
+esto era una alternativa, no un reemplazo.
 
 **Lo que hay que decir y no adornar.** Este es el camino que usan los clientes de
 terceros: se presenta con el identificador de cliente de `gemini-cli` y habla con su
@@ -210,6 +226,64 @@ def _decir(x=""):
     print(x, flush=True)
 
 
+PENDIENTE = Path.home() / ".config" / "genai" / "google_pendiente.json"
+
+
+def url_de_entrada() -> tuple[str, str]:
+    """Devuelve (url, queja) y SALE. El flujo en dos pasos.
+
+    `entrar` se queda esperando, y eso no sirve en cualquier sitio: si el comando corre
+    dentro de otro programa que lo manda a segundo plano a los pocos segundos, el
+    usuario NUNCA VE LA URL y el proceso muere solo al agotar el plazo. Pasó tres veces
+    seguidas en la primera prueba real, y las dos correcciones anteriores —vaciar el
+    búfer, ampliar el plazo— no lo arreglaban porque el problema no era ninguna de esas
+    dos cosas: era quedarse esperando.
+
+    Así que esto genera la URL, guarda el `state` en disco y termina en el acto.
+    `completar` canjea después lo que el navegador haya devuelto."""
+    cid, sec, queja = credenciales()
+    if queja:
+        return "", queja
+    estado = secrets.token_urlsafe(24)
+    # Sin servidor escuchando, el navegador dirá «no se puede conectar» al volver: es lo
+    # esperado, y el código está en la barra de direcciones igual.
+    redirigir = "http://localhost:8765"
+    PENDIENTE.parent.mkdir(parents=True, exist_ok=True)
+    PENDIENTE.write_text(json.dumps({"state": estado, "redirigir": redirigir,
+                                     "cuando": time.time()}), encoding="utf-8")
+    os.chmod(PENDIENTE, 0o600)
+    return AUTORIZAR + "?" + urllib.parse.urlencode({
+        "client_id": cid, "redirect_uri": redirigir, "response_type": "code",
+        "scope": AMBITOS, "state": estado, "access_type": "offline",
+        "prompt": "consent"}), ""
+
+
+def completar(pegado: str) -> tuple[bool, str]:
+    """Canjea la URL de vuelta (o el código suelto) del paso anterior."""
+    try:
+        d = json.loads(PENDIENTE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False, "no hay una entrada a medias. Empieza por `genai google url`."
+    pegado = (pegado or "").strip().strip('"\'')
+    if not pegado:
+        return False, "pega la URL a la que te redirigió, o el código suelto"
+    q = urllib.parse.parse_qs(urllib.parse.urlparse(pegado).query)
+    if q.get("error"):
+        return False, f"Google devolvió «{q['error'][0]}»"
+    codigo = q.get("code", [pegado if "?" not in pegado else ""])[0]
+    if not codigo:
+        return False, f"no encuentro ningún código en eso: {pegado[:60]}"
+    # Si la URL trae `state`, tiene que ser el que se guardó. Si pegó solo el código no
+    # hay nada que comparar y se acepta: lo escribió él, no una página.
+    if q.get("state") and q["state"][0] != d.get("state"):
+        return False, ("el `state` no coincide con la petición que se hizo. No se "
+                       "guarda nada. Vuelve a empezar con `genai google url`.")
+    ok, msg = canjear(codigo, d["redirigir"])
+    if ok:
+        PENDIENTE.unlink(missing_ok=True)
+    return ok, msg
+
+
 def _de_stdin(caja: dict) -> None:
     """Lee la URL de vuelta pegada a mano.
 
@@ -354,10 +428,42 @@ def proyecto() -> tuple[str, str]:
         return "", f"no se pudo hablar con Code Assist: {e}"
     pid = r.get("cloudaicompanionProject") or ""
     if not pid:
-        nivel = ((r.get("currentTier") or {}).get("id")
-                 or (r.get("allowedTiers") or [{}])[0].get("id", "?"))
-        return "", (f"Code Assist no devolvió proyecto (nivel «{nivel}»). Suele hacer "
-                    f"falta aceptar los términos una vez en gemini-cli o en la consola.")
+        # Google puede devolver el proyecto o exigir que lo pongas tú. Medido con una
+        # cuenta real (2026-08-28): el `free-tier` sale como INELEGIBLE con
+        # «UNSUPPORTED_CLIENT — this client is no longer supported for Gemini Code
+        # Assist for individuals», o sea que Google ya cerró esa puerta para clientes
+        # de terceros. Lo que queda es `standard-tier`, que pide un proyecto tuyo.
+        pid = (os.environ.get("GOOGLE_CLOUD_PROJECT")
+               or _leer().get("proyecto_dado") or "")
+        if not pid:
+            inelegibles = "; ".join(
+                f"{t.get('tierId')}: {t.get('reasonMessage', '')[:110]}"
+                for t in (r.get("ineligibleTiers") or []))
+            permitidos = ", ".join(t.get("id", "?")
+                                   for t in (r.get("allowedTiers") or []))
+            return "", (
+                f"Code Assist no da proyecto solo. Niveles permitidos: "
+                f"{permitidos or 'ninguno'}.\n"
+                + (f"  Niveles NO disponibles → {inelegibles}\n" if inelegibles else "")
+                + "  Los niveles permitidos que ves piden un proyecto de Google Cloud "
+                  "TUYO, con Gemini Code Assist activado.\n"
+                  "  Dilo con: export GOOGLE_CLOUD_PROJECT=tu-proyecto\n"
+                  "  o `genai google proyecto <id>`.\n"
+                  "  Si eso te suena a más de lo que querías: la clave de AI Studio "
+                  "sigue ahí, tiene nivel gratuito y no depende de nada de esto.")
+        # Con proyecto propio hay que completar el alta una vez.
+        try:
+            _post(f"{ASIST}:onboardUser", {}, {"Authorization": f"Bearer {tok}"},
+                  json_cuerpo={"tierId": ((r.get("allowedTiers") or [{}])[0]
+                                          .get("id", "standard-tier")),
+                               "cloudaicompanionProject": pid,
+                               "metadata": {"pluginType": "GEMINI"}})
+        except urllib.error.HTTPError as e:
+            cuerpo = (e.read() or b"").decode("utf-8", "replace")[:220]
+            return "", (f"el alta en Code Assist con el proyecto «{pid}» falló "
+                        f"({e.code}): {cuerpo}")
+        except OSError as e:
+            return "", f"no se pudo completar el alta: {e}"
     d["proyecto"] = pid
     _guardar(d)
     return pid, ""
