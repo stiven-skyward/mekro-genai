@@ -19,7 +19,9 @@ import lazo as mod  # noqa: E402
 c = Cuenta("lazo")
 tmp = Path(tempfile.mkdtemp(prefix="lazo-prueba-"))
 entorno = {**os.environ, "MG_CICLOS": str(tmp / "ciclos"),
-           "MG_REGISTROS": str(tmp / "registros")}
+           "MG_REGISTROS": str(tmp / "registros"),
+           # sin esto, las lecciones de juguete acaban en el CONTINUIDAD.md real
+           "MG_CONTINUIDAD": str(tmp / "CONTINUIDAD.md")}
 (tmp / "ciclos").mkdir(parents=True)
 
 
@@ -33,7 +35,8 @@ buena = {"pregunta": "¿pasa humo con eco?", "revision": "eco pasa n0 desde M0",
          "metrica": "tareas_pct", "umbral": "==100", "porque": "es el guion de oro",
          "carrera": {"nivel": "n0", "tarea": "humo", "cerebro": "eco",
                      "tope_vueltas": 8, "tope_tokens": 2000, "tope_segundos": 120},
-         "leccion": "prueba fría: eco sigue pasando humo, el lazo cierra la vuelta"}
+         "leccion": "[LECCION-DE-PRUEBA] eco sigue pasando humo; si esto aparece "
+                    "en el CONTINUIDAD.md real, una prueba lo contaminó"}
 c(mod.validar(buena) == [], "la propuesta bien formada no tiene quejas")
 c(any("metrica" in q or "métrica" in q for q in
       mod.validar({**buena, "metrica": "vibes"})), "una métrica inventada se rechaza")
@@ -61,7 +64,8 @@ c(r.returncode == 0, f"la vuelta fría termina bien (dijo: {r.stdout[-200:]!r})"
 c1 = json.loads((tmp / "ciclos" / "C1.json").read_text(encoding="utf-8"))
 c(c1["fase"] == "cerrado" and c1["veredicto"]["confirma"],
   "el ciclo quedó CERRADO y confirmado, con las dos puertas pasadas")
-c(c1["leccion"].startswith("prueba fría"), "la lección quedó escrita")
+c(c1["leccion"].startswith("[LECCION-DE-PRUEBA]"),
+  "la lección quedó escrita, y marcada como de prueba")
 c(list((tmp / "registros").glob("*lazo-C1*")), "la carrera dejó su registro aparte")
 
 # ── el guardia de novedad: repetir la carrera+métrica de C1 ya no vale ──────

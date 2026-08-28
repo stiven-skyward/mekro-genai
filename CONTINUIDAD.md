@@ -208,13 +208,9 @@ la del cuantizado. Las dos vías del proyecto no compiten: se necesitan.
 
 - **[2026-08-25 21:26] C31 · CONFIRMA** (medicion) — tareas_pct = 0.0 (se predijo ==0). CONFIRMADO en la cifra —tareas_pct 0 por tope_tokens, 1.659 gastados, solo lista.py escrito— y la cota queda cerrada: el presupuesto minimo de n3/lista esta en (1.500, 2.118] y el tope operativo razonable para n3 es 3.000. PERO el camino micro DIVERGIO y eso es la mitad valiosa del ciclo: la vuelta 3 no repitio el think ingles de C29/C30 —salio antes, en castellano, y empezo el escribir, cortado a 1.024 en mitad del JSON; la vuelta 4 lo reemitio limpio (el camino de quejas de C24 funcionando)—. A temperatura 0 la unica fuente de divergencia es el contexto, y el culpable es el ls -la de la vuelta 1: el nombre del directorio temporal y las fechas CAMBIAN por carrera, y el muestreo greedy es caotico ante bits de contexto. El «token por token» que la leccion de C30 afirmo era demasiado fuerte: valio entre C29 y C30 por suerte, no por construccion. CONSECUENCIA DE METODO, directa para H6: comparar carreras como «mismo guion» solo vale si las observaciones son byte-identicas; el comparador del lazo autonomo necesita observaciones NORMALIZADAS (directorio de trabajo → «.», sin fechas, sin inodos) o cada comparacion arrastra este ruido. Es un cambio chico en herramientas/bash y compra reproducibilidad de verdad. Del mismo ciclo quedan construidas y probadas las dos piezas que el foco de H6 pedia: el VETO de rutas (permisos.py, banco/ de solo lectura en todo modo, 5 asertos) y el VIGILANTE (ciclo.py racha: N cerrados seguidos sin confirmar, umbral y codigo de salida para que el lazo pare y pida revision, 3 asertos). Falta el proponente: que el cerebro proponga la hipotesis siguiente desde horizonte.md y los registros.
 
-- **[2026-08-25 21:34] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-25 21:35] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-25 22:02] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-25 22:41] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-25 23:16] C32 · REFUTA** (medicion) — tokens_media = 1933.0 (se predijo <1900). <think>
 The user wants me to write a research cycle lesson. Let me analyze the data:
@@ -250,17 +246,11 @@ Most probable cause: The prediction assumed file reads cost 250-350 tokens and `
 
 - **[2026-08-26] NOTA a mano sobre la lección de C32** — la entrada anterior es la PRIMERA lección escrita por el lazo autónomo y salió contaminada: un `<think>` sin cerrar (cortado por el tope de 512 del redactor) se coló entero, en inglés y truncado. No se borra —esta página no olvida—, se corrige el mecanismo: el redactor de lecciones de `lazo.py` pasa a 1.024 tokens, descarta el razonamiento sin cerrar y cae a un aviso de revisión si no queda prosa. Lo que la lección DEBIÓ decir, con las cifras en la mano: (1) la carrera lanzada NO activaba ningún `foco` —esa bandera no existe—, así que el número no mide la hipótesis: mide la COSTURA entre el espacio de hipótesis del proponente y su espacio de acción (los mandos de `correr_banco`); el proponente queda constreñido a los mandos existentes hasta que la bandera exista. (2) Aun así el número informa, y mucho: 1.933 frente a los 2.118 de C30, mismo mundo reproducible y mismos topes — una deriva del ~9 % entre carreras SIN cambio de mecanismo, que fija el SUELO DE RUIDO de `tokens_media`: un umbral a menos del ~10 % del baseline es una apuesta al ruido, no una hipótesis. El proponente queda instruido de dejar ≥15 % de margen o de predecir sobre `tareas_pct`/`intervenciones`, que son discretas.
 
-- **[2026-08-26 00:30] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-26 01:18] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-26 01:48] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-26 02:25] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-26 02:44] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-26 02:53] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-26 03:13] C33 · REFUTA** (medicion) — segundos_media = 1765.1 (se predijo <1400). REFUTA. El umbral era <1400s y la medición fue 1765.1s, superando el límite en 365.1s. La causa más probable es que el tope de 8 vueltas no es el cuello de botella, sino que la sobrecarga de contexto o la velocidad de inferencia domina el tiempo total. La tarea se completó al 100% con 1933 tokens medios y 0 intervenciones, confirmando que la restricción de vueltas no rompió la ejecución. El tiempo total de 1766.2s excede el baseline de 1630s, indicando un aumento del 8.3% en la duración. No se observó un aumento por sobrecarga de contexto, sino una degradación general del rendimiento. Se debe medir el tiempo por llamada individual para aislar si la lentitud proviene de la inferencia o de la gestión de contexto.
 
@@ -274,7 +264,6 @@ No se registraron intervenciones ni errores en las 7 vueltas.
 Se debe medir la varianza de tokens en 10 ejecuciones adicionales.
 El siguiente paso es validar la consistencia del umbral en otras tareas.
 
-- **[2026-08-26 04:51] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-26 05:00] C35 · CONFIRMA** (medicion) — segundos_media = 1352.0 (se predijo <2500). CONFIRMA.
 La medición de 1352.0 segundos supera el umbral de 2500 segundos con un margen de 1148 segundos.
@@ -286,9 +275,7 @@ Se recomienda medir la variabilidad en las próximas 5 iteraciones para confirma
 El umbral de 2500 segundos se mantiene como referencia válida para futuros ciclos.
 No se detectaron intervenciones ni errores que afectaran la métrica de tiempo.
 
-- **[2026-08-26 05:33] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-26 05:33] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-26 05:49] C36 · CONFIRMA** (medicion) — intervenciones = 0.0 (se predijo <10). CONFIRMA.
 El umbral de 10 intervenciones se superó con 0 medidas.
@@ -327,7 +314,6 @@ El 100% de éxito se mantuvo con 0 intervenciones.
 Mide el tope de 1600 tokens para forzar una compresión real.
 Observa si el éxito cae o si el sistema recorta la salida.
 
-- **[2026-08-26 08:49] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-26 09:00] C40 · CONFIRMA** (medicion) — tokens_media = 1732.0 (se predijo <1800). CONFIRMA.
 La métrica tokens_media es 1732, por debajo del umbral de 1800.
@@ -378,7 +364,6 @@ El tope de 1200 tokens no impidió el éxito, pero no garantizó la ligereza.
 Medir la longitud de la edición en `migrador.py` para aislar el coste.
 Repetir el ciclo con una instrucción de edición incremental.
 
-- **[2026-08-26 14:17] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-26 15:39] C46 · REFUTA** (medicion) — segundos_media = 2322.1 (se predijo <900). REFUTA. El tiempo medio de 2322.1 segundos supera el umbral de 900 segundos en 1422.1 segundos. La causa más probable es la ejecución de un comando fallido que consumió 1474.0 segundos en la vuelta 3. El tope de 1200 tokens permitió completar la tarea con 686 tokens medios, cumpliendo el objetivo de menos de 700. El éxito se mantuvo al 100% con 0 intervenciones. La métrica de tokens se mantuvo estable bajo el tope. El tiempo total de 2323.2 segundos confirma la ineficiencia temporal. Se debe medir el tiempo de ejecución de comandos bash para aislar cuellos de botella.
 
@@ -394,13 +379,11 @@ Evaluar si reducir el contexto de entrada acelera la generación de código.
 
 - **[2026-08-26 17:48] C48 · REFUTA** (medicion) — segundos_media = 1379.7 (se predijo <800). REFUTA. El umbral era <800 segundos y la medición registró 1379.7 segundos, superando el límite en 579.7 segundos. El éxito se mantuvo al 100% con 881 tokens medios, confirmando que el tope de 1200 tokens no impide la finalización. La causa probable es que la inferencia del modelo gguf en modo lista requiere más tiempo de cómputo por token que el estimado en la predicción. La predicción subestimó el coste temporal real de la tarea n2/tres en este entorno. No se observaron intervenciones humanas, lo que indica que el fallo es puramente de rendimiento de velocidad. El margen de 30% previsto no cubre la brecha real de 72% sobre el umbral. Debe medirse el tiempo de inferencia por token específico del modelo gguf para recalibrar el umbral.
 
-- **[2026-08-26 17:50] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-26 18:17] C49 · CONFIRMA** (medicion) — tokens_media = 493.0 (se predijo <700). CONFIRMADO —493,0 tokens frente a <700, y ademas EXACTAMENTE la linea base: el guion de anadir repitio al token entre C24, C25 y hoy—. Este ciclo fue la revision humana que el vigilante exigio al parar el lazo en racha 4 (C45-C48), y deja tres cosas: (1) el diagnostico de la racha confirmado — era UN sesgo repetido cuatro veces, predecir segundos ignorando lineas base conocidas, no cuatro fallos distintos; (2) el arreglo puesto — el contexto del proponente lleva ahora la tabla de LINEAS BASE por tarea con la instruccion de anclar umbrales con 15-30% de margen; (3) la salida de una racha codificada como doctrina: se sale con una prediccion ANCLADA que confirma, no con un override del umbral — el vigilante no se toca, se le da la razon. Secundario y valioso: segundos_media 766,0 con la maquina de mediodia, frente a 969,2 de la primera medicion de anadir — el mundo reproducible mantiene el guion clavado mientras el reloj baila con la maquina, una demostracion mas de que tokens_media es la metrica estable y segundos_media necesita control del dia.
 
 - **[2026-08-26 18:55] C50 · REFUTA** (medicion) — segundos_media = 919.7 (se predijo <900). REFUTA. El umbral era <900 segundos y la medición fue 919.7 segundos. La causa más probable es que la tarea de bitacora requirió 6 vueltas completas para diagnosticar y corregir el error en `disco.py`, superando la complejidad estimada. El éxito se mantuvo al 100% con 654 tokens medios y 0 intervenciones. El tope de 16 vueltas no fue el limitante, sino el tiempo de inferencia por vuelta. Medir la latencia pura de inferencia por token para aislar el cuello de botella.
 
-- **[2026-08-26 19:28] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-26 19:42] C51 · REFUTA** (medicion) — tokens_media = 953.0 (se predijo <600). REFUTA.
 El umbral de 3000 tokens no impide el éxito, pero la métrica de tokens_media es 953.0, superando el umbral de 600.
@@ -460,9 +443,7 @@ Medir la varianza de segundos_media en las siguientes 5 ejecuciones.
 Verificar si el margen de 330.1 segundos se mantiene estable.
 Registrar el tiempo de latencia de las llamadas de herramientas.
 
-- **[2026-08-27 01:08] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-27 01:47] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-27 02:58] C58 · CONFIRMA** (medicion) — segundos_media = 1485.2 (se predijo <1540). CONFIRMA.
 El tiempo medio de 1485.2 segundos queda por debajo del umbral de 1540 segundos.
@@ -578,31 +559,21 @@ La causa probable es la eficiencia del modelo gguf en n2.
 La tarea version requirió solo 7 vueltas y 1309 tokens.
 Medir segundos_media en n3 para validar la escalabilidad.
 
-- **[2026-08-27 11:52] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-27 11:55] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-27 12:14] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-27 12:15] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-27 12:23] C71 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). CONFIRMADO en la cifra —tareas_pct 100— pero la GUARDA de la propia prediccion dice que esto NO cierra M5.1 todavia: no hubo ni un renacimiento real (la unica coincidencia en el log es la cita de la prediccion) porque el modelo fue mas economico que mi aritmetica — 14 vueltas, 992 tokens de salida, contexto por vuelta ~9K, por debajo del umbral de 13.1K. La tarea de resistencia paso SIN estresar el mecanismo. Dos cosas medidas que si valen: (a) 64.045 tokens de entrada acumulada en 1.802,6 s — el append-exacto sostiene tareas largas con un reloj decente; (b) el renacimiento sigue probado solo en frio (ventana enana, 48 asertos). La leccion de metodo: para estresar un mecanismo relativo al contexto no se engorda la tarea (el modelo la adelgaza), se ENCOGE LA VENTANA — C72 repite la misma tarea con contexto_max 8000 y ahi el umbral de 6.4K se cruza hacia la vuelta 9 haga lo que haga el modelo. Guarda identica: 100 CON renacimiento en la traza, o no cuenta.
 
-- **[2026-08-27 12:25] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-27 13:30] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-27 14:38] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-27 15:28] C72 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). CONFIRMADO CON LA GUARDA CUMPLIDA —tareas_pct 100 Y un renacimiento real en la traza (13.026 caracteres resumidos)—: LA BRECHA M5.1 QUEDA CERRADA CON NUMERO. La sesion renacio tras el mega-turno de los 10 editar, el modelo continuo desde el resumen mecanico sin repetir trabajo, verifico y cerro en 10 vueltas (1.365 tok, 2.975,7 s, 1 intervencion menor). El camino hasta aqui vale tanto como el destino y queda en las revisiones: el desbordamiento tenia TRES capas y las tres se pelaron con evidencia, no con conjetura — la fraccion no ve la sobrecarga absoluta; el contenido crudo no ve el JSON de llamadas ni los envoltorios; y la capa real, invisible para CUALQUIER conteo desde la transcripcion, es el think crudo que el camino incremental arrastra en la cache — por eso el arreglo final pregunta al CEREBRO (tokens_en_contexto) y toma el maximo de ambas vistas, con olvidar() tras renacer para no encadenar renaceres. Regla que queda para siempre: en un arnes con cache append-exacta, el guardian del contexto tiene que mirar LA CACHE, no la transcripcion. Con esto Mekro-Genai sostiene tareas que desbordan su ventana: la capacidad que el autor llamo «el hueco mas profundo» frente a Claude Code.
 
-- **[2026-08-27 15:31] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
-- **[2026-08-27 16:59] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-27 17:22] C73 · CONFIRMA** (medicion) — tokens_media = 1614.0 (se predijo <1900). CONFIRMADO en la cifra (1.614 < 1900) pero la GUARDA manda: la tarea FALLO por tope_tokens y M3 NO se declara. Lo que este ciclo probo es la otra mitad del mecanismo, y en produccion: el vigilante de adopciones REVIRTIO solo la adopcion fallida, con constancia en el historial — el 100% es sagrado y la maquinaria lo defiende sin humano. La causa raiz, medible: C40 'gano' con 1.732 tokens de USO sobre un tope de 1.600 — rebaso su propio presupuesto y sobrevivio porque el tope se chequea al empezar cada vuelta; la adopcion eligio una configuracion sin margen, fragil por construccion, y la deriva normal de guion la mato. REGLA NUEVA del mecanismo (la cuarta de honestidad): solo se adopta una victoria que termino DENTRO de su tope (valor <= tope_tokens) — ganar rebasando el presupuesto es suerte, no configuracion. Con esa regla, el candidato robusto que queda en los registros es C39 (tope 1.800, uso ~1.6xx, 100%): la siguiente pasada lo adopta y C74 lo mide por la tuberia oficial. El arco C73→C74 es el mecanismo completo enseñado en publico: adopcion fragil → fallo → reversion automatica → regla endurecida → adopcion robusta.
 
-- **[2026-08-27 17:23] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-27 18:49] C74 · REFUTA** (medicion) — tokens_media = 1242.0 (se predijo <1200). REFUTA.
 El umbral de 1200 tokens no se cumplió, registrando 1242 tokens de media.
@@ -636,30 +607,9 @@ Registrar la tasa de intervención para cuantificar la fricción del corte.
 
 - **[2026-08-27 22:04] C78 · REFUTA** (medicion) — tokens_media = 2069.0 (se predijo <1906). REFUTADO —2.069 frente a <1906, con 100% y 0 intervenciones— y con ello queda FALSADA LA VIA ENTERA de mandos pasivos para M3, en cinco mediciones: los topes rompen antes de mejorar (C73: adopcion revertida; C77: 0% a tope 1.050) y la ventana encogida comprime por azar del camino, no por construccion (C72: 1.365; C78: 2.069 — misma configuracion, ±35% de varianza, contra un liston del 10%). El renacimiento ni siquiera salto esta vez: el camino de 7 vueltas cupo en 8.000. La leccion de fondo: en un modelo determinista-caotico (C31), un mando solo es adoptable si actua EN CADA carrera, no si depende del camino — los topes actuan solo al morder (y entonces rompen) y el contexto solo si el guion desborda. El mando activo que actua SIEMPRE y nadie ha medido en el banco: sin-pensar (el prellenado enable_thinking=false de fabrica, ya construido en M5.5), que elimina la fraccion dominante de los tokens en cada vuelta por construccion. Riesgo real y falsable: el criterio puede degradarse sin el think (C29 enseño que el diseño largo lo necesita; un arreglo simple quiza no). C79 lo mide en n1/anadir — el banco de M2, la letra exacta de M3.
 
-- **[2026-08-27 22:05] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
 
 - **[2026-08-27 22:25] C79 · CONFIRMA** (medicion) — tokens_media = 202.0 (se predijo <430). CONFIRMADO en la cifra —202 frente a <430, un -59% sobre la base 493— pero la GUARDA manda otra vez: la tarea FALLO (2 vueltas: sin think el modelo se precipito y rompio el criterio) y la adopcion NO salta. La rama intermedia de la prediccion, cumplida al pie: el criterio SI necesita el razonamiento incluso en tareas simples — el think no es grasa, es donde vive la comprension del contrato de la prueba. Con esto van SIETE mediciones del espacio de mandos (C73-C79) y el mapa esta completo: topes rompen antes de mejorar, contexto comprime por azar del camino (±35%), sin-pensar total comprime de sobra (-59%) pero mata el criterio. El dato de C79 señala la sintesis obvia y aun sin medir: el think selectivo — pensar en las vueltas de DIAGNOSTICO (donde el criterio se forma) y no en las mecanicas (donde solo cuesta). Es bandera de carrera (--pensar-vueltas N) y C80 la mide como ULTIMO intento del revisor antes de rendir el informe al autor: si tampoco, M3 queda medido como inalcanzable con banderas y este cerebro, y la palanca pasa a M1.
 
 - **[2026-08-27 23:01] C80 · REFUTA** (medicion) — tokens_media = 544.0 (se predijo <430). REFUTADO —544 frente a <430, con 100% y 0 intervenciones— y con ello EL MAPA DE M3 SOBRE MANDOS DE CARRERA QUEDA COMPLETO EN OCHO MEDICIONES (C73-C80), con una simetria final que lo explica todo: (1) los topes rompen antes de mejorar (C73 adopcion revertida; C77 0% a tope 1.050); (2) la ventana encogida comprime por azar del camino, no por construccion (1.365 contra 2.069 con la misma configuracion: ±35% de varianza contra un liston del 10%); (3) quitar el think entero ahorra un 59% pero mata el criterio (C79: 202 tokens, 0%); (4) y quitarlo solo de las vueltas mecanicas conserva el criterio pero no ahorra (C80: 544 ≥ 493), porque EL GASTO Y EL CRITERIO VIVEN EN EL MISMO SITIO — el razonamiento del diagnostico es a la vez la fraccion dominante de los tokens y la fuente de la correccion. Conclusion MEDIDA, no conjeturada: con el cerebro de trabajo de 2,83 bits, una mejora estable ≥10% en tokens del banco via banderas de carrera NO EXISTE — la densidad de razonamiento por token de este cerebro es la que es, y la palanca real de M3 es M1: un cerebro mejor piensa lo mismo en menos tokens. Lo que SI quedo construido y probado en produccion es la maquinaria entera de M3: adopcion con cuatro reglas de honestidad, reversion automatica (C73), vigilante de rachas, y un espacio de mandos activo (sin-pensar, pensar-vueltas, contexto) listo para el dia que el campeon exista. El dia que M1 aterrice, esta misma bateria de ocho preguntas se recorre en una noche de lazo autonomo.
 
-- **[2026-08-27 23:01] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 02:09] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 04:13] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 05:05] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 05:19] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 05:21] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 05:24] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 05:25] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 05:29] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 05:39] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
-
-- **[2026-08-28 05:42] C1 · CONFIRMA** (medicion) — tareas_pct = 100.0 (se predijo ==100). prueba fría: eco sigue pasando humo, el lazo cierra la vuelta
+- **[2026-08-28] INCIDENTE DE REGISTRO, anotado porque este fichero es permanente** — se retiraron de aquí **41 entradas idénticas** que decían «C1 · CONFIRMA» con la misma lección de juguete. No eran lecciones: las escribía `tests/test_lazo.py` en CADA ejecución, porque `ciclo.py veredicto` escribía siempre en el CONTINUIDAD.md real aunque la prueba apuntara sus ciclos y registros a un temporal. Se fueron commiteando desde el 2026-08-25 sin que nadie lo viera. **Lo destapó el guardián de salud, no una persona**, avisando de un fichero sin commitear tres rondas seguidas. Arreglo: `ciclo.py` respeta `MG_CONTINUIDAD`, la prueba apunta a un temporal, y el guardián comprueba en cada ronda que no haya lecciones de prueba aquí dentro. La lección de método: **una prueba que escribe en el registro permanente del proyecto corrompe la evidencia en silencio**; todo lo que una prueba toque tiene que ser desviable por entorno.

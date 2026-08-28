@@ -306,7 +306,10 @@ def cmd_veredicto(args: list[str]) -> int:
     _bitacora(c, f"veredicto: {'CONFIRMA' if ok else 'REFUTA'} ({p['metrica']}={v})")
     _escribir(c)
 
-    cont = RAIZ / "CONTINUIDAD.md"
+    # MG_CONTINUIDAD existe porque la prueba fría del lazo escribía sus lecciones de
+    # juguete en el CONTINUIDAD.md de verdad — el fichero que por regla del proyecto
+    # NO SE BORRA NUNCA. Lo destapó el guardián, no una persona.
+    cont = Path(os.environ.get("MG_CONTINUIDAD", RAIZ / "CONTINUIDAD.md"))
     if cont.exists():
         with cont.open("a", encoding="utf-8") as fh:
             fh.write(f"\n- **[{_ahora()}] {c['id']} · "

@@ -109,6 +109,21 @@ def secretos() -> tuple[bool, str]:
             else f"‼ POSIBLE CLAVE EN: {sospechosos}")
 
 
+def continuidad() -> tuple[bool, str]:
+    """CONTINUIDAD.md no se borra nunca — y tampoco se contamina. Una lección con
+    pinta de prueba ahí dentro es basura permanente en el registro del proyecto."""
+    f = RAIZ / "CONTINUIDAD.md"
+    if not f.exists():
+        return (False, "‼ CONTINUIDAD.md no existe")
+    texto = f.read_text(encoding="utf-8", errors="ignore")
+    # la marca es inequívoca a propósito: buscar una frase de prosa hacía que este
+    # mismo aviso —que cita el incidente— disparara la alarma
+    sucias = [l[:70] for l in texto.splitlines()
+              if l.startswith("- **[") and "[LECCION-DE-PRUEBA]" in l]
+    return (not sucias, "limpio" if not sucias
+            else f"‼ lecciones de prueba dentro: {sucias[:1]}")
+
+
 def sin_commitear() -> tuple[bool, int, str]:
     r = _correr(["git", "status", "--porcelain"], 120)
     n = len([l for l in (r.stdout or "").splitlines() if l.strip()])
@@ -124,7 +139,7 @@ def ronda(paciencia: dict) -> bool:
     """Una comprobación completa. Devuelve si todo está sano."""
     sello = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     res = {"suites": suites(), "anclas": anclas(), "ciclos": ciclos(),
-           "secretos": secretos(), "disco": disco()}
+           "secretos": secretos(), "continuidad": continuidad(), "disco": disco()}
     _, pendientes, txt_git = sin_commitear()
 
     # el trabajo sin registrar se pierde: se avisa a partir de la tercera ronda seguida
