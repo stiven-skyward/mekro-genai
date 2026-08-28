@@ -1,0 +1,47 @@
+{
+  "cuando": "2026-08-28_0737",
+  "nivel": "n3",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "regresion",
+      "paso": false,
+      "motivo": "tope_segundos",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 2146,
+      "tokens_entrada": 12007,
+      "cache": {
+        "leidos": 0,
+        "totales": 0
+      },
+      "poda": {
+        "antes": 2630,
+        "despues": 2630
+      },
+      "segundos": 2127.3,
+      "verificador": "✓ festivo manda sobre socio\n✓ festivo a no socio\n✓ socio en dia laborable\n✓ no socio en dia laborable\n✓ festivo que ademas cae en finde\n✗ finde a no socio: esperaba 1100, obtuve 1000\n✗ finde a socio: esperaba 880, obtuve 800",
+      "trabajo": "/tmp/banco-regresion-0h_6ee4a/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 0.0,
+    "tokens_media": 2146.0,
+    "entrada_media": 12007.0,
+    "segundos_media": 2127.3,
+    "intervenciones": 0
+  }
+}
