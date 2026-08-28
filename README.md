@@ -60,6 +60,26 @@ genai tarea "..." --cerebro eco                # el arnés sin modelo (pruebas)
 El modo por defecto es `preguntar`: lo peligroso se consulta por consola. Los topes
 (vueltas, tokens, segundos) existen porque cada vuelta cuesta segundos de CPU reales.
 
+## Interfaz gráfica — `genai ui`
+
+```bash
+genai ui                    # arranca en un puerto libre y abre el navegador
+genai ui --puerto 7654 --sin-navegador   # puerto fijo, sin abrir nada (para un servidor)
+```
+
+Una sola página HTML autocontenida (sin Electron, sin npm, sin paso de compilación)
+servida por el mismo `genai/servidor.py` que ya existía para multi-sesión y compartir:
+lista de sesiones, lanzar una tarea, ver la transcripción en vivo, responder permisos
+pendientes desde un modal, y un panel de ajustes para las claves de `genai proveedores`
+sin tocar el fichero a mano. Sondea el servidor cada 1-2 s en vez de un canal de eventos
+— con un cerebro que tarda segundos o minutos por vuelta, sondear es indistinguible de
+streaming de verdad y evita una clase entera de fallos de conexión.
+
+Al ser solo un navegador hablando HTTP con `127.0.0.1`, corre igual en Linux, macOS y
+WSL: no hay ninguna pieza nativa por sistema operativo que mantener. **macOS no necesita
+nada equivalente a WSL** —es POSIX/BSD real—, así que la base para los tres sistemas es
+la misma.
+
 ## Verificación
 
 ```bash

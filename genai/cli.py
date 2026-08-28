@@ -75,6 +75,20 @@ def cmd_tarea(a) -> int:
     guion = json.loads(Path(a.guion).read_text(encoding="utf-8")) if a.guion else []
     cerebro = cargar(a.cerebro, guion=guion) if a.cerebro == "eco" else cargar(a.cerebro)
 
+    # MULTI-SESIÓN: se resuelve el registro ANTES de construir la `Sesion`, para
+    # poder atarle el MISMO id. Antes no se hacía así, y `Sesion` generaba su propio
+    # UUID al azar: `genai sesiones compartir` y `/transcripcion` buscaban el fichero
+    # por el id del registro y el fichero se guardaba con el id de la sesión — dos
+    # identidades para la misma cosa que por construcción no coincidían nunca. El
+    # candado es de SESIÓN y no de proyecto a propósito: bloquear el proyecto
+    # convertiría esto en un turno de espera, que es lo contrario de lo que se busca.
+    from . import sesiones as _S
+    reg = (next((x for x in _S.listar() if x["id"] == a.sesion), None) if a.sesion
+           else (None if a.continuar else _S.crear(a.encargo[:60])))
+    if a.sesion and not reg:
+        print(f"no existe la sesión «{a.sesion}». Mira `genai sesiones`.")
+        return 2
+
     ultima = Path(".genai") / "ultima.json"
     if a.continuar:
         # M5 brecha 2: la sesión anterior revive tal cual. El primer generar
@@ -85,8 +99,16 @@ def cmd_tarea(a) -> int:
         sesion = Sesion.de_dict(json.loads(ultima.read_text(encoding="utf-8")), cerebro)
         print(f"continuando la sesión {sesion.id} ({sesion.vueltas} vueltas previas, "
               f"{len(sesion.mensajes)} mensajes)")
+        if reg is None:
+            # --continuar sin --sesion no pasaba antes por el registro multi-sesión:
+            # se le da una entrada nueva para que el candado y el listado funcionen,
+            # aunque su id no coincida con `sesion.id` —son dos mecanismos de resumen
+            # distintos (uno por directorio, otro por id explícito) y este caso
+            # concreto no se intenta unificar del todo aquí.
+            reg = _S.crear(f"(continuada) {sesion.id}"[:60])
     else:
-        sesion = Sesion(sistema=SISTEMA.format(raiz=Path.cwd()), cerebro=cerebro)
+        sesion = Sesion(sistema=SISTEMA.format(raiz=Path.cwd()), cerebro=cerebro,
+                        id=reg["id"])
     politica = Politica(modo=a.modo)
     print(f"cerebro {cerebro.nombre} · modo {a.modo} · topes: {a.vueltas} vueltas, "
           f"{a.tokens} tokens, {a.segundos} s")
@@ -95,18 +117,6 @@ def cmd_tarea(a) -> int:
     if hasattr(cerebro, "al_token") and not a.sin_streaming:
         cerebro.al_token = lambda trozo: print(trozo, end="", flush=True)
 
-    # MULTI-SESIÓN: se coge una sesión en exclusiva antes de tocar nada. El candado es
-    # de sesión y no de proyecto a propósito — bloquear el proyecto convertiría esto en
-    # un turno de espera, que es lo contrario de lo que se busca. Es un mecanismo
-    # DISTINTO de --continuar: uno registra "cuál de varias sesiones está viva y quién
-    # la tiene", el otro es "retoma lo último que hice aquí". Pueden usarse juntos o
-    # por separado.
-    from . import sesiones as _S
-    reg = (next((x for x in _S.listar() if x["id"] == a.sesion), None) if a.sesion
-           else _S.crear(a.encargo[:60]))
-    if a.sesion and not reg:
-        print(f"no existe la sesión «{a.sesion}». Mira `genai sesiones`.")
-        return 2
     tomada, queja = _S.tomar(reg["id"])
     if not tomada:
         print(queja)
@@ -411,6 +421,30 @@ def cmd_mcp(args: list[str]) -> int:
     return 0
 
 
+def cmd_ui(puerto: int, abrir_navegador: bool) -> int:
+    """`genai ui` — la interfaz gráfica: una página servida por `genai/servidor.py`
+    (`genai sesiones servir` es el mismo servidor; esto solo añade abrir el
+    navegador). Sin instalar nada ni añadir un ecosistema de JavaScript: funciona en
+    Linux, macOS y WSL exactamente igual, porque es un navegador hablando HTTP con
+    localhost — no hay ninguna pieza nativa por sistema operativo que mantener."""
+    import webbrowser
+
+    from .servidor import servir
+
+    def _abrir(url: str) -> None:
+        if abrir_navegador:
+            try:
+                webbrowser.open(url)
+            except Exception:  # noqa: BLE001 — sin navegador, la URL ya se imprimió
+                pass
+
+    # `puerto` tal cual, SIN «or 7654»: 0 es el defecto documentado («uno libre
+    # cualquiera») y en Python `0 or 7654` da 7654 siempre — ese `or` volvía inalcanzable
+    # el propio comportamiento por defecto que el --help promete.
+    servir(puerto, al_arrancar=_abrir)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="genai", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -473,6 +507,11 @@ def main(argv: list[str] | None = None) -> int:
     co = sub.add_parser("copilot", help="suscripción directa de GitHub Copilot")
     co.add_argument("resto", nargs=argparse.REMAINDER)
 
+    ui = sub.add_parser("ui", help="interfaz gráfica ligera (navegador, sin instalar nada)")
+    ui.add_argument("--puerto", type=int, default=0, help="0 = uno libre cualquiera")
+    ui.add_argument("--sin-navegador", action="store_true",
+                    help="no abrir el navegador solo; imprime la URL igualmente")
+
     a = ap.parse_args(argv)
     if a.orden == "tarea":
         return cmd_tarea(a)
@@ -493,6 +532,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_google(a.resto)
     if a.orden == "copilot":
         return cmd_copilot(a.resto)
+    if a.orden == "ui":
+        return cmd_ui(a.puerto, not a.sin_navegador)
     ap.print_help()
     return 0
 
