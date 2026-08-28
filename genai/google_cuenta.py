@@ -54,6 +54,27 @@ from pathlib import Path
 CLIENTE_FICHERO = Path.home() / ".config" / "genai" / "google_cliente.json"
 
 
+def _pareja_valida(cid: str, sec: str) -> bool:
+    """¿Son pareja? Se le pregunta a Google con un código inventado: si el cliente y el
+    secreto casan, se queja del CÓDIGO («invalid_grant»); si no, del CLIENTE. No
+    autoriza nada ni toca ninguna cuenta."""
+    datos = urllib.parse.urlencode({
+        "client_id": cid, "client_secret": sec, "code": "no-existe",
+        "grant_type": "authorization_code", "redirect_uri": "http://localhost:1"}).encode()
+    try:
+        urllib.request.urlopen(urllib.request.Request(
+            "https://oauth2.googleapis.com/token", datos,
+            {"Content-Type": "application/x-www-form-urlencoded"}), timeout=20)
+    except urllib.error.HTTPError as e:
+        try:
+            return json.loads(e.read() or b"{}").get("error") == "invalid_grant"
+        except ValueError:
+            return False
+    except OSError:
+        return False
+    return False
+
+
 def _de_gemini_cli() -> tuple[str, str]:
     """Saca las credenciales de un gemini-cli instalado, si lo hay."""
     import re
@@ -76,10 +97,17 @@ def _de_gemini_cli() -> tuple[str, str]:
                 t = f.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
-            cid = re.search(r"[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com", t)
-            sec = re.search(r"GOCSPX-[A-Za-z0-9_\-]{20,}", t)
-            if cid and sec:
-                return cid.group(0), sec.group(0)
+            # gemini-cli lleva DOS client_id y un solo secreto: coger el primero de
+            # cada uno los empareja mal y Google responde «client secret is invalid».
+            # Se empareja por CERCANÍA en el fichero, que es donde el código los define
+            # juntos, y luego se verifica contra Google — que es lo único que lo zanja.
+            for m_sec in re.finditer(r"GOCSPX-[A-Za-z0-9_\-]{20,}", t):
+                cerca = sorted(
+                    re.finditer(r"[0-9]{6,}-[a-z0-9]{10,}\.apps\.googleusercontent\.com", t),
+                    key=lambda m: abs(m.start() - m_sec.start()))
+                for m_cid in cerca[:3]:
+                    if _pareja_valida(m_cid.group(0), m_sec.group(0)):
+                        return m_cid.group(0), m_sec.group(0)
     return "", ""
 
 
