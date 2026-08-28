@@ -148,6 +148,12 @@ def main(argv: list[str] | None = None) -> int:
     # `genai proveedores [texto]` — qué se puede enchufar, del catálogo.
     if a.peticion[0] == "proveedores":
         return cmd_proveedores(" ".join(a.peticion[1:]))
+    if a.peticion[0] == "mcp":
+        # Sobre stdio, sin traza: cualquier línea que no sea JSON-RPC rompería el
+        # protocolo del lado del cliente (Antigravity, Claude Desktop, …).
+        from .mcp import servir
+        servir()
+        return 0
     if a.peticion[0] == "google":
         from . import google_cuenta as G
         sub = a.peticion[1] if len(a.peticion) > 1 else "estado"

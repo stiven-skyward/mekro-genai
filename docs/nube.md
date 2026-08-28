@@ -309,6 +309,45 @@ clave que escribieras tú, sino una credencial que este programa obtuvo en tu no
    registro, un log o un nombre. Si una clave se te escapa a un sitio compartido,
    rótala — es más barato que cualquier auditoría.
 
+## Mekro-Genai como servidor MCP (tu suscripción usando el arnés)
+
+No hay forma legítima de que Mekro-Genai gaste la cuota de una suscripción de
+**consumidor** (Google AI Pro/Ultra) por API — esa cuota vive dentro de las apps de
+Google (Gemini, Antigravity), y la API programática es un producto de facturación
+distinto. Medido con cuenta real el 2026-08-28 (ver arriba): `loadCodeAssist` responde
+que el nivel gratuito para individuos "ya no está soportado" y el de pago exige
+licencia de Code Assist, no la suscripción de consumidor.
+
+Lo que **sí** funciona: invertir la dirección. En vez de que Mekro-Genai le pida texto a
+Gemini, **Gemini (dentro de Antigravity, con tu suscripción) le pide herramientas a
+Mekro-Genai** — protocolo MCP, que Antigravity y Claude Desktop ya hablan de forma
+nativa.
+
+```bash
+genai mcp     # sirve por stdio; no lo lances a mano, lo lanza el cliente
+```
+
+En la configuración MCP de Antigravity (o Claude Desktop):
+
+```json
+{"mcpServers": {"mekro-genai": {
+  "command": "python3", "args": ["-m", "genai.cli", "mcp"],
+  "cwd": "/ruta/a/tu/proyecto"}}}
+```
+
+Con eso, el modelo que ya pagas puede llamar a `leer`, `editar`, `referencias`
+(la de LSP), `git`, `subagente`, la malla — todo lo que ya existe, sin duplicar nada.
+
+**Pasa por la misma `Politica` que el bucle normal**, en modo `lista` por defecto: no
+hay humano al otro lado de un cliente remoto para «preguntar», y `todo` confiaría en el
+cliente más de lo que se confía en el propio agente. El veto duro de `permisos.py`
+(`rm -rf /`, forzar un push, etc.) actúa igual venga la llamada de donde venga —
+verificado con un `tools/call` real contra `bash rm -rf /`.
+
+**Lo que esto NO es**: no es Mekro-Genai usando tu suscripción. Es tu suscripción,
+dentro de la app de Google, usando Mekro-Genai. El cerebro sigue siendo el de Google; lo
+que se comparte es la caja de herramientas.
+
 ## Coste y velocidad, medidos
 
 `n1/anadir`, misma tarea y mismo verificador determinista:
