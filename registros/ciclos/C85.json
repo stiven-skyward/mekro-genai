@@ -1,7 +1,7 @@
 {
   "id": "C85",
   "pregunta": "¿Separan a modelos capaces las dos tareas nuevas (renombrar, traza)?",
-  "fase": "predicho",
+  "fase": "cerrado",
   "abierto": "2026-08-28 12:38",
   "revision": {
     "cuando": "2026-08-28 12:38",
@@ -14,9 +14,28 @@
     "porque": "Con gpt-4.1-mini sobre n3 completo espero que baje de 100, que es lo que saco en C84 antes de estas dos. renombrar castiga el atajo de renombrar por texto y traza castiga arreglar donde apunta el error, y las dos son tentaciones reales de un modelo rapido. Pero acabo de aprender con n3/regresion que una trampa que muerde en frio puede no morder a nadie capaz, asi que esto es una prediccion floja y puede salir 100. Si sale 100, las tareas siguen siendo buenas -son reales y estan bien verificadas- pero NO habran cerrado el hueco de C84 y habra que decirlo."
   },
   "sonda": null,
-  "medicion": null,
-  "veredicto": null,
-  "leccion": null,
+  "medicion": {
+    "cuando": "2026-08-28 12:51",
+    "comando": "bash /tmp/c85.sh",
+    "codigo": 0,
+    "segundos": 0.0,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 0.0,
+      "entrada_media": 0.0,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "CIFRA tareas_pct 100.0\nCIFRA tokens_media 0\nCIFRA entrada_media 0\nCIFRA intervenciones 0"
+  },
+  "veredicto": {
+    "cuando": "2026-08-28 12:51",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 100.0,
+    "espero": "<100"
+  },
+  "leccion": "Las dos tareas nuevas NO separan a modelos capaces: gpt-4.1-mini 6/6 y gemini 6/6 sobre n3 entero. Predije <100 y salio 100. Con esto van TRES de tres: regresion, renombrar y traza se disenaron con una trampa, las tres muerden en frio -sed global 3 de 10 fallos, parche del sintoma 2 de 4- y a las tres las pasa cualquier cerebro capaz. El patron ya no es casualidad: UNA TRAMPA QUE ATRAPA A UN SCRIPT NO ATRAPA A UN MODELO. Mis trampas castigan un atajo -renombrar por texto, parchear donde apunta la traza- y un modelo capaz no toma ese atajo, asi que la trampa se dispara contra nadie. Para separar capaces hace falta dificultad de CAPACIDAD -longitud, estado que sostener, ambiguedad real, muchos ficheros a la vez- y no ingenio en el diseno. Pero la leccion cara es otra y es sobre el metodo. C84 concluyo que n3 separa capaces porque gemini fallo lista UNA vez. Hoy gemini pasa lista sin que la tarea haya cambiado: era VARIANZA. Construi una conclusion sobre una sola observacion no repetida, que es exactamente el error que le acababa de reprochar a C28 en el veredicto anterior. Dos seguidos. La regla que faltaba escribir: una diferencia entre cerebros no es discriminacion hasta que se REPITE, porque el modelo es no determinista y con seis tareas una que cambie de signo mueve el total 16,7 puntos. Conclusion honesta del estado: el banco no tiene hoy ni una sola tarea que separe de forma repetible a dos cerebros capaces, y las tres que escribi para lograrlo no lo lograron.",
   "bitacora": [
     {
       "cuando": "2026-08-28 12:38",
@@ -29,6 +48,14 @@
     {
       "cuando": "2026-08-28 12:38",
       "que": "predicho tareas_pct <100"
+    },
+    {
+      "cuando": "2026-08-28 12:51",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-28 12:51",
+      "que": "veredicto: REFUTA (tareas_pct=100.0)"
     }
   ]
 }

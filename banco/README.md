@@ -33,29 +33,37 @@ exigírsela a un modelo de 2 bits. Ese efecto lateral vale tanto como la prueba.
 - **n1 — reales.** Ingeniería de verdad, uno o dos ficheros, con prueba en rojo antes y en
   verde después. Sostienen M2. Están por escribir: [H3](../holos/H3.md).
 
-## Qué discrimina cada nivel (medido, C84 · 2026-08-28)
-
-Un banco solo sirve si separa. Esto es lo que separa cada nivel, con cifras y no con
-intención:
+## Qué discrimina cada nivel (medido, C84 y C85 · 2026-08-28)
 
 | nivel | `gpt-4.1-nano` | `gguf` local | `gemini-3.7-flash` | `gpt-4.1-mini` |
 |---|---|---|---|---|
-| **n1** | 16,7 % | 100 % | 100 % | 100 % |
-| **n3** | 0 % | 100 % † | 75 % | 100 % |
-
-*(la fila de n3 es de C84, con cuatro tareas; desde C85 son seis)*
+| **n1** (6 tareas) | 16,7 % | 100 % | 100 % | 100 % |
+| **n3** (6 tareas) | 0 % | 100 % † | 100 % | 100 % |
 
 † el GGUF local necesita `--tope-segundos 6000`: con los 1.800 de fábrica da 0 %, y a
-~530 s por vuelta no le llega ni para editar. Es un aviso para quien mida: **contra el
-cerebro local, un tope de reloj corto convierte cualquier nivel en un medidor de
-velocidad**, y lo que parece dificultad de razonamiento es dificultad de agenda.
+~530 s por vuelta no le llega ni para editar. **Contra el cerebro local, un tope de
+reloj corto convierte cualquier nivel en un medidor de velocidad**, y lo que parece
+dificultad de razonamiento es dificultad de agenda.
 
-Léase con cuidado, porque durante un tiempo aquí se dijo otra cosa: **n1 sí discrimina**
-—separa un modelo débil de uno capaz— pero **no separa a los capaces entre sí**. Para eso
-está n3, donde `gemini` y `mini` ya difieren (`lista`). C28 midió 100 % en todas partes,
-pero con tres cerebros que resultaron ser todos capaces; de ahí salió la frase «el banco
-dejó de discriminar», que se repitió sin comprobarse hasta C84. Una conclusión heredada
-de otra medición no es una medición.
+### Lo que el banco SÍ y NO hace, dicho sin adornos
+
+**Sí**: separa un modelo débil de uno capaz, con holgura (16,7 % contra 100 %).
+
+**No**: no separa a los capaces entre sí. **Ni una sola tarea lo hace de forma
+repetible.** En C84 pareció que `n3/lista` lo hacía —gemini la falló— y en C85 gemini la
+pasó sin que la tarea cambiara: era varianza. Tres tareas escritas expresamente contra
+ese hueco (`regresion`, `renombrar`, `traza`) las pasan todos los cerebros capaces,
+aunque las tres muerdan en frío contra un `sed` o un parche automático.
+
+De ahí las dos reglas que se ganaron a base de equivocarse:
+
+1. **Una trampa que atrapa a un script no atrapa a un modelo.** Castigar un atajo no
+   sirve cuando el modelo capaz no toma el atajo. Para separar capaces hace falta
+   dificultad de **capacidad** —longitud, estado que sostener, ambigüedad real, muchos
+   ficheros a la vez— y no ingenio en el diseño.
+2. **Una diferencia entre cerebros no es discriminación hasta que se repite.** El modelo
+   es no determinista y con seis tareas una que cambie de signo mueve el total 16,7
+   puntos. C84 concluyó de una sola observación; C85 la desmintió.
 
 ## Correrlo
 

@@ -6,7 +6,7 @@
  "verificar_intacto": [
   "prueba.py"
  ],
- "porque": "SEPARA A MODELOS CAPACES y justifica el LSP. Seis ficheros y 14 coincidencias de texto para `procesar`, de las que solo 5 son la función del núcleo: las otras son un método de `Cola`, un método de `Auditor` y una mención en una cadena de ayuda. Un renombrado por texto (`sed`, o un grep leído a la ligera) falla 3 de 10 asertos, porque se lleva por delante los dos métodos homónimos; el correcto pasa 10/10. Es la tarea para la que existe `referencias`: pregunta al servidor de lenguaje quién usa QUÉ, en vez de qué líneas contienen una palabra.",
+ "porque": "EJERCITA EL LSP. (No separa a modelos capaces: medido en C85, gemini y gpt-4.1-mini la pasan. Se escribió para eso y no lo consiguió.) Seis ficheros y 14 coincidencias de texto para `procesar`, de las que solo 5 son la función del núcleo: las otras son un método de `Cola`, un método de `Auditor` y una mención en una cadena de ayuda. Un renombrado por texto (`sed`, o un grep leído a la ligera) falla 3 de 10 asertos, porque se lleva por delante los dos métodos homónimos; el correcto pasa 10/10. Es la tarea para la que existe `referencias`: pregunta al servidor de lenguaje quién usa QUÉ, en vez de qué líneas contienen una palabra.",
  "guion": [
   "<think>Renombrar por texto es la trampa: `procesar` puede ser varias cosas. Pregunto quién usa la función del núcleo de verdad.</think>\n<tool_call>\n{\"name\": \"referencias\", \"arguments\": {\"ruta\": \"nucleo.py\", \"simbolo\": \"procesar\", \"linea\": 4}}\n</tool_call>",
   "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"prueba.py\"}}\n</tool_call>",

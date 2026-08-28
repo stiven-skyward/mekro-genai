@@ -1,0 +1,195 @@
+{
+  "cuando": "2026-08-28_1250",
+  "nivel": "n3",
+  "cerebro": "nube:gemini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "larga",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 18,
+      "intervenciones": 0,
+      "tokens_salida": 653,
+      "tokens_entrada": 74870,
+      "cache": {
+        "leidos": 49908,
+        "totales": 74870,
+        "escritos": 4159,
+        "escrituras": 1
+      },
+      "poda": {
+        "antes": 7989,
+        "despues": 5071
+      },
+      "segundos": 160.1,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-larga-b4ho7l_p/caja"
+    },
+    {
+      "id": "lista",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 9,
+      "intervenciones": 0,
+      "tokens_salida": 847,
+      "tokens_entrada": 44782,
+      "cache": {
+        "leidos": 24121,
+        "totales": 44782,
+        "escritos": 6296,
+        "escrituras": 2
+      },
+      "poda": {
+        "antes": 2994,
+        "despues": 2696
+      },
+      "segundos": 112.2,
+      "verificador": "6/6 asertos ✓",
+      "trabajo": "/tmp/banco-lista-uw7hyv20/caja"
+    },
+    {
+      "id": "regresion",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 528,
+      "tokens_entrada": 25900,
+      "cache": {
+        "leidos": 14644,
+        "totales": 25900,
+        "escritos": 3661,
+        "escrituras": 1
+      },
+      "poda": {
+        "antes": 3256,
+        "despues": 3256
+      },
+      "segundos": 55.6,
+      "verificador": "✓ festivo manda sobre socio\n✓ festivo a no socio\n✓ socio en dia laborable\n✓ no socio en dia laborable\n✓ finde a no socio\n✓ finde a socio\n✓ festivo que ademas cae en finde\n7/7 asertos ✓",
+      "trabajo": "/tmp/banco-regresion-atbk16pd/caja"
+    },
+    {
+      "id": "renombrar",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 17,
+      "intervenciones": 0,
+      "tokens_salida": 624,
+      "tokens_entrada": 75841,
+      "cache": {
+        "leidos": 52509,
+        "totales": 75841,
+        "escritos": 7476,
+        "escrituras": 2
+      },
+      "poda": {
+        "antes": 12320,
+        "despues": 7888
+      },
+      "segundos": 140.6,
+      "verificador": "fine procesar\n✓ Cola.procesar sigue llamándose procesar\n✓ Auditor.procesar sigue llamándose procesar\n✓ nucleo.transformar limpia y redondea\n✓ resumir sigue bien\n✓ informes usa el nombre nuevo\n✓ informe_largo sigue bien\n✓ lotes usa el nombre nuevo\n✓ el Auditor sigue procesando su cola\n10/10 asertos ✓",
+      "trabajo": "/tmp/banco-renombrar-itb9n3yw/caja"
+    },
+    {
+      "id": "ruidosa",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 279,
+      "tokens_entrada": 20176,
+      "cache": {
+        "leidos": 8931,
+        "totales": 20176,
+        "escritos": 2977,
+        "escrituras": 1
+      },
+      "poda": {
+        "antes": 18863,
+        "despues": 2128
+      },
+      "segundos": 62.8,
+      "verificador": "True, obtuvo True\nok  campo_58 justa-40: esperaba True, obtuvo True\nok  campo_58 larga-41: esperaba False, obtuvo False\nok  campo_59 corta: esperaba True, obtuvo True\nok  campo_59 justa-40: esperaba True, obtuvo True\nok  campo_59 larga-41: esperaba False, obtuvo False\n--- 180/180 casos correctos ---",
+      "trabajo": "/tmp/banco-ruidosa-k033w9rm/caja"
+    },
+    {
+      "id": "traza",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 343,
+      "tokens_entrada": 26315,
+      "cache": {
+        "leidos": 17130,
+        "totales": 26315,
+        "escritos": 3426,
+        "escrituras": 1
+      },
+      "poda": {
+        "antes": 3966,
+        "despues": 3966
+      },
+      "segundos": 56.3,
+      "verificador": "✓ la tubería ya no revienta y suma bien\n✓ leer devuelve la cantidad como NÚMERO, que es lo que promete su docstring\n✓ y no pierde el nombre por el camino\n✓ filtro.positivos descarta las cantidades a cero\n4/4 asertos ✓",
+      "trabajo": "/tmp/banco-traza-8w60lab2/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 545.7,
+    "entrada_media": 44647.3,
+    "cache_pct": 62.4,
+    "segundos_media": 97.9,
+    "intervenciones": 0
+  }
+}
