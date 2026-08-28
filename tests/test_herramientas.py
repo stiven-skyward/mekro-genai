@@ -52,8 +52,12 @@ c("omitidos" in gordo.recortado(), "el recorte se declara, no se disimula")
 
 # ── registro ────────────────────────────────────────────────────────────────
 reg = estandar()
-c(len(reg) == 8, "el juego estándar son 8 herramientas (M5.3 añadió fondo_lanzar "
-                 "y fondo_revisar)")
+# el CONJUNTO y no el número: un conteo se rompe con cada herramienta nueva y no
+# dice cuál cambió; el conjunto documenta el juego y falla señalando el culpable
+c({h["function"]["name"] for h in reg.firmas()} ==
+  {"leer", "escribir", "editar", "grep", "simbolos", "bash",
+   "fondo_lanzar", "fondo_revisar", "subagente"},
+  "el juego estándar es exactamente este")
 c("bash" not in estandar(incluir_peligrosas=False), "sin peligrosas no hay bash")
 c("fondo_lanzar" not in estandar(incluir_peligrosas=False),
   "sin peligrosas tampoco hay fondo_lanzar: ejecuta shell igual que bash")
