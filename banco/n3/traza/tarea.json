@@ -1,0 +1,19 @@
+{
+ "id": "traza",
+ "nivel": "n3",
+ "encargo": "`TRAZA.txt` tiene el error de un incidente y es lo único que llegó de él. Arréglalo. `prueba.py` dice qué se espera; no la modifiques.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py",
+  "TRAZA.txt"
+ ],
+ "porque": "SEPARA A MODELOS CAPACES. La traza apunta a `salida.py`, que es donde revienta, no donde está el fallo: `entrada.leer` promete en su docstring devolver la cantidad como número y devuelve texto. Arreglar donde señala la traza hace que el síntoma DESAPAREZCA —la tubería suma 20 correctamente— y sin embargo rompe dos cosas: el contrato de `leer` sigue roto para el siguiente que lo use, y `filtro.positivos` deja de descartar los ceros en silencio, porque `\"0\"` es verdadero y `0` no. Medido: parche del síntoma 2/4; arreglo de la causa 4/4. Mide leer una traza como una pista y no como una dirección.",
+ "guion": [
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"TRAZA.txt\"}}\n</tool_call>",
+  "<think>Revienta en salida.py sumando un int con un str. Pero eso es donde se nota, no de dónde viene el str. Sigo la tubería hacia atrás.</think>\n<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"entrada.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"prueba.py\"}}\n</tool_call>",
+  "<think>`leer` promete en su docstring devolver la cantidad como número y devuelve texto. Ahí está la causa: si parcheo `salida`, la suma funciona pero el contrato sigue roto y `positivos` no descarta el cero.</think>\n<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"entrada.py\", \"cambios\": [{\"buscar\": \"\\\"cantidad\\\": cantidad.strip()\", \"poner\": \"\\\"cantidad\\\": int(cantidad.strip())\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "La traza apuntaba a `salida.py`, pero el fallo estaba en `entrada.leer`, que devolvía texto donde su contrato promete número. Corregido en la causa: 4/4."
+ ]
+}

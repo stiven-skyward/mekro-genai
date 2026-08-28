@@ -1,0 +1,19 @@
+{
+ "id": "renombrar",
+ "nivel": "n3",
+ "encargo": "Renombra la función `procesar` de `nucleo.py` a `transformar`, y actualiza todos los sitios que la usan. CUIDADO: hay otras cosas llamadas `procesar` en este proyecto que NO son esa función y no se tocan. `prueba.py` dice exactamente qué se espera; no la modifiques.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "SEPARA A MODELOS CAPACES y justifica el LSP. Seis ficheros y 14 coincidencias de texto para `procesar`, de las que solo 5 son la función del núcleo: las otras son un método de `Cola`, un método de `Auditor` y una mención en una cadena de ayuda. Un renombrado por texto (`sed`, o un grep leído a la ligera) falla 3 de 10 asertos, porque se lleva por delante los dos métodos homónimos; el correcto pasa 10/10. Es la tarea para la que existe `referencias`: pregunta al servidor de lenguaje quién usa QUÉ, en vez de qué líneas contienen una palabra.",
+ "guion": [
+  "<think>Renombrar por texto es la trampa: `procesar` puede ser varias cosas. Pregunto quién usa la función del núcleo de verdad.</think>\n<tool_call>\n{\"name\": \"referencias\", \"arguments\": {\"ruta\": \"nucleo.py\", \"simbolo\": \"procesar\", \"linea\": 4}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"prueba.py\"}}\n</tool_call>",
+  "<think>Las referencias reales están en nucleo.py, informes.py y lotes.py. Los `procesar` de cola.py y registro.py no aparecen: son otra cosa y se quedan.</think>\n<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"nucleo.py\", \"cambios\": [{\"buscar\": \"def procesar(datos):\", \"poner\": \"def transformar(datos):\"}, {\"buscar\": \"    limpios = procesar(datos)\", \"poner\": \"    limpios = transformar(datos)\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"informes.py\", \"cambios\": [{\"buscar\": \"from nucleo import procesar, resumir\", \"poner\": \"from nucleo import resumir, transformar\"}, {\"buscar\": \"len(procesar(datos))\", \"poner\": \"len(transformar(datos))\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"lotes.py\", \"cambios\": [{\"buscar\": \"nucleo.procesar(l)\", \"poner\": \"nucleo.transformar(l)\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "Renombrada la función del núcleo y sus tres usos reales. Los `procesar` de `Cola` y `Auditor` son otro concepto con el mismo nombre y se quedan como estaban. 10/10."
+ ]
+}

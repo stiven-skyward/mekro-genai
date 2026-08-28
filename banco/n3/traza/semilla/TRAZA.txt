@@ -1,0 +1,11 @@
+Esto es lo que pasa al correr la tubería con datos reales.
+Es lo único que te ha llegado del incidente.
+
+Traceback (most recent call last):
+  File "tuberia.py", line 7, in correr
+    return total(positivos(leer(lineas)))
+  File "salida.py", line 5, in total
+    return sum(r["cantidad"] for r in registros)
+  File "salida.py", line 5, in <genexpr>
+    return sum(r["cantidad"] for r in registros)
+TypeError: unsupported operand type(s) for +: 'int' and 'str'

@@ -1,0 +1,34 @@
+{
+  "id": "C85",
+  "pregunta": "¿Separan a modelos capaces las dos tareas nuevas (renombrar, traza)?",
+  "fase": "predicho",
+  "abierto": "2026-08-28 12:38",
+  "revision": {
+    "cuando": "2026-08-28 12:38",
+    "texto": "C84 midio que n1 separa debil de capaz pero NO separa capaces entre si, y que en n3 solo lista los separaba (gemini 3/4, mini 4/4). Las dos tareas nuevas se disenaron contra ese hueco y en frio discriminan: renombrar, un sed global falla 3 de 10 asertos porque se lleva los dos metodos homonimos, el renombrado correcto 10/10; traza, el parche donde apunta la traza da 2 de 4 -la tuberia suma bien pero el contrato de leer sigue roto y el filtro deja de descartar ceros en silencio- y el arreglo de la causa 4/4. Que discriminen en frio no dice que discriminen con cerebros: eso es lo que fallo con n3/regresion, cuya trampa no atrapo a ninguno."
+  },
+  "prediccion": {
+    "cuando": "2026-08-28 12:38",
+    "metrica": "tareas_pct",
+    "espero": "<100",
+    "porque": "Con gpt-4.1-mini sobre n3 completo espero que baje de 100, que es lo que saco en C84 antes de estas dos. renombrar castiga el atajo de renombrar por texto y traza castiga arreglar donde apunta el error, y las dos son tentaciones reales de un modelo rapido. Pero acabo de aprender con n3/regresion que una trampa que muerde en frio puede no morder a nadie capaz, asi que esto es una prediccion floja y puede salir 100. Si sale 100, las tareas siguen siendo buenas -son reales y estan bien verificadas- pero NO habran cerrado el hueco de C84 y habra que decirlo."
+  },
+  "sonda": null,
+  "medicion": null,
+  "veredicto": null,
+  "leccion": null,
+  "bitacora": [
+    {
+      "cuando": "2026-08-28 12:38",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-28 12:38",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-28 12:38",
+      "que": "predicho tareas_pct <100"
+    }
+  ]
+}

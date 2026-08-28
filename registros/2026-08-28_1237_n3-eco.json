@@ -1,0 +1,48 @@
+{
+  "cuando": "2026-08-28_1237",
+  "nivel": "n3",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "renombrar",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 355,
+      "tokens_entrada": 21342,
+      "cache": {
+        "leidos": 0,
+        "totales": 0
+      },
+      "poda": {
+        "antes": 3632,
+        "despues": 3427
+      },
+      "segundos": 2.1,
+      "verificador": "fine procesar\n✓ Cola.procesar sigue llamándose procesar\n✓ Auditor.procesar sigue llamándose procesar\n✓ nucleo.transformar limpia y redondea\n✓ resumir sigue bien\n✓ informes usa el nombre nuevo\n✓ informe_largo sigue bien\n✓ lotes usa el nombre nuevo\n✓ el Auditor sigue procesando su cola\n10/10 asertos ✓",
+      "trabajo": "/tmp/banco-renombrar-n7c1jn8p/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 355.0,
+    "entrada_media": 21342.0,
+    "cache_pct": 0.0,
+    "segundos_media": 2.1,
+    "intervenciones": 0
+  }
+}

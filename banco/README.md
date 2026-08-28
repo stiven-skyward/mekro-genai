@@ -43,6 +43,8 @@ intención:
 | **n1** | 16,7 % | 100 % | 100 % | 100 % |
 | **n3** | 0 % | 100 % † | 75 % | 100 % |
 
+*(la fila de n3 es de C84, con cuatro tareas; desde C85 son seis)*
+
 † el GGUF local necesita `--tope-segundos 6000`: con los 1.800 de fábrica da 0 %, y a
 ~530 s por vuelta no le llega ni para editar. Es un aviso para quien mida: **contra el
 cerebro local, un tope de reloj corto convierte cualquier nivel en un medidor de

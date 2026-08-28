@@ -1,0 +1,48 @@
+{
+  "cuando": "2026-08-28_1238",
+  "nivel": "n3",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "traza",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 255,
+      "tokens_entrada": 17139,
+      "cache": {
+        "leidos": 0,
+        "totales": 0
+      },
+      "poda": {
+        "antes": 3258,
+        "despues": 3258
+      },
+      "segundos": 0.0,
+      "verificador": "✓ la tubería ya no revienta y suma bien\n✓ leer devuelve la cantidad como NÚMERO, que es lo que promete su docstring\n✓ y no pierde el nombre por el camino\n✓ filtro.positivos descarta las cantidades a cero\n4/4 asertos ✓",
+      "trabajo": "/tmp/banco-traza-zyg6nrv3/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 255.0,
+    "entrada_media": 17139.0,
+    "cache_pct": 0.0,
+    "segundos_media": 0.0,
+    "intervenciones": 0
+  }
+}
