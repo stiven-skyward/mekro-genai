@@ -8,10 +8,17 @@ version = "0.1.0"
 description = "Arnés agéntico de ingeniería para cerebros locales cuantizados, en CPU y sin nube"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Propietario — proyecto Mekro" }
-dependencies = [
-    "llama-cpp-python>=0.3",
-]
+license = { text = "Apache-2.0" }
+# El arnés en sí no necesita nada (bucle, herramientas, permisos, BYOK, MCP y los
+# clientes de suscripción son biblioteca estándar a propósito). Lo único con
+# dependencia real es el CEREBRO LOCAL, que además compila una extensión C++: alguien
+# que solo quiere BYOK o exponerse por MCP a Claude Code/Codex/Cursor no debería tener
+# que instalarla. `pip install -e .` a secas ya sirve para todo eso; el cerebro local
+# es `pip install -e ".[local]"`.
+dependencies = []
+
+[project.optional-dependencies]
+local = ["llama-cpp-python>=0.3"]
 
 [project.scripts]
 genai = "genai.__main__:main"

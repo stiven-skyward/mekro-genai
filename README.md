@@ -18,12 +18,35 @@ La meta y sus criterios de medida viven en [META.md](META.md). El estado real, e
 ## Instalación
 
 ```bash
-pip install -e .
+pip install -e .              # el arnés, BYOK, MCP y las suscripciones: sin dependencias
+pip install -e ".[local]"     # además, el cerebro local (compila llama-cpp-python)
 ```
 
-El cerebro es un GGUF que debe existir en la ruta que enseña `genai version` (hoy:
-`~/modelos/gguf/Qwen3.8-27B-UD-Q2_K_XL.gguf`, 9,2 GB). Sin él, el arnés entero puede
-probarse con el cerebro `eco` (sin modelo).
+`pip install -e .` a secas ya deja `genai proveedores`, `genai cerebros`, `genai mcp` y
+`genai sesiones` funcionando: son biblioteca estándar, sin nada que compilar. El
+cerebro local necesita además un GGUF en la ruta que enseña `genai version` (hoy:
+`~/modelos/gguf/Qwen3.8-27B-UD-Q2_K_XL.gguf`, 9,2 GB) — sin él, todo el arnés se prueba
+igual con `--cerebro eco` (sin modelo) o con cualquiera de nube (`--cerebro nube:...`).
+
+### Desde Windows
+
+**No hay instalación nativa en PowerShell, y no es un hueco por rellenar**: la
+herramienta `bash` del agente corre con `shell=True`, que en Windows nativo invoca
+`cmd.exe` en vez de bash —sintaxis distinta, comandos que fallarían o harían otra
+cosa—; `select()` sobre tuberías (que usa el cliente LSP) no funciona ahí; y los
+permisos 600 de las credenciales no protegen nada en NTFS. Se verificó código en mano,
+no se supuso.
+
+Lo que sí funciona, porque es donde vive y se ha probado todo este proyecto, es WSL:
+
+```powershell
+wsl --install          # si no lo tienes ya (reinicia si te lo pide)
+wsl
+```
+
+Y dentro de esa terminal Linux, exactamente los mismos pasos de arriba (`git clone`,
+`pip install -e .`, `genai ...`). PowerShell es solo la puerta a WSL, no el sitio donde
+corre nada.
 
 ## Uso
 
@@ -69,8 +92,43 @@ Funcionan los tres dialectos que existen (Gemini nativo, Anthropic Messages, y
 compatible-OpenAI para todo lo demás), con llamada a herramientas **nativa** y sin
 añadir un solo SDK. Medido: `n1/anadir` pasa en **25,6 s** con `gemini-3.7-flash`
 frente a **757-969 s** en local — misma tarea, mismo verificador. Una carrera de nube
-**nunca** cuenta como cifra local: el registro anota `nube:proveedor/modelo`. Guía
-completa: [docs/nube.md](docs/nube.md).
+**nunca** cuenta como cifra local: el registro anota `nube:proveedor/modelo`.
+
+`genai proveedores [texto]` busca entre **207 proveedores y 7.483 modelos** de
+models.dev además de los 8 de fábrica, sin escribir código para ninguno.
+
+### Tres caminos para traer un cerebro de nube — `genai cerebros`
+
+BYOK (arriba) no es la única forma, y no todas valen para cualquier proveedor:
+
+```bash
+genai cerebros    # el menú: BYOK, suscripción directa, o MCP — decides tú
+```
+
+- **Suscripción directa** (`genai copilot entrar`, `genai google entrar`): Mekro-Genai
+  actúa como tu cerebro con tu cuenta, no con clave de API. Solo existe donde el
+  proveedor sanciona de verdad que un tercero lo use — GitHub lo documenta para
+  editores; con Google se midió que el nivel gratuito de Code Assist está cerrado. **No
+  existe para OpenAI ni Anthropic**: sus suscripciones están ligadas a su propio
+  cliente, no a extraerlas para otro programa.
+- **MCP** (`genai mcp clientes`): al revés — tu cliente de suscripción (Claude Code,
+  Codex, **Cursor**) usa las herramientas de Mekro-Genai, con su propio cerebro intacto.
+  Verificado con cuenta real en los tres: llamadas reales a `git`, y el veto de
+  `rm -rf /` deteniéndose igual que en el bucle interactivo.
+
+Guía completa, con las cifras de cada camino: [docs/nube.md](docs/nube.md).
+
+## Varios agentes a la vez
+
+El candado es de **sesión**, no de proyecto: dos agentes pueden trabajar sobre el mismo
+repositorio a la vez, cada uno con la suya, y solo se avisa si los dos tocan el mismo
+fichero. Probado con dos procesos reales en paralelo.
+
+```bash
+genai sesiones                          # quién está trabajando aquí ahora mismo
+genai tarea "..." --sesion <id>         # continuar una en concreto
+genai sesiones compartir <id>           # HTML autocontenido, con secretos tachados
+```
 
 ## El modo malla (opcional)
 
