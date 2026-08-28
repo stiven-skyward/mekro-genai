@@ -143,20 +143,92 @@ def web(url: str, tope: int = TOPE) -> Resultado:
 # nativo— y se devuelven sus fuentes. Con eso **el Qwen local tiene búsqueda web** sin
 # ser él quien la haga, que es exactamente la doctrina híbrida de M7.1b: la nube hace el
 # recado auxiliar y nunca es la carga crítica.
+# Motores dedicados, descritos como DATOS y no como código. Añadir uno popular es
+# añadir una entrada; añadir el tuyo es escribirla en claves.json sin tocar nada de
+# aquí — el mismo patrón que ya usan los proveedores compatibles con OpenAI.
+#   {q} = la consulta · {n} = cuántos resultados · {clave} = tu clave
 BUSCADORES = {
-    "brave":  ("https://api.search.brave.com/res/v1/web/search?q=",
-               lambda k: {"X-Subscription-Token": k, "Accept": "application/json"}),
-    "serper": ("https://google.serper.dev/search?q=",
-               lambda k: {"X-API-KEY": k}),
+    "brave": {
+        "url": "https://api.search.brave.com/res/v1/web/search?q={q}&count={n}",
+        "cabeceras": {"X-Subscription-Token": "{clave}", "Accept": "application/json"},
+        "lista": "web.results", "titulo": "title", "enlace": "url",
+        "extracto": "description"},
+    "serper": {
+        "url": "https://google.serper.dev/search", "metodo": "POST",
+        "cuerpo": {"q": "{q}", "num": "{n}"},
+        "cabeceras": {"X-API-KEY": "{clave}", "Content-Type": "application/json"},
+        "lista": "organic", "titulo": "title", "enlace": "link",
+        "extracto": "snippet"},
+    "tavily": {
+        "url": "https://api.tavily.com/search", "metodo": "POST",
+        "cuerpo": {"query": "{q}", "max_results": "{n}"},
+        "cabeceras": {"Authorization": "Bearer {clave}",
+                      "Content-Type": "application/json"},
+        "lista": "results", "titulo": "title", "enlace": "url",
+        "extracto": "content"},
+    "serpapi": {
+        "url": "https://serpapi.com/search.json?q={q}&num={n}&api_key={clave}",
+        "lista": "organic_results", "titulo": "title", "enlace": "link",
+        "extracto": "snippet"},
+    "searxng": {          # instancia propia; la url la pone el usuario, sin clave
+        "url": "{url}/search?q={q}&format=json",
+        "lista": "results", "titulo": "title", "enlace": "url",
+        "extracto": "content"},
 }
 
 
 def _claves() -> dict:
+    """La configuración vive en el mismo sitio que las claves de los cerebros. Nota de
+    seguridad: estas URLs las escribe el USUARIO en su fichero, no el modelo, así que
+    aquí no aplica la comprobación anti-SSRF de `web` — la de `web` existe porque allí
+    la URL la propone el modelo, que puede haberla leído de una página ajena."""
     f = Path.home() / ".config" / "genai" / "claves.json"
     try:
         return json.loads(f.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {}
+
+
+def _hondo(d, ruta: str):
+    """«web.results» → d["web"]["results"]. Un motor anida donde quiere."""
+    for parte in ruta.split("."):
+        d = (d or {}).get(parte) if isinstance(d, dict) else None
+    return d or []
+
+
+def _rellenar(plantilla, **vals):
+    if isinstance(plantilla, dict):
+        return {k: _rellenar(v, **vals) for k, v in plantilla.items()}
+    if isinstance(plantilla, str):
+        for k, v in vals.items():
+            plantilla = plantilla.replace("{" + k + "}", str(v))
+    return plantilla
+
+
+def _por_motor(nombre: str, desc: dict, cfg: dict, consulta: str, n: int) -> Resultado:
+    """Un motor dedicado, ejecutado desde su descripción. Sin ramas por motor: si un
+    buscador nuevo cabe en el descriptor, no hay código que escribir."""
+    vals = {"q": urllib.parse.quote(consulta), "n": n,
+            "clave": cfg.get("clave", ""), "url": (cfg.get("url") or "").rstrip("/")}
+    url = _rellenar(desc["url"], **vals)
+    cabs = _rellenar(desc.get("cabeceras", {}), **vals)
+    datos = None
+    if desc.get("metodo") == "POST":
+        # en el cuerpo va la consulta SIN escapar: es JSON, no una URL
+        cuerpo = _rellenar(desc.get("cuerpo", {}), **{**vals, "q": consulta})
+        cuerpo = {k: (int(v) if str(v).isdigit() else v) for k, v in cuerpo.items()}
+        datos = json.dumps(cuerpo).encode()
+    try:
+        d = json.load(urllib.request.urlopen(
+            urllib.request.Request(url, datos, cabs), timeout=45))
+    except Exception as e:  # noqa: BLE001
+        return Resultado(False, f"el buscador «{nombre}» falló: {e}")
+    crudos = _hondo(d, desc["lista"])[:n]
+    if not crudos:
+        return Resultado(False, f"«{nombre}» no devolvió resultados para «{consulta}»")
+    filas = [f"· {r.get(desc['titulo'], '')}\n  {r.get(desc['enlace'], '')}\n"
+             f"  {str(r.get(desc['extracto'], ''))[:200]}" for r in crudos]
+    return Resultado(True, f"── búsqueda: {consulta}  ({nombre})\n" + "\n".join(filas))
 
 
 def _por_openai(consulta: str, clave: str, n: int, modelo: str = "gpt-4.1-mini") -> Resultado:
@@ -226,51 +298,80 @@ def _por_gemini(consulta: str, clave: str, n: int) -> Resultado:
 POR_CEREBRO = {"gemini": _por_gemini, "openai": _por_openai}
 
 
+def _elegir_motor(cl: dict, cerebro) -> list:
+    """En qué orden se intenta buscar. Configurable en claves.json:
+
+        {"busqueda": {"motor": "brave"}}      un motor concreto y punto
+        {"busqueda": {"motor": "proveedor"}}  siempre por el proveedor del cerebro
+        {"busqueda": {"motor": "auto"}}       el defecto: dedicado si lo hay, si no el
+                                              proveedor del cerebro en uso
+
+    Un motor NO declarado en BUSCADORES pero con `url` y `lista` en su entrada de
+    claves.json también vale: es el hueco para cualquier buscador que no venga de
+    fábrica, sin tocar código."""
+    pedido = ((cl.get("busqueda") or {}).get("motor") or "auto").strip().lower()
+    propio = getattr(cerebro, "proveedor", "") or ""
+
+    def dedicados():
+        fuera = []
+        for nombre, cfg in cl.items():
+            if not isinstance(cfg, dict):
+                continue
+            desc = BUSCADORES.get(nombre)
+            if desc is None and cfg.get("url") and cfg.get("lista"):
+                desc = cfg                      # motor a medida, descrito por el usuario
+            if desc is not None and (cfg.get("clave") or cfg.get("url")):
+                fuera.append(("motor", nombre, desc, cfg))
+        return fuera
+
+    def proveedores():
+        orden = ([propio] if propio in POR_CEREBRO else []) + [
+            p for p in POR_CEREBRO if p != propio]
+        return [("cerebro", p, POR_CEREBRO[p], cl.get(p) or {})
+                for p in orden if (cl.get(p) or {}).get("clave")]
+
+    if pedido == "proveedor":
+        return proveedores()
+    if pedido != "auto":
+        elegidos = [x for x in dedicados() if x[1] == pedido]
+        elegidos += [x for x in proveedores() if x[1] == pedido]
+        # si el motor pedido no está configurado se dice, en vez de usar otro a la
+        # callada: quien fija un motor quiere ESE motor
+        return elegidos
+    return dedicados() + proveedores()
+
+
 def buscar(consulta: str, n: int = 6, cerebro=None) -> Resultado:
     consulta = (consulta or "").strip()
     if not consulta:
         return Resultado(False, "una búsqueda vacía no busca nada")
     n = max(1, min(int(n or 6), 15))
     cl = _claves()
+    opciones = _elegir_motor(cl, cerebro)
 
-    for nombre, (base, cabs) in BUSCADORES.items():
-        k = (cl.get(nombre) or {}).get("clave")
-        if not k:
-            continue
-        try:
-            pedido = urllib.request.Request(base + urllib.parse.quote(consulta),
-                                            headers=cabs(k))
-            d = json.load(urllib.request.urlopen(pedido, timeout=45))
-        except Exception as e:  # noqa: BLE001
-            return Resultado(False, f"el buscador «{nombre}» falló: {e}")
-        crudos = (d.get("web", {}).get("results")
-                  or d.get("organic") or [])[:n]
-        if not crudos:
-            return Resultado(False, f"sin resultados para «{consulta}»")
-        filas = [f"· {r.get('title', '')}\n  {r.get('url') or r.get('link')}\n"
-                 f"  {(r.get('description') or r.get('snippet') or '')[:200]}"
-                 for r in crudos]
-        return Resultado(True, f"── búsqueda: {consulta}  ({nombre})\n"
-                               + "\n".join(filas))
+    if not opciones:
+        pedido = (cl.get("busqueda") or {}).get("motor")
+        if pedido and pedido not in ("auto", "proveedor"):
+            return Resultado(False, (
+                f"pediste buscar con «{pedido}» y no está configurado. Añade su clave "
+                f"en ~/.config/genai/claves.json, o quita `busqueda.motor` para que "
+                f"se elija solo. No se usa otro motor a la callada."))
+        return Resultado(False, (
+            "no hay con qué buscar. Añade en ~/.config/genai/claves.json la clave de "
+            f"un buscador —{', '.join(sorted(BUSCADORES))}— o la de un proveedor que "
+            "sepa buscar (`openai`, `gemini`). Mientras tanto, `web` sí puede traer "
+            "una URL que ya conozcas."))
 
-    # Sin buscador dedicado, se busca con el proveedor DEL CEREBRO QUE YA SE ESTÁ
-    # USANDO. Es lo que espera quien paga una sola factura: si trabajas con GPT, no
-    # tiene sentido que la búsqueda salga por Google, y al revés igual.
-    propio = getattr(cerebro, "proveedor", "") or ""
-    orden = ([propio] if propio in POR_CEREBRO else []) + [
-        p for p in POR_CEREBRO if p != propio]
-    for prov in orden:
-        k = (cl.get(prov) or {}).get("clave")
-        if k:
-            r = POR_CEREBRO[prov](consulta, k, n)
-            if r.ok or prov == orden[-1]:
-                return r        # si el propio falla, se intenta el otro antes de rendirse
-
-    return Resultado(False, (
-        "no hay con qué buscar. Añade en ~/.config/genai/claves.json una clave de "
-        "buscador —`brave` o `serper`— o la de un proveedor que sepa buscar: `openai` "
-        "(web_search) o `gemini` (Google Search nativo). Mientras tanto, `web` sí "
-        "puede traer una URL que ya conozcas."))
+    for i, (clase, nombre, desc, cfg) in enumerate(opciones):
+        if clase == "motor":
+            r = _por_motor(nombre, desc, cfg, consulta, n)
+        else:
+            r = desc(consulta, cfg.get("clave", ""), n)
+        # si uno falla se prueba el siguiente: quedarse sin buscar por una caída ajena
+        # sería peor que cambiar de puerta
+        if r.ok or i == len(opciones) - 1:
+            return r
+    return Resultado(False, "ningún buscador respondió")
 
 
 def para(cerebro=None) -> list[Herramienta]:

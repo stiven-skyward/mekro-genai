@@ -146,31 +146,59 @@ ve el modelo dice con qué referencia recuperarlo.
 
 ## Buscar en la web
 
-`buscar_web` necesita clave, porque no hay buscador gratis y estable que raspar
-(DuckDuckGo responde con un CAPTCHA, comprobado 2026-08-28). Tres opciones, y gana la
-primera que esté en `~/.config/genai/claves.json`:
+Dos caminos, y se elige el que prefieras. No hay buscador gratis y estable que raspar
+(DuckDuckGo responde con un CAPTCHA, comprobado 2026-08-28), así que ambos llevan clave.
+
+**1. Por la API del proveedor que ya usas.** OpenAI busca con `web_search` de la
+Responses API; Gemini con Google Search nativo. Cero configuración extra: si ya tienes
+la clave del cerebro, ya puedes buscar.
+
+**2. Con un buscador dedicado.** Suele salir más barato que pagar tokens de un modelo
+por buscar, y devuelve resultados más limpios. Vienen de fábrica:
+
+| motor | clave | notas |
+|---|---|---|
+| `brave` | sí | API propia de Brave Search |
+| `serper` | sí | Google vía serper.dev |
+| `tavily` | sí | pensado para agentes |
+| `serpapi` | sí | Google vía SerpAPI |
+| `searxng` | no | tu propia instancia: pon `url` en vez de `clave` |
+
+### Elegirlo
 
 ```json
-{"brave":  {"clave": "..."},
- "serper": {"clave": "..."},
- "openai": {"clave": "..."},
- "gemini": {"clave": "..."}}
+{
+  "busqueda": {"motor": "auto"},
+  "brave":  {"clave": "..."},
+  "openai": {"clave": "..."}
+}
 ```
 
-**Se busca con el proveedor que ya estás pagando.** Si tu cerebro es de OpenAI, la
-búsqueda sale por OpenAI (`web_search` de la Responses API); si es de Gemini, por Google
-Search nativo. Quien paga una sola factura no espera que su búsqueda salga por la
-competencia. Si el proveedor propio falla, se intenta el otro antes de rendirse.
-
-| lo que usas de cerebro | por dónde busca |
+| `motor` | qué hace |
 |---|---|
-| `nube:openai/...` | OpenAI |
-| `nube:gemini/...` | Gemini |
-| el **Qwen local** | la primera clave que haya — el cerebro local no sabe buscar, pero tú no te quedas sin búsqueda |
+| `auto` *(defecto)* | dedicado si hay alguno; si no, el proveedor del cerebro en uso |
+| `brave`, `serper`, … | **ese** y solo ese; si no está configurado te lo dice, en vez de usar otro a la callada |
+| `proveedor` | siempre por la API del cerebro, ignorando los dedicados |
 
-Un buscador dedicado (`brave`, `serper`) gana a los dos si está configurado: está hecho
-para esto y sale más barato. Lo que vuelve son las URLs y un resumen corto; leer la
-página es cosa de `web`, y de quien decide qué mirar.
+Si uno falla, se intenta el siguiente antes de rendirse: quedarse sin buscar por una
+caída ajena sería peor que cambiar de puerta.
+
+### Cualquier otro buscador
+
+No hace falta que venga de fábrica. Se describe en `claves.json` y funciona igual —
+mismo patrón que los proveedores compatibles con OpenAI:
+
+```json
+{"mi_buscador": {
+   "url": "https://api.ejemplo.com/search?q={q}&limit={n}",
+   "cabeceras": {"Authorization": "Bearer {clave}"},
+   "clave": "...",
+   "lista": "data.items",     // dónde anida los resultados
+   "titulo": "name", "enlace": "href", "extracto": "summary"}}
+```
+
+`{q}`, `{n}` y `{clave}` se sustituyen. Para POST, añade `"metodo": "POST"` y un
+`"cuerpo": {...}` con las mismas marcas.
 
 ## Las dos reglas que no se negocian
 

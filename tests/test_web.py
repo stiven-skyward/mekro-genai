@@ -161,4 +161,109 @@ c(r2.ok and llamado == ["gemini"],
 _w.POR_CEREBRO.clear(); _w.POR_CEREBRO.update(_reales)
 _w._claves = _orig
 
+# ── motores dedicados: el descriptor, ejecutado contra un servidor de mentira ──
+# No hay claves de brave/serper/tavily, pero lo que hay que probar no es su nube:
+# es que el DESCRIPTOR se convierta en la petición correcta y que la respuesta se
+# parsee. Un servidor local con la forma de cada uno lo decide sin cuenta ninguna.
+import json as _json  # noqa: E402
+
+
+class _Falso(http.server.BaseHTTPRequestHandler):
+    visto = {}
+
+    def _responde(self, cuerpo):
+        b = _json.dumps(cuerpo).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(b)))
+        self.end_headers()
+        self.wfile.write(b)
+
+    def do_GET(self):
+        _Falso.visto = {"metodo": "GET", "ruta": self.path,
+                        "cabeceras": self.headers}
+        self._responde({"web": {"results": [
+            {"title": "Uno", "url": "https://ej.com/1", "description": "extracto uno"},
+            {"title": "Dos", "url": "https://ej.com/2", "description": "extracto dos"}]}})
+
+    def do_POST(self):
+        n = int(self.headers.get("Content-Length", 0))
+        _Falso.visto = {"metodo": "POST", "ruta": self.path,
+                        "cabeceras": self.headers,
+                        "cuerpo": _json.loads(self.rfile.read(n) or b"{}")}
+        self._responde({"organic": [
+            {"title": "Tres", "link": "https://ej.com/3", "snippet": "extracto tres"}]})
+
+    def log_message(self, *a):
+        pass
+
+
+srv = http.server.HTTPServer(("127.0.0.1", 0), _Falso)
+pto = srv.server_address[1]
+threading.Thread(target=srv.serve_forever, daemon=True).start()
+base = f"http://127.0.0.1:{pto}"
+
+# GET con la clave en cabecera y la consulta escapada en la URL (forma de brave)
+d_get = {**_w.BUSCADORES["brave"], "url": base + "/buscar?q={q}&count={n}"}
+r = _w._por_motor("falso-get", d_get, {"clave": "SECRETA"}, "gatos y perros", 2)
+c(r.ok and "Uno" in r.salida and "https://ej.com/1" in r.salida,
+  "un motor GET devuelve título, URL y extracto de cada resultado")
+c(_Falso.visto["cabeceras"].get("X-Subscription-Token") == "SECRETA",
+  "la clave viaja en la cabecera que el descriptor dice, no en la URL")
+c("gatos%20y%20perros" in _Falso.visto["ruta"] or "gatos+y+perros" in _Falso.visto["ruta"],
+  "la consulta se escapa al ir en la URL")
+c("count=2" in _Falso.visto["ruta"], "y el número de resultados también se sustituye")
+
+# POST con cuerpo JSON (forma de serper y tavily)
+d_post = {**_w.BUSCADORES["serper"], "url": base + "/search"}
+r = _w._por_motor("falso-post", d_post, {"clave": "K2"}, "gatos y perros", 3)
+c(r.ok and "Tres" in r.salida, "un motor POST parsea su lista propia («organic»)")
+c(_Falso.visto["cuerpo"] == {"q": "gatos y perros", "num": 3},
+  "en el cuerpo la consulta va SIN escapar —es JSON, no una URL— y `num` es un entero")
+c(_Falso.visto["cabeceras"].get("X-API-KEY") == "K2",
+  "y la clave en su cabecera — buscada sin distinguir mayúsculas, porque urllib "
+  "normaliza el nombre y HTTP las trata como iguales")
+
+c(_w._hondo({"web": {"results": [1, 2]}}, "web.results") == [1, 2],
+  "el resultado se saca de donde cada motor lo anide («web.results»)")
+c(_w._hondo({"a": 1}, "no.existe.aqui") == [],
+  "y una ruta que no existe da lista vacía en vez de reventar")
+
+# ── el motor se ELIGE, y si no está se dice ────────────────────────────────
+_w._claves = lambda: {"busqueda": {"motor": "brave"}, "brave": {"clave": "b"},
+                      "gemini": {"clave": "g"}}
+op = _w._elegir_motor(_w._claves(), None)
+c(len(op) == 1 and op[0][1] == "brave",
+  "con `busqueda.motor` fijado se usa ESE motor, aunque haya otros configurados")
+
+_w._claves = lambda: {"busqueda": {"motor": "tavily"}, "gemini": {"clave": "g"}}
+r = _w.buscar("x")
+c(not r.ok and "tavily" in r.salida and "callada" in r.salida,
+  "y si el motor pedido no está configurado se DICE, en vez de usar otro a la callada: "
+  "quien fija un motor quiere ese motor")
+
+_w._claves = lambda: {"busqueda": {"motor": "proveedor"}, "brave": {"clave": "b"},
+                      "openai": {"clave": "o"}}
+op = _w._elegir_motor(_w._claves(), _Cer("openai"))
+c([x[1] for x in op] == ["openai"],
+  "«proveedor» fuerza a buscar por el proveedor del cerebro, ignorando los dedicados")
+
+_w._claves = lambda: {"brave": {"clave": "b"}, "gemini": {"clave": "g"}}
+op = _w._elegir_motor(_w._claves(), _Cer("gemini"))
+c([x[1] for x in op] == ["brave", "gemini"],
+  "en «auto» —el defecto— gana el dedicado, y el proveedor queda de reserva")
+
+# el hueco para cualquier buscador que no venga de fábrica
+_w._claves = lambda: {"mi_buscador": {"url": base, "lista": "web.results",
+                                      "titulo": "title", "enlace": "url",
+                                      "extracto": "description",
+                                      "clave": "x"}}
+op = _w._elegir_motor(_w._claves(), None)
+c(len(op) == 1 and op[0][1] == "mi_buscador",
+  "un buscador que NO viene de fábrica se describe en claves.json y funciona igual: "
+  "es el hueco para cualquier otro, sin tocar código")
+
+srv.shutdown()
+_w._claves = _orig
+
 raise SystemExit(c.fin())
