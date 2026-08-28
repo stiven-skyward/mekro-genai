@@ -54,6 +54,9 @@ c("omitidos" in gordo.recortado(), "el recorte se declara, no se disimula")
 reg = estandar()
 # el CONJUNTO y no el número: un conteo se rompe con cada herramienta nueva y no
 # dice cuál cambió; el conjunto documenta el juego y falla señalando el culpable
+# `estandar()` trae web desde 2026-08-28; el juego SIN red es el que se fija aquí,
+# porque es el que usan el banco y el modo plan.
+reg = estandar(web=False)
 c({h["function"]["name"] for h in reg.firmas()} ==
   {"leer", "escribir", "editar", "grep", "simbolos", "bash",
    "fondo_lanzar", "fondo_revisar", "subagente", "git", "ver"},

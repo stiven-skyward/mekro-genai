@@ -92,7 +92,11 @@ def correr_tarea(dir_tarea: Path, nombre_cerebro: str, modo: str,
     if sin_pensar and hasattr(cerebro, "pensar"):
         cerebro.pensar = False
     os.environ["MG_CEREBRO"] = nombre_cerebro    # lo heredan los roles auxiliares
-    registro = estandar()
+    # El banco corre SIN web a propósito. Dos herramientas más engordan el prompt de
+    # sistema en cada vuelta, y las cifras de M2 y M3 se declararon sin ellas: mezclarlo
+    # haría incomparables las carreras nuevas con las viejas. Una tarea que necesite la
+    # red se declarará como tal el día que exista.
+    registro = estandar(web=False, cerebro=cerebro)
     for h in HOLO:
         registro.registrar(h)
 

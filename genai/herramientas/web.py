@@ -1,9 +1,13 @@
-"""Acceso a la web (M7.3), **apagado por defecto** y con la puerta bien cerrada.
+"""Acceso a la web (M7.3): `web` trae una URL y `buscar_web` busca.
 
-La honestidad que META.md ya tiene escrita: un arnés que presume de local y abre la red
-sin decirlo está mintiendo sobre lo que es. Por eso esto se enciende a mano
-(`estandar(web=True)`, `genai tarea … --web`) y en local el agente ni sabe que la red
-es una posibilidad: la herramienta no aparece en sus firmas.
+**Viene ENCENDIDO** por decisión del autor (2026-08-28): el agente necesita comprobar
+una URL y consultar documentación que no está en el proyecto. Lo que no cambia es que
+sea visible y apagable (`genai tarea … --sin-web`, `estandar(web=False)`) y que pase por
+`permisos.py` igual que `bash`. El banco lo deja apagado a propósito, para no hacer
+incomparables sus cifras con las de M2 y M3.
+
+Que la red esté encendida **no** convierte esto en un arnés de nube: el cerebro sigue
+siendo local, y leer una página es tan «nube» como leer un fichero es «disco».
 
 **El guardarraíl que de verdad importa no es el opt-in, es el SSRF.** Un agente con
 `leer` y con red puede ser convencido —por el contenido de una página, que es texto
@@ -21,10 +25,12 @@ from __future__ import annotations
 import html
 import ipaddress
 import re
+import json
 import socket
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
 from .base import Herramienta, Resultado
 
@@ -127,7 +133,121 @@ def web(url: str, tope: int = TOPE) -> Resultado:
     return Resultado(True, f"{cabecera}\n{texto}", datos={"url": final})
 
 
+# ── búsqueda ───────────────────────────────────────────────────────────────────
+# No hay buscador gratis y estable que raspar: DuckDuckGo responde con un CAPTCHA
+# («bots use DuckDuckGo too», comprobado 2026-08-28) y construir sobre raspado es
+# frágil por definición. Así que la búsqueda va con clave, como los cerebros: BYOK.
+#
+# Y hay una segunda vía que sirve para el caso que más importa aquí. Si no hay clave de
+# buscador pero sí de Gemini, se le pide a Gemini que busque —tiene Google Search
+# nativo— y se devuelven sus fuentes. Con eso **el Qwen local tiene búsqueda web** sin
+# ser él quien la haga, que es exactamente la doctrina híbrida de M7.1b: la nube hace el
+# recado auxiliar y nunca es la carga crítica.
+BUSCADORES = {
+    "brave":  ("https://api.search.brave.com/res/v1/web/search?q=",
+               lambda k: {"X-Subscription-Token": k, "Accept": "application/json"}),
+    "serper": ("https://google.serper.dev/search?q=",
+               lambda k: {"X-API-KEY": k}),
+}
+
+
+def _claves() -> dict:
+    f = Path.home() / ".config" / "genai" / "claves.json"
+    try:
+        return json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _por_gemini(consulta: str, clave: str, n: int) -> Resultado:
+    """Gemini busca y devuelve sus fuentes. No se pide la respuesta del modelo: se
+    piden las URLs, porque quien tiene que leer y decidir es el agente, no Gemini."""
+    cuerpo = {"contents": [{"role": "user", "parts": [{"text":
+              f"Busca en la web: {consulta}\nResume en tres líneas lo hallado."}]}],
+              "tools": [{"googleSearch": {}}],
+              "generationConfig": {"maxOutputTokens": 2000}}
+    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+           f"gemini-3.7-flash:generateContent?key={clave}")
+    try:
+        pedido = urllib.request.Request(url, json.dumps(cuerpo).encode(),
+                                        {"Content-Type": "application/json"})
+        d = json.load(urllib.request.urlopen(pedido, timeout=90))
+    except Exception as e:  # noqa: BLE001
+        return Resultado(False, f"la búsqueda por Gemini falló: {e}")
+    cand = (d.get("candidates") or [{}])[0]
+    texto = "".join(p.get("text", "")
+                    for p in (cand.get("content") or {}).get("parts", []))
+    gm = cand.get("groundingMetadata") or {}
+    fuentes = []
+    for ch in (gm.get("groundingChunks") or [])[:n]:
+        w = ch.get("web") or {}
+        if w.get("uri"):
+            fuentes.append(f"· {w.get('title', '(sin título)')}\n  {w['uri']}")
+    if not fuentes and not texto:
+        return Resultado(False, f"sin resultados para «{consulta}»")
+    cab = f"── búsqueda: {consulta}  (vía Gemini; consultas reales: "
+    cab += ", ".join(gm.get("webSearchQueries") or ["?"]) + ")"
+    cuerpo_txt = texto.strip()[:2000]
+    if fuentes:
+        cuerpo_txt += "\n\nFUENTES (léelas con `web` si necesitas el detalle):\n"
+        cuerpo_txt += "\n".join(fuentes)
+    return Resultado(True, f"{cab}\n{cuerpo_txt}")
+
+
+def buscar(consulta: str, n: int = 6) -> Resultado:
+    consulta = (consulta or "").strip()
+    if not consulta:
+        return Resultado(False, "una búsqueda vacía no busca nada")
+    n = max(1, min(int(n or 6), 15))
+    cl = _claves()
+
+    for nombre, (base, cabs) in BUSCADORES.items():
+        k = (cl.get(nombre) or {}).get("clave")
+        if not k:
+            continue
+        try:
+            pedido = urllib.request.Request(base + urllib.parse.quote(consulta),
+                                            headers=cabs(k))
+            d = json.load(urllib.request.urlopen(pedido, timeout=45))
+        except Exception as e:  # noqa: BLE001
+            return Resultado(False, f"el buscador «{nombre}» falló: {e}")
+        crudos = (d.get("web", {}).get("results")
+                  or d.get("organic") or [])[:n]
+        if not crudos:
+            return Resultado(False, f"sin resultados para «{consulta}»")
+        filas = [f"· {r.get('title', '')}\n  {r.get('url') or r.get('link')}\n"
+                 f"  {(r.get('description') or r.get('snippet') or '')[:200]}"
+                 for r in crudos]
+        return Resultado(True, f"── búsqueda: {consulta}  ({nombre})\n"
+                               + "\n".join(filas))
+
+    g = (cl.get("gemini") or {}).get("clave")
+    if g:
+        return _por_gemini(consulta, g, n)
+
+    return Resultado(False, (
+        "no hay con qué buscar. Añade en ~/.config/genai/claves.json una clave de "
+        "buscador —`brave` o `serper`— o una de `gemini`, que trae Google Search "
+        "nativo. Mientras tanto, `web` sí puede traer una URL que ya conozcas."))
+
+
 HERRAMIENTAS = [
+    Herramienta(
+        nombre="buscar_web",
+        descripcion=("Busca en internet y devuelve títulos, URLs y un extracto. "
+                     "Úsala cuando necesites algo que no está en el proyecto y no "
+                     "sepas la URL; luego lee la que sirva con `web`."),
+        parametros={
+            "type": "object",
+            "properties": {
+                "consulta": {"type": "string", "description": "qué buscar"},
+                "n": {"type": "integer", "description": "cuántos resultados (6)"},
+            },
+            "required": ["consulta"],
+        },
+        funcion=buscar,
+        peligrosa=True,
+    ),
     Herramienta(
         nombre="web",
         descripcion=("Trae el TEXTO de una página web pública (http/https). Devuelve "

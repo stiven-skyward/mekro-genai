@@ -31,7 +31,7 @@ Si algo te bloquea, dilo y para. Inventar un resultado cuesta más que no tenerl
 
 def construir(args) -> tuple[Sesion, object, Politica]:
     registro = estandar(incluir_peligrosas=args.modo != "plan",
-                        web=args.web)
+                        web=not args.sin_web)
     for h in HERRAMIENTAS_HOLO:
         if not (h.peligrosa and args.modo == "plan"):
             registro.registrar(h)
@@ -50,9 +50,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--tope-vueltas", type=int, default=24)
     p.add_argument("--tope-tokens", type=int, default=6000)
     p.add_argument("--tope-segundos", type=int, default=1800)
-    p.add_argument("--web", action="store_true",
-                   help="dar acceso a la web (APAGADO por defecto; no alcanza esta "
-                        "máquina ni esta red)")
+    p.add_argument("--sin-web", action="store_true",
+                   help="quitar el acceso a la web (viene encendido; nunca alcanza "
+                        "esta máquina ni esta red)")
     p.add_argument("--callado", action="store_true", help="sin traza por pantalla")
     a = p.parse_args(argv)
 

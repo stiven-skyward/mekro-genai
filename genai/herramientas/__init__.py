@@ -44,7 +44,7 @@ def cargar_plugins() -> tuple[list[Herramienta], list[str]]:
 
 
 def estandar(incluir_peligrosas: bool = True, plugins: bool = True,
-             malla: bool = False, web: bool = False,
+             malla: bool = False, web: bool = True,
              cerebro=None) -> Registro:
     from . import bash, buscar, ficheros, fondo, git, subagente
     todas: list[Herramienta] = []
@@ -58,9 +58,12 @@ def estandar(incluir_peligrosas: bool = True, plugins: bool = True,
     from .vista import para as _vista
     todas.extend(_vista(cerebro))
     if web:
-        # M7.3: la red está APAGADA por defecto. Un arnés que presume de local y abre
-        # la red sin decirlo miente sobre lo que es; sin este `web=True`, el agente ni
-        # sabe que internet es una posibilidad.
+        # La red viene ENCENDIDA por decisión del autor (2026-08-28, META.md): el
+        # agente necesita comprobar una URL y consultar documentación que no está en el
+        # proyecto. Lo que NO cambia es que sea visible y apagable (`--sin-web`), que
+        # pase por permisos.py como `bash`, y que no alcance esta máquina ni esta red.
+        # El banco la deja apagada a propósito: añadir dos herramientas engorda el
+        # prompt de sistema en cada vuelta y rompería la comparación con M2 y M3.
         from .web import HERRAMIENTAS as WEB
         todas.extend(WEB)
     if plugins:

@@ -1,9 +1,10 @@
-"""Acceso a la web (M7.3): opt-in y SSRF, que son las dos mitades del diseño.
+"""Acceso a la web (M7.3): `web` trae una URL, `buscar_web` busca.
 
-Lo que se vigila NO es que sepa descargar una página —eso lo sabe `urllib`— sino:
+Viene encendida por decisión del autor. Lo que se vigila NO es que sepa descargar una
+página —eso lo sabe `urllib`— sino:
 
-1. que **no exista** si nadie la encendió, porque un arnés que presume de local y abre
-   la red sin decirlo miente sobre lo que es;
+1. que siga siendo **visible y apagable**, y que el BANCO la deje fuera, porque dos
+   herramientas más en el prompt de cada vuelta harían incomparables sus cifras;
 2. que **no alcance esta máquina ni esta red**, ni por URL directa ni por redirección,
    porque un agente con red puede ser convencido por texto ajeno de ir a pedir las
    credenciales de la instancia;
@@ -18,17 +19,27 @@ import threading
 from _util import Cuenta
 
 from genai.herramientas import estandar
-from genai.herramientas.web import _a_texto, _publica, web
+from genai.herramientas.web import BUSCADORES, _a_texto, _publica, buscar, web
+
+RAIZ = __import__("pathlib").Path(__file__).resolve().parents[1]
 
 c = Cuenta("web")
 
-# ── 1. opt-in: si nadie la enciende, no existe ──────────────────────────────
-c("web" not in estandar(), "por defecto NO hay web: el agente ni sabe que es posible")
-c("web" not in estandar(incluir_peligrosas=True),
-  "ni siquiera con las peligrosas puestas: la red es una decisión aparte, no un grado")
-c("web" in estandar(web=True), "y con web=True aparece, que es la única forma")
-c(estandar(web=True)["web"].peligrosa,
-  "es peligrosa: toca la red, así que pasa por permisos.py como bash")
+# ── 1. encendida, pero visible y apagable ──────────────────────────────────
+c({"web", "buscar_web"} <= set(estandar()._por_nombre),
+  "la red viene ENCENDIDA por decisión del autor: traer una URL y buscar")
+c("web" not in estandar(web=False),
+  "y se apaga entera con web=False (`--sin-web`): sigue siendo una decisión visible")
+c(estandar()["web"].peligrosa and estandar()["buscar_web"].peligrosa,
+  "las dos son peligrosas: tocan la red, así que pasan por permisos.py como bash")
+c("web" not in estandar(incluir_peligrosas=False),
+  "en modo plan no hay red, como no hay bash: quien no puede escribir tampoco sale")
+
+_banco = (RAIZ / "scripts" / "correr_banco.py").read_text(encoding="utf-8")
+c("estandar(web=False" in _banco,
+  "el BANCO corre sin web a propósito: dos herramientas más engordan el prompt de "
+  "sistema en cada vuelta y harían incomparables las carreras nuevas con las cifras "
+  "de M2 y M3")
 
 # ── 2. SSRF: la casa de uno no es internet ──────────────────────────────────
 for url, que in [("http://127.0.0.1:9/x", "loopback por IP"),
@@ -94,5 +105,22 @@ c("Título" in t and "Uno" in t and "dos" in t, "el texto legible sobrevive")
 c("alert" not in t and "color:red" not in t,
   "el script y el estilo no: son bytes que se pagarían en cada vuelta sin decir nada")
 c("<" not in t and ">" not in t, "y no queda ni una etiqueta")
+
+# ── 5. la búsqueda: sin clave lo dice, y dice cuál ─────────────────────────
+c(not buscar("").ok, "una búsqueda vacía no busca nada")
+c(set(BUSCADORES) >= {"brave", "serper"},
+  "hay más de un buscador posible: no se ata el proyecto a uno")
+
+import genai.herramientas.web as _w  # noqa: E402
+
+_orig = _w._claves
+_w._claves = lambda: {}
+r = buscar("lo que sea")
+_w._claves = _orig
+c(not r.ok and "claves.json" in r.salida,
+  "sin ninguna clave, dice EXACTAMENTE qué añadir en vez de fallar en seco")
+c("gemini" in r.salida and "`web`" in r.salida,
+  "y recuerda las dos salidas: una clave de Gemini vale como buscador, y `web` sigue "
+  "sirviendo para una URL que ya se conozca")
 
 raise SystemExit(c.fin())

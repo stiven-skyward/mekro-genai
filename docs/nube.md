@@ -144,6 +144,24 @@ Dos cosas que conviene entender porque son contraintuitivas:
 **Podar no es perder**: lo recortado se guarda entero en `.genai/podado/` y el aviso que
 ve el modelo dice con qué referencia recuperarlo.
 
+## Buscar en la web
+
+`buscar_web` necesita clave, porque no hay buscador gratis y estable que raspar
+(DuckDuckGo responde con un CAPTCHA, comprobado 2026-08-28). Tres opciones, y gana la
+primera que esté en `~/.config/genai/claves.json`:
+
+```json
+{"brave":  {"clave": "..."},
+ "serper": {"clave": "..."},
+ "gemini": {"clave": "..."}}
+```
+
+**La tercera es la interesante**: Gemini trae Google Search nativo, así que con una
+clave de Gemini **el Qwen local tiene búsqueda web** sin ser él quien la haga. Es la
+doctrina híbrida aplicada — la nube hace el recado auxiliar, el cerebro local sigue
+decidiendo. Lo que vuelve son las URLs y un resumen corto; leer la página es cosa de
+`web`, y de quien decide qué mirar.
+
 ## Las dos reglas que no se negocian
 
 1. **Una carrera de nube nunca cuenta como cifra local.** El cerebro se registra como

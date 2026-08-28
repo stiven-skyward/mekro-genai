@@ -42,7 +42,7 @@ def main() -> int:
     REG = estandar()
     for h in HOLO:
         REG.registrar(h)
-    nombres = {f["function"]["name"] for f in REG.firmas()}
+    nombres = {f["function"]["name"] for f in REG.firmas()} - {"web", "buscar_web"}
     ok(nombres == {"leer", "escribir", "editar", "grep", "simbolos", "bash",
                    "fondo_lanzar", "fondo_revisar", "subagente", "git", "ver",
                    "holos", "foco", "anotar"},

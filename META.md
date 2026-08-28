@@ -99,6 +99,29 @@ Tres reglas, que valen tanto como las dos de arriba:
    es una cifra del banco, y un ahorro que rompe una tarea es una avería con buena
    prensa.
 
+## La web, encendida (decidido por el autor, 2026-08-28)
+
+El agente tiene `web` (traer una URL) y `buscar_web` (buscar), **encendidas por
+defecto**. El motivo es de uso: comprobar un enlace y consultar documentación que no
+está en el proyecto es parte de programar, y sin eso el agente solo sabe lo que ya venía
+sabiendo.
+
+Esto **no** convierte el proyecto en un arnés de nube. El cerebro sigue siendo local, y
+leer una página es tan «nube» como leer un fichero es «disco». Lo que se conserva:
+
+1. **Visible y apagable**: `genai tarea … --sin-web`. La decisión se ve, no se cuela.
+2. **Pasa por permisos**: las dos son `peligrosa=True`, como `bash`. En modo plan no hay
+   red, igual que no hay shell.
+3. **No alcanza esta máquina ni esta red**: se resuelve el nombre y se comprueba la IP
+   antes de conectar, y otra vez en cada redirección.
+4. **El banco corre sin web**, a propósito. Dos herramientas más engordan el prompt de
+   sistema en cada vuelta, y las cifras de M2 y M3 se declararon sin ellas.
+
+Para buscar hace falta clave (`brave`, `serper`, o `gemini`, que trae Google Search
+nativo). No hay buscador gratis y estable que raspar: DuckDuckGo responde con un CAPTCHA,
+comprobado. **Con clave de Gemini, el Qwen local tiene búsqueda web** sin ser él quien
+la haga — la doctrina híbrida de M7.1b aplicada: la nube hace el recado, nunca la carga.
+
 ## El cerebro OFICIAL local (decidido por el autor, 2026-08-27)
 
 **`Qwen3.8-27B-UD-Q2_K_XL.gguf` (9,15 GB, 2,83 bits) es el cerebro oficial de
