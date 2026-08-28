@@ -1,0 +1,195 @@
+{
+  "cuando": "2026-08-28_1424",
+  "nivel": "n1",
+  "cerebro": "nube:gemini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 366,
+      "tokens_entrada": 20548,
+      "cache": {
+        "leidos": 0,
+        "totales": 20548,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 2622,
+        "despues": 2622
+      },
+      "segundos": 194.9,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-aaj1opub/caja"
+    },
+    {
+      "id": "bitacora",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 14,
+      "intervenciones": 1,
+      "tokens_salida": 376,
+      "tokens_entrada": 52945,
+      "cache": {
+        "leidos": 0,
+        "totales": 52945,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 2970,
+        "despues": 2970
+      },
+      "segundos": 419.0,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-bitacora-lz1xo51h/caja"
+    },
+    {
+      "id": "cadena",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 16,
+      "intervenciones": 0,
+      "tokens_salida": 543,
+      "tokens_entrada": 52160,
+      "cache": {
+        "leidos": 0,
+        "totales": 52160,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 2763,
+        "despues": 2763
+      },
+      "segundos": 557.9,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-cadena-4u4qxpfi/caja"
+    },
+    {
+      "id": "fuga",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 9,
+      "intervenciones": 0,
+      "tokens_salida": 355,
+      "tokens_entrada": 25847,
+      "cache": {
+        "leidos": 0,
+        "totales": 25847,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 1626,
+        "despues": 1626
+      },
+      "segundos": 262.1,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-fuga-zffhtea3/caja"
+    },
+    {
+      "id": "migrar",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 13,
+      "intervenciones": 0,
+      "tokens_salida": 383,
+      "tokens_entrada": 40925,
+      "cache": {
+        "leidos": 0,
+        "totales": 40925,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 3245,
+        "despues": 2897
+      },
+      "segundos": 442.6,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-migrar-0784eo1z/caja"
+    },
+    {
+      "id": "rojo",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 321,
+      "tokens_entrada": 20120,
+      "cache": {
+        "leidos": 0,
+        "totales": 20120,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 1650,
+        "despues": 1650
+      },
+      "segundos": 358.2,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-rojo-x1yz33io/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 390.7,
+    "entrada_media": 35424.2,
+    "cache_pct": 0.0,
+    "segundos_media": 372.4,
+    "intervenciones": 1
+  }
+}

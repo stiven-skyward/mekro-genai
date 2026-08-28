@@ -1,0 +1,34 @@
+{
+  "id": "C86",
+  "pregunta": "¿Cuánto RELOJ cuesta la caché explícita de Gemini, que ahorra tokens?",
+  "fase": "predicho",
+  "abierto": "2026-08-28 13:47",
+  "revision": {
+    "cuando": "2026-08-28 13:47",
+    "texto": "C83 midio que cachedContents lleva el 50% de la entrada a precio de cache y declaro eso como ahorro, sin mirar el reloj. Comparando registros de hoy: las mismas 6 tareas de n1 con gemini dieron 34,5 y 36,1 s/tarea antes de implementar cachedContents (C82) y 55,2 s/tarea despues (C83). Y en la demo interactiva las vueltas tardaron 16-38 s cada una, cuando antes una tarea entera de n1 costaba 25-46 s. La causa plausible: crear un cachedContent es una subida HTTP extra del prefijo entero, y en n1/bitacora se midieron 2 escrituras por tarea. Pero esas comparaciones son entre carreras distintas y con codigo distinto en medio; no son un A/B."
+  },
+  "prediccion": {
+    "cuando": "2026-08-28 13:47",
+    "metrica": "segundos_media",
+    "espero": ">45",
+    "porque": "Si la caché cuesta reloj, el brazo CON cache debe quedar por encima de 45 s/tarea mientras el brazo SIN cache ronda los 34 que dieron los controles de C82. Predigo >45 para el brazo con cache. Lo que estoy prediciendo es que METI UN COSTE QUE NO DECLARE: en C83 canté un ahorro del 50% de la entrada sin mirar el segundo eje. Si sale por debajo de 45, la subida de C82 a C83 fue de otra cosa -ruido, o los cambios de codigo de por medio- y mi sospecha es falsa. La puerta honesta sigue siendo tareas_pct==100 en los dos brazos."
+  },
+  "sonda": null,
+  "medicion": null,
+  "veredicto": null,
+  "leccion": null,
+  "bitacora": [
+    {
+      "cuando": "2026-08-28 13:47",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-28 13:47",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-28 13:47",
+      "que": "predicho segundos_media >45"
+    }
+  ]
+}
