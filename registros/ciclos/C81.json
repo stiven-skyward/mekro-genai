@@ -1,7 +1,7 @@
 {
   "id": "C81",
   "pregunta": "modo híbrido (M7.1b): ¿baja el reloj de una tarea de EXPLORACIÓN mandando los subagentes a la nube y conservando el Qwen local como cerebro principal?",
-  "fase": "predicho",
+  "fase": "cerrado",
   "abierto": "2026-08-28 05:41",
   "revision": {
     "cuando": "2026-08-28 05:41",
@@ -14,9 +14,28 @@
     "porque": "El camino natural de esta tarea es explorar los ocho modulos. Con GGUF puro, cada vuelta de exploracion cuesta ~200-400 s de prefill mas generacion; ocho lecturas mas la edicion y la verificacion rondan 1.800-2.400 s. En hibrido, la exploracion entera se va a la nube (decenas de segundos) y el Qwen local solo gasta las vueltas de DECISION: leer la conclusion, editar, verificar y cerrar — tres o cuatro vueltas, ~900-1.300 s. La barra en 1.400 exige que el ahorro supere con holgura el ruido de maquina (x1,35 medido entre dias). Lo que decide: <1400 con 100% confirma que el reparto por rol es la palanca que el autor intuyo y M7.1b queda medida; >=1400 con 100% diria que el modelo local NO delega —usa grep en vez de subagentes, que para ESTA tarea es hasta mejor— y entonces lo medido seria que el modo hibrido no se impone solo: hay que pedirlo en el prompt del sistema, y eso es otro ciclo; fallo de tarea seria un bug del cableado hibrido y a mirarlo antes que nada."
   },
   "sonda": null,
-  "medicion": null,
-  "veredicto": null,
-  "leccion": null,
+  "medicion": {
+    "cuando": "2026-08-28 05:59",
+    "comando": "python3 -u scripts/correr_banco.py --nivel n2 --tarea hallar --cerebro gguf --hibrido nube:gemini/gemini-3.7-flash --modo lista --tope-vueltas 16 --tope-tokens 4000 --tope-segundos 5400 --etiqueta m7-hibrido-hallar",
+    "codigo": 0,
+    "segundos": 1086.6,
+    "cifras": {
+      "tareas_pct": 100.0,
+      "tokens_media": 295.0,
+      "segundos_media": 1085.4,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "   modo HÍBRIDO · principal: gguf · auxiliares: nube:gemini/gemini-3.7-flash\n== banco n2 · cerebro gguf · modo lista · 1 tareas ==\n\n── hallar\n[1] 105 tok · 487.4 s · 2 llamadas\n  ✓ grep({\"patron\": \"LIMITE\", \"ruta\": \"app\", \"contexto\": 2})  (0.0 s)\n  ✓ grep({\"patron\": \"LIMITE\", \"ruta\": \".\", \"glob\": \"*test*\", \"contexto\": 2})  (0.0 s)\n[2] 95 tok · 505.9 s · 1 llamadas\n  ✓ editar({\"ruta\": \"app/mod5.py\", \"cambios\": [{\"buscar\": \"LIMITE = 7\", \"poner\": \"LIMITE = 100\"}]})  (0.0 s)\n[3] 36 tok · 36.6 s · 1 llamadas\n  ✓ bash({\"comando\": \"python3 prueba.py\"})  (0.0 s)\n[4] 59 tok · 42.1 s\n  Corregido. El módulo `app/mod5.py` tenía `LIMITE = 7` en lugar de `LIMITE = 100`. Lo puse a 100 y la prueba pasa: **8/8 asertos ✓**.\n   ✓ PASA · fin · 4 vueltas · 295 tok · 1085.4 s · 0 interv.\n\n══════════════════════════════════════════════════════════════════\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 295.0\nCIFRA segundos_media 1085.4\nCIFRA intervenciones 0\n\n1/1 tareas · registro → registros/2026-08-28_0559_m7-hibrido-hallar.json"
+  },
+  "veredicto": {
+    "cuando": "2026-08-28 06:00",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 1085.4,
+    "espero": "<1400"
+  },
+  "leccion": "CONFIRMADO EN LA CIFRA PERO NO POR EL MECANISMO, y la distincion es toda la leccion: segundos_media 1.085,4 frente a <1.400, con 100% y 0 intervenciones — pero el gasto auxiliar de nube fue CERO. El modelo local no lanzo ni un subagente: resolvio la tarea con dos grep, un editar y una verificacion, en 4 vueltas. La rama honesta de la prediccion se cumplio antes de tiempo: el hibrido no se impone por existir, y para ESTA tarea el modelo eligio mejor que el diseno — un grep sobre ocho ficheros es mas barato que delegar tres exploraciones a la nube. El numero bajo de 1.400 por merito del modelo, no del reparto por rol. Tres cosas quedan medidas: (1) el cableado hibrido funciona y no estorba —la carrera paso limpia con el reparto puesto—; (2) la contabilidad auxiliar dice la verdad, y por eso se pudo ver que no se uso; (3) el subagente es una herramienta CARA cuya ganancia depende de que explorar sea realmente costoso: con grep disponible y ficheros pequenos, no lo es. Lo que falta medir, y es otro ciclo: una tarea donde grep NO baste —donde la respuesta exija leer y entender, no localizar una cadena— porque ahi es donde el subagente deberia pagar. Y una nota de diseno: si se quiere que el modelo delegue, hay que pedirselo en el prompt del sistema; el arnes hoy ofrece la herramienta y no la sugiere, que es lo correcto por defecto.",
   "bitacora": [
     {
       "cuando": "2026-08-28 05:41",
@@ -29,6 +48,14 @@
     {
       "cuando": "2026-08-28 05:41",
       "que": "predicho segundos_media <1400"
+    },
+    {
+      "cuando": "2026-08-28 05:59",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-28 06:00",
+      "que": "veredicto: CONFIRMA (segundos_media=1085.4)"
     }
   ]
 }

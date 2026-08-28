@@ -1,0 +1,38 @@
+{
+  "cuando": "2026-08-28_0559",
+  "nivel": "n2",
+  "cerebro": "gguf",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 4000,
+    "tope_segundos": 5400
+  },
+  "tareas": [
+    {
+      "id": "hallar",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 295,
+      "tokens_entrada": 13073,
+      "segundos": 1085.4,
+      "verificador": "8/8 asertos ✓",
+      "trabajo": "/tmp/banco-hallar-ttgrl4da/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 295.0,
+    "segundos_media": 1085.4,
+    "intervenciones": 0
+  }
+}
