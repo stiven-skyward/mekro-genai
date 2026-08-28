@@ -19,6 +19,7 @@ import threading
 from _util import Cuenta
 
 from genai.herramientas import estandar
+from genai.herramientas.base import Resultado
 from genai.herramientas.web import BUSCADORES, _a_texto, _publica, buscar, web
 
 RAIZ = __import__("pathlib").Path(__file__).resolve().parents[1]
@@ -122,5 +123,42 @@ c(not r.ok and "claves.json" in r.salida,
 c("gemini" in r.salida and "`web`" in r.salida,
   "y recuerda las dos salidas: una clave de Gemini vale como buscador, y `web` sigue "
   "sirviendo para una URL que ya se conozca")
+
+# ── la búsqueda sale por el proveedor QUE YA SE ESTÁ PAGANDO ───────────────
+# Quien trabaja con GPT no espera que su búsqueda salga por Google. Se comprueba el
+# ENRUTADO sin tocar la red: se sustituyen los backends por marcadores.
+c(set(_w.POR_CEREBRO) == {"gemini", "openai"},
+  "los dos proveedores de cerebro que además saben buscar están declarados")
+
+_reales = dict(_w.POR_CEREBRO)
+llamado = []
+_w.POR_CEREBRO.update({p: (lambda con, k, n, _p=p: (llamado.append(_p),
+                                                    Resultado(True, f"via {_p}"))[1])
+                       for p in _w.POR_CEREBRO})
+_w._claves = lambda: {"gemini": {"clave": "g"}, "openai": {"clave": "o"}}
+
+
+class _Cer:
+    def __init__(self, p):
+        self.proveedor = p
+
+
+llamado.clear(); _w.buscar("x", cerebro=_Cer("openai"))
+c(llamado == ["openai"], "con cerebro de OpenAI, la búsqueda sale por OpenAI")
+llamado.clear(); _w.buscar("x", cerebro=_Cer("gemini"))
+c(llamado == ["gemini"], "con cerebro de Gemini, por Gemini")
+llamado.clear(); _w.buscar("x", cerebro=None)
+c(len(llamado) == 1,
+  "sin cerebro de nube —el caso del Qwen LOCAL— se usa la primera clave que haya: "
+  "el cerebro local no sabe buscar, pero el usuario no se queda sin búsqueda")
+
+# si el propio falla, se intenta el otro antes de rendirse
+_w.POR_CEREBRO["openai"] = lambda con, k, n: Resultado(False, "caído")
+llamado.clear(); r2 = _w.buscar("x", cerebro=_Cer("openai"))
+c(r2.ok and llamado == ["gemini"],
+  "y si el proveedor propio falla se intenta el otro: quedarse sin buscar por una "
+  "caída ajena sería peor que cambiar de puerta")
+_w.POR_CEREBRO.clear(); _w.POR_CEREBRO.update(_reales)
+_w._claves = _orig
 
 raise SystemExit(c.fin())

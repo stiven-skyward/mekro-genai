@@ -117,10 +117,12 @@ leer una página es tan «nube» como leer un fichero es «disco». Lo que se co
 4. **El banco corre sin web**, a propósito. Dos herramientas más engordan el prompt de
    sistema en cada vuelta, y las cifras de M2 y M3 se declararon sin ellas.
 
-Para buscar hace falta clave (`brave`, `serper`, o `gemini`, que trae Google Search
-nativo). No hay buscador gratis y estable que raspar: DuckDuckGo responde con un CAPTCHA,
-comprobado. **Con clave de Gemini, el Qwen local tiene búsqueda web** sin ser él quien
-la haga — la doctrina híbrida de M7.1b aplicada: la nube hace el recado, nunca la carga.
+Para buscar hace falta clave. No hay buscador gratis y estable que raspar: DuckDuckGo
+responde con un CAPTCHA, comprobado. Se busca **con el proveedor que ya se está
+pagando** —OpenAI por `web_search`, Gemini por Google Search nativo— y un buscador
+dedicado (`brave`, `serper`) gana a ambos si está configurado. **Con cualquiera de esas
+claves, el Qwen local tiene búsqueda web** sin ser él quien la haga: la doctrina híbrida
+de M7.1b aplicada — la nube hace el recado, nunca la carga.
 
 ## El cerebro OFICIAL local (decidido por el autor, 2026-08-27)
 

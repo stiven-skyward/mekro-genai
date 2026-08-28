@@ -139,6 +139,9 @@ class CerebroNube:
         self.cache = {"leidos": 0, "totales": 0, "escritos": 0, "escrituras": 0}
         # p. ej. {"anthropic-workspace-id": "wrkspc_..."} o las de un proxy
         self.cabeceras = dict(cfg.get("cabeceras", {}))
+        # qué proveedor es, por nombre. `buscar_web` lo usa para que la búsqueda salga
+        # por el proveedor que ya se está pagando y no por otro.
+        self.proveedor = proveedor
         self._cache_g = None          # caché explícita viva, solo dialecto gemini
         # M7.4 — qué puede MIRAR este cerebro. `ver` lo consulta antes de mandar bytes:
         # un adjunto que el proveedor tira en silencio hace que el modelo responda con

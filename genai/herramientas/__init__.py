@@ -64,8 +64,8 @@ def estandar(incluir_peligrosas: bool = True, plugins: bool = True,
         # pase por permisos.py como `bash`, y que no alcance esta máquina ni esta red.
         # El banco la deja apagada a propósito: añadir dos herramientas engorda el
         # prompt de sistema en cada vuelta y rompería la comparación con M2 y M3.
-        from .web import HERRAMIENTAS as WEB
-        todas.extend(WEB)
+        from .web import para as _web
+        todas.extend(_web(cerebro))
     if plugins:
         extras, quejas = cargar_plugins()
         nombres = {h.nombre for h in todas}

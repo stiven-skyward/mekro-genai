@@ -153,14 +153,24 @@ primera que esté en `~/.config/genai/claves.json`:
 ```json
 {"brave":  {"clave": "..."},
  "serper": {"clave": "..."},
+ "openai": {"clave": "..."},
  "gemini": {"clave": "..."}}
 ```
 
-**La tercera es la interesante**: Gemini trae Google Search nativo, así que con una
-clave de Gemini **el Qwen local tiene búsqueda web** sin ser él quien la haga. Es la
-doctrina híbrida aplicada — la nube hace el recado auxiliar, el cerebro local sigue
-decidiendo. Lo que vuelve son las URLs y un resumen corto; leer la página es cosa de
-`web`, y de quien decide qué mirar.
+**Se busca con el proveedor que ya estás pagando.** Si tu cerebro es de OpenAI, la
+búsqueda sale por OpenAI (`web_search` de la Responses API); si es de Gemini, por Google
+Search nativo. Quien paga una sola factura no espera que su búsqueda salga por la
+competencia. Si el proveedor propio falla, se intenta el otro antes de rendirse.
+
+| lo que usas de cerebro | por dónde busca |
+|---|---|
+| `nube:openai/...` | OpenAI |
+| `nube:gemini/...` | Gemini |
+| el **Qwen local** | la primera clave que haya — el cerebro local no sabe buscar, pero tú no te quedas sin búsqueda |
+
+Un buscador dedicado (`brave`, `serper`) gana a los dos si está configurado: está hecho
+para esto y sale más barato. Lo que vuelve son las URLs y un resumen corto; leer la
+página es cosa de `web`, y de quien decide qué mirar.
 
 ## Las dos reglas que no se negocian
 

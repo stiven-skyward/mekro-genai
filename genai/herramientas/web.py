@@ -159,6 +159,34 @@ def _claves() -> dict:
         return {}
 
 
+def _por_openai(consulta: str, clave: str, n: int, modelo: str = "gpt-4.1-mini") -> Resultado:
+    """OpenAI busca con la herramienta `web_search` de la Responses API."""
+    cuerpo = {"model": modelo, "tools": [{"type": "web_search"}],
+              "input": f"Busca en la web: {consulta}\nResume en tres líneas y cita "
+                       f"las URLs concretas."}
+    try:
+        pedido = urllib.request.Request(
+            "https://api.openai.com/v1/responses", json.dumps(cuerpo).encode(),
+            {"Content-Type": "application/json", "Authorization": f"Bearer {clave}"})
+        d = json.load(urllib.request.urlopen(pedido, timeout=120))
+    except Exception as e:  # noqa: BLE001
+        return Resultado(False, f"la búsqueda por OpenAI falló: {e}")
+    texto, urls = "", []
+    for o in d.get("output", []):
+        for cc in (o.get("content") or []):
+            texto += cc.get("text", "")
+            for a in (cc.get("annotations") or []):
+                if a.get("url") and a["url"] not in [u for _, u in urls]:
+                    urls.append((a.get("title") or "(sin título)", a["url"]))
+    if not texto:
+        return Resultado(False, f"sin resultados para «{consulta}»")
+    salida = f"── búsqueda: {consulta}  (vía OpenAI)\n{texto.strip()[:2000]}"
+    if urls:
+        salida += "\n\nFUENTES (léelas con `web` si necesitas el detalle):\n"
+        salida += "\n".join(f"· {t}\n  {u}" for t, u in urls[:n])
+    return Resultado(True, salida)
+
+
 def _por_gemini(consulta: str, clave: str, n: int) -> Resultado:
     """Gemini busca y devuelve sus fuentes. No se pide la respuesta del modelo: se
     piden las URLs, porque quien tiene que leer y decidir es el agente, no Gemini."""
@@ -194,7 +222,11 @@ def _por_gemini(consulta: str, clave: str, n: int) -> Resultado:
     return Resultado(True, f"{cab}\n{cuerpo_txt}")
 
 
-def buscar(consulta: str, n: int = 6) -> Resultado:
+# Los proveedores de cerebro que además saben buscar, y con qué función.
+POR_CEREBRO = {"gemini": _por_gemini, "openai": _por_openai}
+
+
+def buscar(consulta: str, n: int = 6, cerebro=None) -> Resultado:
     consulta = (consulta or "").strip()
     if not consulta:
         return Resultado(False, "una búsqueda vacía no busca nada")
@@ -221,14 +253,40 @@ def buscar(consulta: str, n: int = 6) -> Resultado:
         return Resultado(True, f"── búsqueda: {consulta}  ({nombre})\n"
                                + "\n".join(filas))
 
-    g = (cl.get("gemini") or {}).get("clave")
-    if g:
-        return _por_gemini(consulta, g, n)
+    # Sin buscador dedicado, se busca con el proveedor DEL CEREBRO QUE YA SE ESTÁ
+    # USANDO. Es lo que espera quien paga una sola factura: si trabajas con GPT, no
+    # tiene sentido que la búsqueda salga por Google, y al revés igual.
+    propio = getattr(cerebro, "proveedor", "") or ""
+    orden = ([propio] if propio in POR_CEREBRO else []) + [
+        p for p in POR_CEREBRO if p != propio]
+    for prov in orden:
+        k = (cl.get(prov) or {}).get("clave")
+        if k:
+            r = POR_CEREBRO[prov](consulta, k, n)
+            if r.ok or prov == orden[-1]:
+                return r        # si el propio falla, se intenta el otro antes de rendirse
 
     return Resultado(False, (
         "no hay con qué buscar. Añade en ~/.config/genai/claves.json una clave de "
-        "buscador —`brave` o `serper`— o una de `gemini`, que trae Google Search "
-        "nativo. Mientras tanto, `web` sí puede traer una URL que ya conozcas."))
+        "buscador —`brave` o `serper`— o la de un proveedor que sepa buscar: `openai` "
+        "(web_search) o `gemini` (Google Search nativo). Mientras tanto, `web` sí "
+        "puede traer una URL que ya conozcas."))
+
+
+def para(cerebro=None) -> list[Herramienta]:
+    """Ata el cerebro a `buscar_web`, para que la búsqueda salga por el proveedor que
+    ya se está usando. Se ata al construir el registro y no con una global: dos
+    sesiones con cerebros distintos en el mismo proceso no deben pisarse."""
+    import functools
+    fuera = []
+    for h in HERRAMIENTAS:
+        if h.nombre == "buscar_web":
+            fuera.append(Herramienta(**{**vars(h),
+                                        "funcion": functools.partial(buscar,
+                                                                     cerebro=cerebro)}))
+        else:
+            fuera.append(h)
+    return fuera
 
 
 HERRAMIENTAS = [
