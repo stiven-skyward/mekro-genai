@@ -210,8 +210,27 @@ def _decir(x=""):
     print(x, flush=True)
 
 
-def entrar(imprimir=_decir, espera: float = 300.0,
-           abrir_navegador: bool = True) -> tuple[bool, str]:
+def _de_stdin(caja: dict) -> None:
+    """Lee la URL de vuelta pegada a mano.
+
+    Existe porque el servidor local no siempre es alcanzable —WSL sin reenvío de
+    puertos, un navegador en otra máquina, una sesión por SSH— y porque el ir y venir
+    para copiar la URL puede comerse el plazo. El código de Google está en esa URL de
+    vuelta igual que en la petición al servidor: sirve exactamente lo mismo."""
+    try:
+        linea = input().strip()
+    except (EOFError, KeyboardInterrupt, OSError):
+        return
+    if not linea:
+        return
+    q = urllib.parse.parse_qs(urllib.parse.urlparse(linea).query)
+    caja.update({k: v[0] for k, v in q.items()})
+    if "code" not in caja and linea and "?" not in linea:
+        caja["code"] = linea            # por si pegó solo el código
+
+
+def entrar(imprimir=_decir, espera: float = 900.0,
+           abrir_navegador: bool = True, leer_pegado: bool = True) -> tuple[bool, str]:
     cid, sec, queja = credenciales()
     if queja:
         return False, queja
@@ -232,15 +251,25 @@ def entrar(imprimir=_decir, espera: float = 300.0,
             webbrowser.open(url)
         except Exception:  # noqa: BLE001 — sin navegador, la URL de arriba basta
             pass
-    imprimir("  Esperando…  (si el navegador no puede llegar a esta máquina, pega "
-             "aquí\n   la URL completa a la que te redirigió y pulsa intro)\n")
+    imprimir("  Esperando 15 minutos. Dos formas de terminar, la que te venga bien:")
+    imprimir("    · autoriza y ya está, si el navegador alcanza esta máquina;")
+    imprimir("    · o pega AQUÍ la URL completa a la que te redirigió "
+             "(http://localhost:…/?code=…)")
+    imprimir("      y pulsa intro. Sirve igual: el código va dentro.\n")
 
+    # Dos caminos a la vez: el navegador llegando al servidor local, o la URL de vuelta
+    # pegada a mano. Gana el primero que traiga un código.
+    pegado: dict = {}
+    if leer_pegado:
+        threading.Thread(target=_de_stdin, args=(pegado,), daemon=True).start()
     limite = time.time() + espera
-    while time.time() < limite and not _Recogida.recibido:
-        time.sleep(0.5)
+    while time.time() < limite and not _Recogida.recibido and not pegado:
+        time.sleep(0.3)
     srv.shutdown()
 
-    r = _Recogida.recibido
+    r = _Recogida.recibido or pegado
+    if pegado and not _Recogida.recibido and "state" not in pegado:
+        r = {**pegado, "state": estado}   # al pegarla a mano, el `state` ya se vio
     if not r:
         return False, "se agotó el plazo sin autorizar"
     if r.get("error"):

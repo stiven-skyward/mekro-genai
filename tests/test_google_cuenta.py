@@ -94,7 +94,8 @@ G._post = lambda *a, **k: (_ for _ in ()).throw(
 srv_salida = []
 hilo = threading.Thread(
     target=lambda: srv_salida.append(G.entrar(imprimir=lambda *_: None, espera=6,
-                                              abrir_navegador=False)), daemon=True)
+                                              abrir_navegador=False,
+                                              leer_pegado=False)), daemon=True)
 hilo.start()
 time.sleep(1.0)
 # se simula lo que haría una página cualquiera: mandar un código con otro `state`
@@ -215,5 +216,41 @@ c("no es una integración que Google bendiga" in fuente,
   "cliente de gemini-cli, funciona hoy, y puede cortarse sin aviso")
 c("AI Studio" in fuente,
   "y señala la alternativa sin incertidumbre, que además tiene nivel gratuito")
+
+# ── pegar la URL de vuelta a mano ──────────────────────────────────────────
+# Existe porque el servidor local no siempre es alcanzable —WSL sin reenvío, navegador
+# en otra máquina, sesión por SSH— y porque copiar la URL puede comerse el plazo. Pasó
+# en la primera prueba real con la cuenta del autor.
+caja = {}
+G._de_stdin.__globals__["input"] = lambda: (
+    "http://localhost:42761/?code=4/0AY_ejemplo&state=ABC123")
+G._de_stdin(caja)
+c(caja.get("code") == "4/0AY_ejemplo" and caja.get("state") == "ABC123",
+  "de una URL de vuelta pegada entera se saca el código y el `state`")
+
+caja = {}
+G._de_stdin.__globals__["input"] = lambda: "4/0AY_solo_el_codigo"
+G._de_stdin(caja)
+c(caja.get("code") == "4/0AY_solo_el_codigo",
+  "y si solo pega el código, también sirve: es lo que hace media gente")
+
+caja = {}
+G._de_stdin.__globals__["input"] = lambda: ""
+G._de_stdin(caja)
+c(caja == {}, "una línea vacía no inventa nada")
+
+caja = {}
+def _revienta():
+    raise EOFError
+G._de_stdin.__globals__["input"] = _revienta
+G._de_stdin(caja)
+c(caja == {},
+  "y sin entrada estándar —en segundo plano, sin terminal— no revienta: se queda "
+  "esperando por el otro camino")
+del G._de_stdin.__globals__["input"]
+
+c(G.entrar.__defaults__[1] >= 900,
+  "el plazo es de 15 minutos: con 5 no daba tiempo a copiar la URL, mirarla y "
+  "autorizar, y eso se vio en la primera prueba real")
 
 raise SystemExit(c.fin())
