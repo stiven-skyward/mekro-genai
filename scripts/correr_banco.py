@@ -91,6 +91,7 @@ def correr_tarea(dir_tarea: Path, nombre_cerebro: str, modo: str,
 
     if sin_pensar and hasattr(cerebro, "pensar"):
         cerebro.pensar = False
+    os.environ["MG_CEREBRO"] = nombre_cerebro    # lo hereda el subagente
     registro = estandar()
     for h in HOLO:
         registro.registrar(h)

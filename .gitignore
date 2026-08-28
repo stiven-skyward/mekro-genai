@@ -8,6 +8,9 @@ CLAUDE.md
 registros/cache-grande-C4corpus.pt
 registros/corpus-congelado.json
 
+# índices de herramientas externas: no son parte del arnés y el repo es público
+vectors/
+
 # python
 __pycache__/
 *.pyc

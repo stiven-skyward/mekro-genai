@@ -43,8 +43,10 @@ def _preguntar(herramienta, argumentos) -> Decision:
 
 def cmd_tarea(a) -> int:
     import json
+    import os
     from pathlib import Path
 
+    os.environ["MG_CEREBRO"] = a.cerebro       # lo hereda el subagente
     cerebro = cargar(a.cerebro)
     ultima = Path(".genai") / "ultima.json"
     if a.continuar:
