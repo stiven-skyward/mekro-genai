@@ -1,0 +1,25 @@
+{
+  "id": "C82",
+  "pregunta": "¿La poda en el origen baja los tokens de entrada sin romper ninguna tarea?",
+  "fase": "revisado",
+  "abierto": "2026-08-28 06:18",
+  "revision": {
+    "cuando": "2026-08-28 06:18",
+    "texto": "docs/ahorro.md mide 40:1 entrada/salida en dos carreras (n1/anadir nube, n2/hallar local): el gasto es la transcripcion reenviada cada vuelta. RTK poda salida de shell (60-90% sobre lo interceptado, no sobre la factura); headroom comprime en vuelo sin romper el prefijo; ponytail hace que el modelo escriba menos. Ninguno pondera por vueltas restantes. No hay cifra propia de poda todavia: esta es la primera."
+  },
+  "prediccion": null,
+  "sonda": null,
+  "medicion": null,
+  "veredicto": null,
+  "leccion": null,
+  "bitacora": [
+    {
+      "cuando": "2026-08-28 06:18",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-28 06:18",
+      "que": "revisado"
+    }
+  ]
+}

@@ -22,3 +22,4 @@ dist/
 # sesiones y temporales
 lista.jsonl
 eventos.jsonl
+.genai/podado/

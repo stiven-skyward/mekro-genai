@@ -134,6 +134,20 @@ class CerebroNube:
         # (400 si falta). No cabe en la `Llamada` del arnes sin ensuciar el protocolo
         # compartido, asi que se guarda aqui por id de llamada y se reinyecta.
         self._firmas_pensamiento: dict[str, str] = {}
+        # caché de prefijo: se puede apagar para medir el A/B (docs/ahorro.md)
+        self.cachear = cfg.get("cachear", True)
+        self.cache = {"leidos": 0, "totales": 0}
+
+    def _anotar_cache(self, leidos: int, totales: int) -> None:
+        """Cuánto de la entrada vino de caché. Es la cifra que dice si el ahorro
+        mayor está funcionando; sin medirla, «usamos caché» es un adjetivo."""
+        self.cache["leidos"] += int(leidos or 0)
+        self.cache["totales"] += int(totales or 0)
+
+    @property
+    def ahorro_cache(self) -> float:
+        t = self.cache["totales"]
+        return round(self.cache["leidos"] / t, 3) if t else 0.0
 
     # ── conversion de la transcripcion del arnes a cada dialecto ────────────
 
@@ -264,6 +278,8 @@ class CerebroNube:
                 llamadas.append(Llamada(fc.get("name", ""), fc.get("args") or {},
                                         id=ident))
         u = d.get("usageMetadata") or {}
+        self._anotar_cache(u.get("cachedContentTokenCount", 0),
+                           u.get("promptTokenCount", 0))
         return (texto.strip(), llamadas, u.get("promptTokenCount", 0),
                 u.get("candidatesTokenCount", 0))
 
@@ -278,6 +294,22 @@ class CerebroNube:
                                 "description": h["function"].get("description", ""),
                                 "input_schema": h["function"].get("parameters", {})}
                                for h in herramientas]
+        # CACHÉ DE PREFIJO (docs/ahorro.md): Anthropic cobra ~0,1× por token leído de
+        # caché, y el gasto de una carrera es entrada en proporción 40:1. El prefijo
+        # aquí es estable POR CONSTRUCCIÓN (C22: la transcripción solo crece por el
+        # final), así que basta marcar dónde acaba lo estable. Se marca el sistema y
+        # el penúltimo turno: lo último cambia siempre y marcarlo no cachearía nada.
+        if self.cachear:
+            if isinstance(cuerpo.get("system"), str) and cuerpo["system"]:
+                cuerpo["system"] = [{"type": "text", "text": cuerpo["system"],
+                                     "cache_control": {"type": "ephemeral"}}]
+            msgs = cuerpo["messages"]
+            if len(msgs) >= 3:
+                bloques = msgs[-3]["content"]
+                if isinstance(bloques, str):
+                    msgs[-3]["content"] = bloques = [{"type": "text", "text": bloques}]
+                if bloques:
+                    bloques[-1]["cache_control"] = {"type": "ephemeral"}
         d = _pedir(self.url, cuerpo, {"x-api-key": self.clave,
                                       "anthropic-version": "2023-06-01"})
         texto, llamadas = "", []
@@ -289,6 +321,8 @@ class CerebroNube:
                                         bloque.get("input") or {},
                                         id=bloque.get("id", "")))
         u = d.get("usage") or {}
+        self._anotar_cache(u.get("cache_read_input_tokens", 0),
+                           u.get("input_tokens", 0))
         return (texto.strip(), llamadas, u.get("input_tokens", 0),
                 u.get("output_tokens", 0))
 
@@ -309,6 +343,12 @@ class CerebroNube:
                 args = {}
             llamadas.append(Llamada(fn.get("name", ""), args, id=tc.get("id", "")))
         u = d.get("usage") or {}
+        # OpenAI, DeepSeek y compatibles cachean el prefijo SOLOS: no hay que pedirlo,
+        # solo no romperlo. Lo que sí hay que hacer es CONTARLO, porque un ahorro que
+        # no se mide no existe (docs/ahorro.md).
+        cacheados = ((u.get("prompt_tokens_details") or {}).get("cached_tokens", 0)
+                     or u.get("prompt_cache_hit_tokens", 0))
+        self._anotar_cache(cacheados, u.get("prompt_tokens", 0))
         return ((msg.get("content") or "").strip(), llamadas,
                 u.get("prompt_tokens", 0), u.get("completion_tokens", 0))
 

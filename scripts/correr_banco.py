@@ -198,6 +198,11 @@ def main() -> int:
     n = len(filas)
     pasan = sum(1 for f in filas if f["paso"])
     tok = sum(f["tokens_salida"] for f in filas) / n
+    # entrada_media es la cifra del DINERO cuando el cerebro es de nube: la entrada
+    # domina a la salida ~40:1 porque la transcripción se reenvía cada vuelta
+    # (docs/ahorro.md). Sin esta cifra, la poda se estaría midiendo con una métrica
+    # que no toca.
+    ent = sum(f["tokens_entrada"] for f in filas) / n
     seg = sum(f["segundos"] for f in filas) / n
     interv = sum(f["intervenciones"] for f in filas)
 
@@ -214,6 +219,7 @@ def main() -> int:
          "topes": topes, "tareas": filas,
          "resumen": {"tareas_pct": round(100 * pasan / n, 1),
                      "tokens_media": round(tok, 1),
+                     "entrada_media": round(ent, 1),
                      "segundos_media": round(seg, 1),
                      "intervenciones": interv}},
         indent=2, ensure_ascii=False), encoding="utf-8")
@@ -222,6 +228,7 @@ def main() -> int:
     print("═" * 66)
     print(f"CIFRA tareas_pct {100 * pasan / n:.1f}")
     print(f"CIFRA tokens_media {tok:.1f}")
+    print(f"CIFRA entrada_media {ent:.1f}")
     print(f"CIFRA segundos_media {seg:.1f}")
     print(f"CIFRA intervenciones {interv}")
     print(f"\n{pasan}/{n} tareas · registro → {reg.relative_to(RAIZ)}")

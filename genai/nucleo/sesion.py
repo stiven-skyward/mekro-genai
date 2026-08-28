@@ -35,6 +35,9 @@ class Sesion:
     vueltas: int = 0
     intervenciones: int = 0
     compactaciones: int = 0
+    # cuánto se ahorró podando en el origen, para que el ahorro sea una cifra medida y
+    # no un adjetivo (docs/ahorro.md)
+    ahorro: dict = field(default_factory=lambda: {"antes": 0, "despues": 0})
     inicio: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def __post_init__(self) -> None:

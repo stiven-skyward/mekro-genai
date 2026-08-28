@@ -27,6 +27,13 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from ..cerebro.base import Uso
+from ..ahorro import podar
+
+
+def _env_si(clave: str, defecto: bool) -> bool:
+    """La poda viene puesta; se apaga para medir el A/B (MG_PODA=0)."""
+    v = __import__("os").environ.get(clave)
+    return defecto if v is None else v.strip().lower() not in ("0", "no", "false")
 from ..herramientas.base import Registro
 from .permisos import Politica
 from .sesion import Sesion
@@ -49,6 +56,7 @@ class Resultado:
 
 def turno(sesion: Sesion, registro: Registro, politica: Politica,
           peticion: str, *, tope_vueltas: int = 24, tope_tokens: int = 6000,
+          poda: bool = _env_si("MG_PODA", True),
           pensar_vueltas: int = 0,
           tope_segundos: int = 1800, preguntar: Callable | None = None,
           traza_por_pantalla: bool = True) -> Resultado:
@@ -182,7 +190,16 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
             t1 = time.time()
             res = registro.invocar(ll.nombre, ll.argumentos)
             seg = time.time() - t1
-            sesion.observacion(ll.id, res.recortado())
+            # PODA EN EL ORIGEN (docs/ahorro.md). Este es el único sitio por donde una
+            # observación entra en la transcripción, y por tanto el único donde se puede
+            # ahorrar sin romper el prefijo cacheado. Se aprieta según lo que le queda
+            # de vida al dato: lo que entra pronto se reenvía muchas más veces.
+            texto, ahorro = podar(ll.nombre, res.recortado(),
+                                  vueltas_restantes=max(1, tope_vueltas - vuelta),
+                                  activo=poda)
+            sesion.ahorro["antes"] += ahorro["antes"]
+            sesion.ahorro["despues"] += ahorro["despues"]
+            sesion.observacion(ll.id, texto)
             traza.append({"vuelta": vuelta, "llamada": ll.firma(),
                           "ok": res.ok, "segundos": round(seg, 2)})
             if traza_por_pantalla:
