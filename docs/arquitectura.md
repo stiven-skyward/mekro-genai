@@ -114,3 +114,29 @@ se gana permitiéndola. Está probado en `tests/test_bucle.py`.
 | separación servidor/cliente (el cerebro sobrevive a la interfaz) | M2 | **H4** |
 | decodificación restringida por gramática para las llamadas | M2 | **H5** |
 | el ciclo de investigación cerrando el lazo solo | M3 | **H6** |
+
+## LSP (2026-08-28)
+
+La deuda que este documento citaba desde el primer día —«el uso de LSP de OpenCode»— ya
+está pagada, en `genai/lsp.py` y `genai/herramientas/codigo.py`.
+
+Es **protocolo, no biblioteca**: JSON-RPC con cabecera `Content-Length` sobre stdio.
+Cabe en un fichero y no añade dependencias; el proyecto tiene una y se queda con una. El
+servidor de lenguaje sí es una herramienta externa que instala el usuario, como `git`.
+
+Por qué importa, con el caso mínimo que lo demuestra: en un fichero con `def pagar(x)` a
+nivel de módulo y `def pagar(self)` dentro de una clase, `grep pagar` da 6 coincidencias
+—incluidas la del método y la de un comentario—; `referencias` sobre la función devuelve
+5 y **excluye el método**, y preguntado sobre el método devuelve solo el método. Esa
+confusión es exactamente la que rompe un renombrado.
+
+Tres decisiones de diseño, cada una con su motivo medido:
+
+1. **El servidor se reutiliza** por (proyecto, lenguaje). Arrancar `pylsp` cuesta ~1,5 s
+   y la segunda llamada 0,0 s. Pagar el arranque en cada pregunta sería inservible con
+   un cerebro que ya tarda 530 s por vuelta.
+2. **Sin servidor instalado se dice cuál falta**, con el comando exacto. Devolver
+   «0 referencias» cuando lo cierto es «no hay quien busque» hace que el modelo concluya
+   que el símbolo no se usa y borre código vivo.
+3. **Solo lectura.** Renombrar en veinte ficheros lo hace el agente con `editar`, que
+   pasa por permisos y deja diff. Un `workspace/applyEdit` silencioso, no.

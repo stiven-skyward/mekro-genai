@@ -45,6 +45,7 @@ def main() -> int:
     nombres = {f["function"]["name"] for f in REG.firmas()} - {"web", "buscar_web"}
     ok(nombres == {"leer", "escribir", "editar", "grep", "simbolos", "bash",
                    "fondo_lanzar", "fondo_revisar", "subagente", "git", "ver",
+                   "definicion", "referencias", "diagnostico",
                    "holos", "foco", "anotar"},
        f"el juego con hologramas es exactamente este ({len(nombres)})")
 
