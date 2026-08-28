@@ -200,7 +200,17 @@ class _Recogida(http.server.BaseHTTPRequestHandler):
         pass
 
 
-def entrar(imprimir=print, espera: float = 300.0,
+def _decir(x=""):
+    """Imprime Y VACÍA EL BÚFER.
+
+    Sin el `flush`, la URL de autorización se queda en el búfer de Python cuando la
+    salida no va a una terminal —redirigida, en segundo plano, dentro de otro
+    programa— y el usuario ve un proceso colgado sin explicación, esperando una
+    autorización que nunca le llegó a pedir. Pasó en la primera prueba real."""
+    print(x, flush=True)
+
+
+def entrar(imprimir=_decir, espera: float = 300.0,
            abrir_navegador: bool = True) -> tuple[bool, str]:
     cid, sec, queja = credenciales()
     if queja:
