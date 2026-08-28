@@ -21,6 +21,14 @@ Crea `~/.config/genai/claves.json` **con permisos 600** (nunca dentro del reposi
 chmod 600 ~/.config/genai/claves.json
 ```
 
+**Cabeceras extra**, si tu proveedor las pide. Una clave de Anthropic ligada a identidad
+responde `400` sin `anthropic-workspace-id`, y un proxy corporativo suele querer las
+suyas; se ponen aquí y no hay que tocar código:
+
+```json
+{"anthropic": {"clave": "...", "cabeceras": {"anthropic-workspace-id": "wrkspc_..."}}}
+```
+
 ## Usar
 
 ```bash

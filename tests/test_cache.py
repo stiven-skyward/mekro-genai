@@ -123,6 +123,15 @@ c(aprox < g.CACHE_MINIMO,
 h = desnudo(); h.cachear = False
 c(h.cachear is False, "la caché se puede apagar: sin brazo de control no hay medición")
 
+# ── cabeceras extra por proveedor ──────────────────────────────────────────
+# Existen porque una clave de Anthropic ligada a identidad responde 400 sin
+# `anthropic-workspace-id`, y porque un proxy corporativo delante de cualquier
+# proveedor pide las suyas. Se ponen en claves.json, sin tocar código.
+c("cabeceras" in fuente and "cab.update(self.cabeceras)" in fuente,
+  "el dialecto de Anthropic mezcla las cabeceras extra con las suyas")
+c('"x-api-key": self.clave' in fuente,
+  "sin que las extra puedan pisar la clave ni la versión del API, que van primero")
+
 # ── que no quede nada vivo ─────────────────────────────────────────────────
 c("def cerrar" in fuente and "_cache_borrar" in fuente,
   "hay una forma explícita de cerrar: una caché que sobrevive a la tarea se sigue "

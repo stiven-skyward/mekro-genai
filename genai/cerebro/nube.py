@@ -137,6 +137,8 @@ class CerebroNube:
         # caché de prefijo: se puede apagar para medir el A/B (docs/ahorro.md)
         self.cachear = cfg.get("cachear", True)
         self.cache = {"leidos": 0, "totales": 0, "escritos": 0, "escrituras": 0}
+        # p. ej. {"anthropic-workspace-id": "wrkspc_..."} o las de un proxy
+        self.cabeceras = dict(cfg.get("cabeceras", {}))
         self._cache_g = None          # caché explícita viva, solo dialecto gemini
         # M7.4 — qué puede MIRAR este cerebro. `ver` lo consulta antes de mandar bytes:
         # un adjunto que el proveedor tira en silencio hace que el modelo responda con
@@ -456,8 +458,13 @@ class CerebroNube:
                     msgs[-3]["content"] = bloques = [{"type": "text", "text": bloques}]
                 if bloques:
                     bloques[-1]["cache_control"] = {"type": "ephemeral"}
-        d = _pedir(self.url, cuerpo, {"x-api-key": self.clave,
-                                      "anthropic-version": "2023-06-01"})
+        cab = {"x-api-key": self.clave, "anthropic-version": "2023-06-01"}
+        # Cabeceras extra del proveedor. Existen porque una clave de Anthropic ligada a
+        # identidad exige `anthropic-workspace-id` y responde 400 sin ella; y porque un
+        # proxy corporativo delante de cualquier proveedor suele pedir las suyas. Se
+        # ponen en claves.json y no hay que tocar código.
+        cab.update(self.cabeceras)
+        d = _pedir(self.url, cuerpo, cab)
         texto, llamadas = "", []
         for bloque in d.get("content", []):
             if bloque.get("type") == "text":
