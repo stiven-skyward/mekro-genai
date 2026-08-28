@@ -64,7 +64,80 @@ def cmd_proveedores(patron: str = "") -> int:
     for pid, mid, _ in filas:
         print(f"  --cerebro nube:{pid}/{mid}")
     print("\nLa clave va en ~/.config/genai/claves.json, con el nombre del proveedor.")
+    print("\nEsto es BYOK (pagas por token). Para suscripción o MCP: `genai cerebros`.")
     return 0
+
+
+def cmd_cerebros() -> int:
+    """`genai cerebros` — el menú: tres caminos para traer un cerebro, decide tú cuál.
+
+    Existe porque no son intercambiables ni igual de disponibles para todo proveedor:
+    BYOK cubre cualquiera con clave; suscripción directa solo donde el proveedor
+    sanciona de verdad usarla desde un tercero; MCP es al revés —tu cliente de
+    suscripción usa las herramientas de Mekro-Genai, no un cerebro nuevo."""
+    from .cerebro.nube import PROVEEDORES
+    print("Tres caminos para traer un cerebro de nube. Ninguno es «el bueno»: decide "
+          "según lo que ya tengas.\n")
+    print(f"1. BYOK — clave de API, pagas por token")
+    print(f"   {len(PROVEEDORES)} de fábrica (medidos) + 207 del catálogo de "
+          f"models.dev, sin código nuevo.")
+    print("   `genai proveedores [texto]` · --cerebro nube:<proveedor>/<modelo>\n")
+    print("2. Suscripción directa — Mekro-Genai actúa como tu cerebro, con tu cuenta")
+    print("   Solo donde el proveedor sanciona de verdad usarlo desde un tercero:")
+    print("     genai copilot entrar   — GitHub Copilot (device flow de editor, "
+          "documentado)")
+    print("     genai google entrar    — Google (Code Assist exige licencia aparte "
+          "de AI Pro/Ultra; medido, ver docs/nube.md)")
+    print("   NO existe para OpenAI ni Anthropic: ChatGPT y Claude Pro/Max están "
+          "ligados a su propio cliente oficial, no a extraerlos para otro programa.\n")
+    print("3. MCP — tu cliente de suscripción usa las HERRAMIENTAS de Mekro-Genai")
+    print("   El camino correcto para Claude Code, Codex, y cualquier cliente MCP: "
+          "el cerebro sigue siendo el suyo, se presta la caja de herramientas.")
+    print("   `genai mcp clientes` · `genai mcp instalar <cliente>`")
+    return 0
+
+
+def cmd_mcp_clientes() -> int:
+    """`genai mcp clientes` — qué se ha probado de verdad y qué no."""
+    from .mcp_clientes import CLIENTES, detectado
+    for clave, c in CLIENTES.items():
+        marca = "✓ instalado" if detectado(clave) else ("no detectado" if c.get("binario")
+                                                         else "sin binario propio")
+        if c.get("verificado"):
+            print(f"[{clave}] {c['nombre']}  ({marca})")
+            print(f"    verificado: {c['verificado']}")
+            print(f"    genai mcp instalar {clave}")
+        else:
+            print(f"[{clave}] {c['nombre']}  (SIN VERIFICAR desde aquí)")
+            print(f"    {c['instrucciones']}")
+        print()
+    print("Cualquier otro cliente MCP: usa el fragmento JSON genérico —")
+    print("`python3 -c \"from genai.mcp_clientes import json_generico as j; "
+          "import json; print(json.dumps(j(), indent=2))\"`")
+    return 0
+
+
+def cmd_mcp_instalar(clave: str) -> int:
+    if not clave:
+        print("uso: genai mcp instalar <cliente>   (`genai mcp clientes` para ver "
+              "cuáles)")
+        return 2
+    from .mcp_clientes import instalar
+    ok, msg = instalar(clave)
+    print(("✓ " if ok else "") + msg)
+    if ok:
+        print(f"\nQuitar con: genai mcp quitar {clave}")
+    return 0 if ok else 1
+
+
+def cmd_mcp_quitar(clave: str) -> int:
+    if not clave:
+        print("uso: genai mcp quitar <cliente>")
+        return 2
+    from .mcp_clientes import quitar
+    ok, msg = quitar(clave)
+    print(("✓ " if ok else "✗ ") + (msg or ("hecho" if ok else "falló")))
+    return 0 if ok else 1
 
 
 def cmd_sesiones(args: list[str]) -> int:
@@ -149,11 +222,21 @@ def main(argv: list[str] | None = None) -> int:
     if a.peticion[0] == "proveedores":
         return cmd_proveedores(" ".join(a.peticion[1:]))
     if a.peticion[0] == "mcp":
-        # Sobre stdio, sin traza: cualquier línea que no sea JSON-RPC rompería el
-        # protocolo del lado del cliente (Antigravity, Claude Desktop, …).
+        sub = a.peticion[1] if len(a.peticion) > 1 else ""
+        if sub == "clientes":
+            return cmd_mcp_clientes()
+        if sub == "instalar":
+            return cmd_mcp_instalar(a.peticion[2] if len(a.peticion) > 2 else "")
+        if sub == "quitar":
+            return cmd_mcp_quitar(a.peticion[2] if len(a.peticion) > 2 else "")
+        # Bare `genai mcp`: SERVIR, sin traza por stdio. Es lo que Claude Code y Codex
+        # ya tienen registrado (`python3 -m genai.cli mcp`, sin más argumentos) —
+        # cambiar este defecto rompería las dos integraciones probadas esta sesión.
         from .mcp import servir
         servir()
         return 0
+    if a.peticion[0] == "cerebros":
+        return cmd_cerebros()
     if a.peticion[0] == "google":
         from . import google_cuenta as G
         sub = a.peticion[1] if len(a.peticion) > 1 else "estado"

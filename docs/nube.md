@@ -309,6 +309,43 @@ clave que escribieras tú, sino una credencial que este programa obtuvo en tu no
    registro, un log o un nombre. Si una clave se te escapa a un sitio compartido,
    rótala — es más barato que cualquier auditoría.
 
+## Tres caminos para traer un cerebro, y decides tú cuál (`genai cerebros`)
+
+No son intercambiables ni igual de disponibles para todo proveedor. Antes de elegir
+uno, `genai cerebros` los enseña los tres juntos.
+
+| camino | qué pasa | cuándo existe |
+|---|---|---|
+| **1. BYOK** | pagas por token, con tu clave | cualquier proveedor con API — 207 del catálogo + 8 de fábrica |
+| **2. Suscripción directa** | Mekro-Genai actúa como tu cerebro, con tu cuenta | solo donde el proveedor **sanciona de verdad** que un tercero lo haga |
+| **3. MCP** | tu cliente de suscripción usa las **herramientas** de Mekro-Genai | Claude Code, Codex, cualquier cliente MCP — el cerebro sigue siendo el suyo |
+
+**Por qué el camino 2 no existe para OpenAI ni Anthropic**, y no es un hueco por
+rellenar: existe para GitHub Copilot (`genai copilot entrar`) porque GitHub documenta
+oficialmente el device flow para editores de terceros — es la base misma de que Copilot
+funcione en Neovim o JetBrains, no una extracción. Se intentó de buena fe para Google
+(`genai google entrar`) con las credenciales oficiales de `gemini-cli`, y se **midió**
+que el nivel gratuito para individuos está cerrado (C86, más abajo).
+
+Para ChatGPT Plus/Pro y Claude Pro/Max, el camino 2 significaría extraer el token de
+sesión de Codex o de Claude Code y usarlo para que Mekro-Genai sustituya su propio
+bucle de agente — repurposar una credencial fuera del cliente para el que se emitió. Es
+la misma categoría que extraer cookies del navegador para suplantar la app de Gemini,
+solo que con OAuth en vez de cookies: el mecanismo cambia, el límite no. Por eso esos
+dos proveedores están en el camino **3** —como clientes MCP, con su propio agente
+intacto— y nunca en el 2.
+
+```bash
+genai mcp clientes             # qué se ha probado de verdad, y qué solo se documenta
+genai mcp instalar <cliente>   # claude-code, codex — verificados con cuenta real
+genai mcp quitar <cliente>
+```
+
+Para Antigravity y Kimi Code CLI —que se sabe que hablan MCP, pero no se ha ejecutado
+su instalación exacta desde aquí— `genai mcp instalar` da instrucciones y el fragmento
+JSON genérico en vez de inventar una sintaxis no probada: un comando que falla a medias
+puede dejar una configuración más rota que no tener nada.
+
 ## Mekro-Genai como servidor MCP (tu suscripción usando el arnés)
 
 No hay forma legítima de que Mekro-Genai gaste la cuota de una suscripción de
