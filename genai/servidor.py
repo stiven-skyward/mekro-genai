@@ -266,11 +266,19 @@ class _Manejador(BaseHTTPRequestHandler):
         return self._responder(404, {"error": f"no hay ruta {r.path}"})
 
     def _guardar_clave(self, cuerpo: dict):
+        from .cerebro.nube import CLAVES
+
         proveedor = (cuerpo.get("proveedor") or "").strip()
         valor = (cuerpo.get("clave") or "").strip()
         if not proveedor or not valor:
             return self._responder(400, {"error": "faltan «proveedor» o «clave»"})
-        f = Path.home() / ".config" / "genai" / "claves.json"
+        # MISMA ruta que lee `claves()` (respeta MG_CLAVES) — antes esto escribía
+        # siempre en ~/.config/genai/claves.json a pelo, sin importar la variable de
+        # entorno que GET /claves ya honraba: una prueba que quisiera aislarse no
+        # podía, y acababa tocando el fichero REAL de secretos del usuario. Eso
+        # además corrió carrera de verdad con `scripts/guardian.py` (que ejecuta la
+        # misma suite cada 15 min) la primera vez que se probó en frío.
+        f = CLAVES
         f.parent.mkdir(parents=True, exist_ok=True)
         try:
             datos = json.loads(f.read_text(encoding="utf-8")) if f.is_file() else {}

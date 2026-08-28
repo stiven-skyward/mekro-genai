@@ -32,6 +32,15 @@ c = Cuenta("servidor_ui")
 tmp = Path(tempfile.mkdtemp(prefix="ui-"))
 os.chdir(tmp)
 os.environ["MG_SESIONES"] = str(tmp / "s")
+# MG_CLAVES aísla /claves de ~/.config/genai/claves.json —el fichero REAL de
+# secretos del usuario—, que es lo que esta prueba tocaba antes con un backup/
+# restore manual. Eso corría carrera con `scripts/guardian.py` (ejecuta la misma
+# suite cada 15 min en segundo plano): la primera vez que se probó `genai ui` en
+# frío, guardián y esta prueba escribieron el fichero real a la vez y una de las
+# dos rondas vio el estado a medio restaurar de la otra. Con ruta propia, ninguna
+# ejecución concurrente de esta prueba —ni la del guardián, ni una manual— puede
+# ya rozar el fichero de nadie más.
+os.environ["MG_CLAVES"] = str(tmp / "claves.json")
 
 srv = servidor.servir(puerto=0, bloquear=False)
 base = f"http://127.0.0.1:{srv.server_address[1]}"
@@ -68,35 +77,31 @@ cod, cer = pide("/cerebros")
 c(cod == 200 and {"local", "fabrica", "configurados", "suscripciones"} <= set(cer),
   "/cerebros trae las cuatro fuentes que la interfaz necesita para el selector")
 
-_claves_reales = Path.home() / ".config" / "genai" / "claves.json"
-_copia = _claves_reales.read_text(encoding="utf-8") if _claves_reales.is_file() else None
-_claves_reales.parent.mkdir(parents=True, exist_ok=True)
-_claves_reales.write_text(json.dumps({"gemini": {"clave": "SECRETO-DE-VERDAD-12345"}}),
+# ruta AISLADA (MG_CLAVES, fijada arriba) — nunca ~/.config/genai/claves.json real,
+# así que no hace falta backup/restore ni compartir el fichero con nadie más
+_claves_prueba = Path(os.environ["MG_CLAVES"])
+_claves_prueba.parent.mkdir(parents=True, exist_ok=True)
+_claves_prueba.write_text(json.dumps({"gemini": {"clave": "SECRETO-DE-PRUEBA-12345"}}),
                           encoding="utf-8")
-try:
-    cod, cl = pide("/claves")
-    c(cod == 200 and cl.get("gemini", {}).get("configurada") is True,
-      "/claves dice que gemini está configurado")
-    c("SECRETO-DE-VERDAD-12345" not in json.dumps(cl),
-      "pero NUNCA el secreto — ni siquiera truncado: la interfaz de ajustes solo "
-      "necesita saber que existe, no verlo")
 
-    # guardar una clave nueva no debe pisar la que ya había
-    cod, r2 = pide("/claves", {"proveedor": "openai", "clave": "otra-clave-real"})
-    c(cod == 200, "se puede guardar una clave nueva por HTTP")
-    tras = json.loads(_claves_reales.read_text(encoding="utf-8"))
-    c(tras["gemini"]["clave"] == "SECRETO-DE-VERDAD-12345",
-      "y la que ya había (gemini) sigue intacta: se completa el fichero, no se "
-      "sobrescribe entero")
-    c(tras["openai"]["clave"] == "otra-clave-real", "la nueva sí quedó guardada")
+cod, cl = pide("/claves")
+c(cod == 200 and cl.get("gemini", {}).get("configurada") is True,
+  "/claves dice que gemini está configurado")
+c("SECRETO-DE-PRUEBA-12345" not in json.dumps(cl),
+  "pero NUNCA el secreto — ni siquiera truncado: la interfaz de ajustes solo "
+  "necesita saber que existe, no verlo")
 
-    cod, r3 = pide("/claves", {"proveedor": "", "clave": ""})
-    c(cod == 400, "proveedor o clave vacíos se rechazan, no se guardan como entrada vacía")
-finally:
-    if _copia is None:
-        _claves_reales.unlink(missing_ok=True)
-    else:
-        _claves_reales.write_text(_copia, encoding="utf-8")
+# guardar una clave nueva no debe pisar la que ya había
+cod, r2 = pide("/claves", {"proveedor": "openai", "clave": "otra-clave-de-prueba"})
+c(cod == 200, "se puede guardar una clave nueva por HTTP")
+tras = json.loads(_claves_prueba.read_text(encoding="utf-8"))
+c(tras["gemini"]["clave"] == "SECRETO-DE-PRUEBA-12345",
+  "y la que ya había (gemini) sigue intacta: se completa el fichero, no se "
+  "sobrescribe entero")
+c(tras["openai"]["clave"] == "otra-clave-de-prueba", "la nueva sí quedó guardada")
+
+cod, r3 = pide("/claves", {"proveedor": "", "clave": ""})
+c(cod == 400, "proveedor o clave vacíos se rechazan, no se guardan como entrada vacía")
 
 # ── lanzar una tarea real con `eco`, y el ID UNIFICADO ──────────────────────
 s = sesiones.crear("prueba de la interfaz")
