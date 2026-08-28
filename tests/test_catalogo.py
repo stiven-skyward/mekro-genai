@@ -117,12 +117,23 @@ c([m for _, m, _ in catalogo.buscar("uno-ch")] == ["uno-chico"],
 c(len(catalogo.buscar("", tope=2)) == 2, "el tope se respeta: la lista no se desborda")
 
 # ── 1. los ocho de fábrica mandan ──────────────────────────────────────────
-fuente = (Path(__file__).resolve().parents[1] / "genai" / "cerebro" / "nube.py"
-          ).read_text(encoding="utf-8")
-i = fuente.index("base = PROVEEDORES.get(proveedor)")
-c("if base is None" in fuente[i:i + 600],
-  "el catálogo solo se consulta si el nombre NO está de fábrica: los ocho medidos "
-  "ganan siempre, porque el catálogo no sabe de caché ni de firmas de pensamiento")
+# Se comprueba la CONDUCTA y no el texto del fuente: la versión anterior miraba que
+# dos líneas estuvieran cerca en nube.py y se rompió sola al meter Copilot entre
+# ellas. Una prueba que falla porque el código se reordenó no estaba probando nada.
+_visitas = []
+_real = catalogo.resolver
+catalogo.resolver = lambda p: (_visitas.append(p), _real(p))[1]
+try:
+    from genai.cerebro.nube import CerebroNube
+    try:
+        CerebroNube(proveedor="openai", modelo="gpt-4.1-mini")
+    except SystemExit:
+        pass                       # sin clave revienta, y da igual: lo que importa es
+finally:                           # si llegó a preguntarle al catálogo
+    catalogo.resolver = _real
+c("openai" not in _visitas,
+  "el catálogo NO se consulta para un proveedor de fábrica: los ocho medidos ganan "
+  "siempre, porque el catálogo no sabe de caché ni de firmas de pensamiento")
 c({"openai", "anthropic", "gemini"} <= set(PROVEEDORES),
   "y los tres con medición real siguen ahí")
 
