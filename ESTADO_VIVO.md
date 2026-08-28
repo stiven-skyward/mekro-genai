@@ -6,7 +6,25 @@ metadata:
   type: project
 ---
 
-**Actualizado: 2026-08-28 · 🔑 CEREBROS DE NUBE (BYOK) + 🕸 MALLA MEDIDA EN GCP.**
+**Actualizado: 2026-08-28 (M7 en marcha) · ▶▶ LAZO AUTÓNOMO DE PARIDAD + GUARDIÁN.**
+META gana **M7** con las seis brechas del informe y dos honestidades escritas: la web
+deja de estar vetada pero **solo como opt-in explícito** (`--web`), y la brecha 6
+(madurez de uso) **no se promete arreglar programando** — lo que se hace es endurecer
+el banco (C28 midió que ya no discrimina) y ejercitar lo construido.
+**M7.1 HECHA**: `subagente` explora con contexto AISLADO y devuelve solo la conclusión
+(13 asertos; medido con nube: 3 exploraciones en paralelo, 22 vueltas y 1.259 tokens
+SUYOS, 87 s de cerebro en 46 s de reloj, 3.158 caracteres al contexto principal). Con
+cerebro local van en serie y la cabecera lo dice.
+**Vigilancia**: `scripts/guardian.py` (pid en `logs/guardian.pid`, log
+`logs/guardian.log`) comprueba cada 15 min suites, anclas, ciclos a medias, CLAVES en
+ficheros versionados y disco. En su primera ronda ya encontró algo real: `vectors/`
+—índice de una herramienta externa, 1,8 MB— se había publicado en el repo público;
+fuera y a `.gitignore`. Se para con `touch logs/guardian.parar`.
+**Siguiente en el lazo**: M7.2 compactación semántica (la hipótesis que C72 dejó
+abierta), luego 3 (plugins reales + web opt-in), 4 (multimodal), 5 (diff y git), 6
+(endurecer el banco).
+
+**Antes: 🔑 CEREBROS DE NUBE (BYOK) + 🕸 MALLA MEDIDA EN GCP.**
 **Nube con tu clave**: `nube:PROVEEDOR[/MODELO]` habla los tres dialectos que existen
 (Gemini nativo, Anthropic Messages, compatible-OpenAI para OpenAI/DeepSeek/Kimi/xAI/
 Groq/OpenRouter y cualquier endpoint que el usuario añada), con llamada a herramientas
