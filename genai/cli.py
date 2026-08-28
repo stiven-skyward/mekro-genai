@@ -41,6 +41,32 @@ def construir(args) -> tuple[Sesion, object, Politica]:
     return sesion, registro, Politica(modo=args.modo)
 
 
+def cmd_proveedores(patron: str = "") -> int:
+    """`genai proveedores [texto]` — qué se puede enchufar.
+
+    Los de fábrica son los ocho que tienen medición detrás; el resto sale del catálogo
+    de models.dev, cacheado en disco para que esto funcione sin red."""
+    from .catalogo import buscar, descargar
+    from .cerebro.nube import PROVEEDORES
+    cat, queja = descargar()
+    if queja:
+        print(f"⚠ {queja}")
+    print(f"De fábrica ({len(PROVEEDORES)}, medidos): {', '.join(sorted(PROVEEDORES))}")
+    if not cat:
+        return 1
+    filas = buscar(patron, tope=40)
+    total = sum(len(v.get("models") or {}) for v in cat.values())
+    if not filas:
+        print(f"nada casa con «{patron}» entre {len(cat)} proveedores y {total} modelos")
+        return 1
+    print(f"\nDel catálogo ({len(cat)} proveedores, {total} modelos)"
+          + (f" · «{patron}»" if patron else ", primeros 40") + ":")
+    for pid, mid, _ in filas:
+        print(f"  --cerebro nube:{pid}/{mid}")
+    print("\nLa clave va en ~/.config/genai/claves.json, con el nombre del proveedor.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser("mekro-genai", description=__doc__)
     p.add_argument("peticion", nargs="*", help="el encargo, en lenguaje natural")
@@ -59,6 +85,10 @@ def main(argv: list[str] | None = None) -> int:
     if not a.peticion:
         p.print_help()
         return 0
+
+    # `genai proveedores [texto]` — qué se puede enchufar, del catálogo.
+    if a.peticion[0] == "proveedores":
+        return cmd_proveedores(" ".join(a.peticion[1:]))
 
     sesion, registro, politica = construir(a)
     r = turno(sesion, registro, politica, " ".join(a.peticion),

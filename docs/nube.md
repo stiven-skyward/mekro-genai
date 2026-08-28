@@ -54,9 +54,35 @@ python3 scripts/correr_banco.py --nivel n1 --cerebro nube:gemini
 | `groq` | compatible OpenAI | `llama-3.3-70b-versatile` |
 | `openrouter` | compatible OpenAI | `openai/gpt-5.1` |
 
-**Cualquier otro endpoint compatible con OpenAI** funciona sin tocar el código: añade
-`{"url": "https://...", "dialecto": "openai", "modelo": "...", "clave": "..."}` con el
-nombre que quieras.
+### Y otros 207, del catálogo
+
+`genai proveedores [texto]` lista **207 proveedores y 7.483 modelos** de
+[models.dev](https://models.dev), cacheados en disco. Funcionan sin escribir código:
+
+```bash
+genai proveedores mistral            # buscar
+genai tarea "..." --cerebro nube:mistral/mistral-large-latest
+```
+
+Funciona porque ahí fuera casi todo el mundo habla uno de los tres dialectos que ya
+estaban escritos: ~190 hablan OpenAI, 9 Anthropic y 1 Gemini. **Lo que faltaba no era
+código, era la tabla.** La clave va en `claves.json` con el nombre del proveedor, o en
+la variable de entorno que el catálogo declara.
+
+Tres cosas que conviene saber:
+
+- **Los ocho de fábrica mandan.** Si el nombre está arriba, gana ese: son los que
+  tienen medición detrás (caché, firmas de pensamiento, PDF) y el catálogo no sabe nada
+  de eso.
+- **Funciona sin red** una vez cacheado. Un arnés que presume de local no puede
+  necesitar una descarga para arrancar.
+- **Bedrock, Vertex, Azure y watsonx se rechazan a propósito**, y se dice por qué: no se
+  autentican con una clave en una cabecera sino con la firma de su nube, y eso no es
+  HTTP con `urllib`.
+
+**Cualquier otro endpoint compatible con OpenAI** funciona igualmente sin tocar el
+código: añade `{"url": "https://...", "dialecto": "openai", "modelo": "...",
+"clave": "..."}` con el nombre que quieras.
 
 ## Cómo funciona por dentro
 

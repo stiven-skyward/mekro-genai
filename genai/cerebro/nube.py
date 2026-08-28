@@ -110,11 +110,23 @@ class CerebroNube:
                  contexto_max: int = 200000, temperatura: float = 0.0):
         cfg = claves().get(proveedor) or {}
         base = PROVEEDORES.get(proveedor)
+        # Los ocho de fábrica MANDAN: son los que tienen medición detrás (caché, firmas
+        # de pensamiento, PDF) y el catálogo no sabe nada de eso. Solo si el nombre no
+        # está aquí ni escrito a mano se busca entre los 207 de models.dev.
         if base is None and not cfg.get("url"):
-            raise SystemExit(
-                f"proveedor «{proveedor}» desconocido. Conocidos: "
-                f"{', '.join(PROVEEDORES)}. Para uno nuevo compatible con OpenAI, "
-                f'añade {{"url": "...", "dialecto": "openai"}} en {CLAVES}.')
+            from ..catalogo import resolver
+            base, queja = resolver(proveedor)
+            if not base:
+                raise SystemExit(
+                    f"proveedor «{proveedor}» desconocido. De fábrica: "
+                    f"{', '.join(PROVEEDORES)}.\n  {queja}\n"
+                    f'  O escríbelo a mano: {{"url": "...", "dialecto": "openai", '
+                    f'"clave": "..."}} en {CLAVES}.')
+            # la clave puede venir de la variable de entorno que el catálogo declara
+            if not cfg.get("clave") and base.get("env"):
+                import os as _os
+                if _os.environ.get(base["env"]):
+                    cfg = {**cfg, "clave": _os.environ[base["env"]]}
         base = base or {}
         self.proveedor = proveedor
         self.dialecto = cfg.get("dialecto") or base.get("dialecto", "openai")
