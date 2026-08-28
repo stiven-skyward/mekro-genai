@@ -1,0 +1,47 @@
+{
+  "cuando": "2026-08-28_0710",
+  "nivel": "n1",
+  "cerebro": "nube:gemini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "rojo",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 329,
+      "tokens_entrada": 14632,
+      "cache": {
+        "leidos": 5066,
+        "totales": 14632
+      },
+      "poda": {
+        "antes": 1650,
+        "despues": 1650
+      },
+      "segundos": 25.1,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-rojo-t5a_hwq7/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 329.0,
+    "entrada_media": 14632.0,
+    "segundos_media": 25.1,
+    "intervenciones": 0
+  }
+}

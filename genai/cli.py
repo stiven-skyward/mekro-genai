@@ -67,6 +67,10 @@ def main(argv: list[str] | None = None) -> int:
               preguntar=preguntar_por_consola if a.modo == "preguntar" else None,
               traza_por_pantalla=not a.callado)
 
+    # Una caché explícita de nube que sobrevive al turno se sigue cobrando por horas.
+    if hasattr(sesion.cerebro, "cerrar"):
+        sesion.cerebro.cerrar()
+
     ruta = sesion.guardar()
     # Las cuatro cifras de META.md, siempre juntas y siempre al final.
     print(f"\n── {r.motivo} · {r.vueltas} vueltas · "

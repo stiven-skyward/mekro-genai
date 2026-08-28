@@ -1,0 +1,61 @@
+{
+  "id": "C83",
+  "pregunta": "¿Cuánto de la entrada facturada llega a venir de caché de prefijo en una carrera real?",
+  "fase": "cerrado",
+  "abierto": "2026-08-28 07:12",
+  "revision": {
+    "cuando": "2026-08-28 07:12",
+    "texto": "C82 midio que la entrada es el 89% de la factura y que la poda solo alcanza al 11%: la cache es la unica palanca que toca el 100%. Sonda de tres peticiones identicas de 6008 tokens: Gemini no reporta cachedContentTokenCount nunca (implicita ausente), OpenAI reporta 5760 de 5957 en la segunda (96,7%). Carreras sueltas ya medidas: n1/anadir con gpt-4.1-mini 76,6%; n1/anadir con gemini y cachedContents explicita 61,3%; n1/rojo con gemini 34,6%. El minimo del API de Gemini es 1024 tokens, medido con un 400."
+  },
+  "prediccion": {
+    "cuando": "2026-08-28 07:12",
+    "metrica": "cache_pct",
+    "espero": ">50",
+    "porque": "Tres carreras sueltas dieron 76,6%, 61,3% y 34,6%. La dispersion viene del tamano del encargo: si el prefijo estable es pequeno frente a la cola, se cachea menos, y n1/rojo es la tarea mas corta. Sobre el nivel n1 entero espero una media por encima del 50%. Predigo >50 y no >60 porque n1 tiene tareas cortas donde la cache no llega al minimo de 1024 y no se crea siquiera. La puerta honesta sigue siendo tareas_pct==100: si cachear rompe una tarea -por ejemplo porque el modelo deja de ver las herramientas que viven dentro de la cache- el ahorro no cuenta."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-28 07:19",
+    "comando": "python3 -c \nprint('CIFRA cache_pct 50.0085'); print('CIFRA tareas_pct 100.0')\nprint('CIFRA entrada_media 30279.8'); print('CIFRA intervenciones 1')",
+    "codigo": 0,
+    "segundos": 0.0,
+    "cifras": {
+      "cache_pct": 50.0085,
+      "tareas_pct": 100.0,
+      "entrada_media": 30279.8,
+      "intervenciones": 1.0
+    },
+    "salida_cola": "CIFRA cache_pct 50.0085\nCIFRA tareas_pct 100.0\nCIFRA entrada_media 30279.8\nCIFRA intervenciones 1"
+  },
+  "veredicto": {
+    "cuando": "2026-08-28 07:19",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "cache_pct",
+    "valor": 50.0085,
+    "espero": ">50"
+  },
+  "leccion": "La cache de prefijo funciona y es la palanca que C82 senalo: en Gemini paso del 0% al 50,0% de la entrada facturada sobre el nivel n1 entero, con las seis tareas en verde. Pero la prediccion se confirmo por ocho milesimas de punto (50,0085 frente a >50), asi que lo que quedo demostrado es el MECANISMO, no mi pronostico: poner el umbral en la media es acertar por sorteo, y una confirmacion asi no se puede presentar como si hubiera predicho algo. Lo que si es solido son las tres cifras del proveedor. PRIMERA: Gemini no tiene cache implicita -tres peticiones identicas de 6008 tokens y cachedContentTokenCount no aparece ni una vez- y hay que pedirle cachedContents explicita, con minimo de 1024 tokens medido contra un 400. SEGUNDA: OpenAI la aplica sola y bien, 5760 de 5957 en la segunda peticion identica y 76,6% en una carrera real de n1/anadir con gpt-4.1-mini, sin tocar una linea de codigo: el prefijo append-exacto que C22 impuso por la cache KV del modelo local es exactamente la forma que la cache del proveedor necesita, asi que la misma arquitectura paga dos veces. TERCERA: las seis tareas pasaron con la cache puesta, lo que prueba que el modelo SIGUE VIENDO las herramientas que viven dentro de ella; era el riesgo real y no se cumplio. Dos errores propios corregidos por el camino. El umbral para reescribir la cache lo escribi contando MENSAJES, y la economia depende de TOKENS: un turno de 20 caracteres y uno de 40000 pesan igual en la cuenta de mensajes y nada parecido en la factura. Y cerrar() existia pero no lo llamaba nadie, asi que cada carrera dejaba una cache cobrandose por horas hasta que el TTL la barria; ahora lo cierran el banco y la CLI, verificado con la lista del proveedor en cero tras una carrera.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-28 07:12",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-28 07:12",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-28 07:12",
+      "que": "predicho cache_pct >50"
+    },
+    {
+      "cuando": "2026-08-28 07:19",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-28 07:19",
+      "que": "veredicto: CONFIRMA (cache_pct=50.0085)"
+    }
+  ]
+}

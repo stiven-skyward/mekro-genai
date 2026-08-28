@@ -1,0 +1,47 @@
+{
+  "cuando": "2026-08-28_0706",
+  "nivel": "n1",
+  "cerebro": "nube:openai/gpt-4.1-mini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 469,
+      "tokens_entrada": 9028,
+      "cache": {
+        "leidos": 6912,
+        "totales": 9028
+      },
+      "poda": {
+        "antes": 1448,
+        "despues": 1448
+      },
+      "segundos": 8.2,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-qc4pf133/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 469.0,
+    "entrada_media": 9028.0,
+    "segundos_media": 8.2,
+    "intervenciones": 0
+  }
+}

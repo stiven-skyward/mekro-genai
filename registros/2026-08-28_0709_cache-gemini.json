@@ -1,0 +1,47 @@
+{
+  "cuando": "2026-08-28_0709",
+  "nivel": "n1",
+  "cerebro": "nube:gemini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 341,
+      "tokens_entrada": 16782,
+      "cache": {
+        "leidos": 10285,
+        "totales": 16782
+      },
+      "poda": {
+        "antes": 2615,
+        "despues": 2615
+      },
+      "segundos": 46.3,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-x0xab775/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 341.0,
+    "entrada_media": 16782.0,
+    "segundos_media": 46.3,
+    "intervenciones": 0
+  }
+}

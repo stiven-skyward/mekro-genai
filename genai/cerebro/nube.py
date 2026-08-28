@@ -137,6 +137,7 @@ class CerebroNube:
         # caché de prefijo: se puede apagar para medir el A/B (docs/ahorro.md)
         self.cachear = cfg.get("cachear", True)
         self.cache = {"leidos": 0, "totales": 0}
+        self._cache_g = None          # caché explícita viva, solo dialecto gemini
         # M7.4 — qué puede MIRAR este cerebro. `ver` lo consulta antes de mandar bytes:
         # un adjunto que el proveedor tira en silencio hace que el modelo responda con
         # seguridad sobre algo que nunca vio.
@@ -290,21 +291,121 @@ class CerebroNube:
                          uso=Uso(entrada, salida, round(time.time() - t0, 3)),
                          motivo_parada="herramienta" if llamadas else "fin")
 
-    def _gemini(self, mensajes, herramientas, max_tokens):
-        cuerpo = {"contents": self._gemini_contenidos(mensajes),
-                  "generationConfig": {"temperature": self.temperatura,
-                                       "maxOutputTokens": max_tokens}}
-        sistema = self._sistema(mensajes)
+    # ── caché explícita de Gemini (cachedContents) ──────────────────────────
+    # Gemini NO tiene caché implícita: se midió con tres peticiones idénticas de 6.008
+    # tokens y `cachedContentTokenCount` no apareció ni una vez. Lo que sí tiene es
+    # caché explícita, y hay que pedirla a mano.
+    #
+    # La aritmética que decide CUÁNDO recrearla, porque escribir una caché cuesta como
+    # entrada normal: escribir T y leerlo K veces con descuento sale a T·(1 + 0,25·K)
+    # frente a T·K sin caché. Gana en cuanto K > 1,33, es decir a partir de la SEGUNDA
+    # lectura. Por eso se recrea solo cuando el prefijo ha crecido lo bastante para que
+    # la reescritura se amortice, y no en cada vuelta.
+    CACHE_MINIMO = 1024        # el mínimo del API; por debajo responde 400 (medido)
+    # Recrear cuando la COLA SIN CACHEAR llegue a esta fracción de lo ya cacheado. Se
+    # mide en tokens y no en número de mensajes: un turno de 20 caracteres y uno de
+    # 5.000 pesan igual en la cuenta de mensajes y nada parecido en la factura.
+    CACHE_COLA_MAX = 0.5
+    CACHE_TTL = "600s"
+
+    def _cache_crear(self, prefijo, sistema, tools):
+        cuerpo = {"model": f"models/{self.modelo}", "contents": prefijo,
+                  "ttl": self.CACHE_TTL}
         if sistema:
             cuerpo["systemInstruction"] = {"parts": [{"text": sistema}]}
+        if tools:
+            cuerpo["tools"] = tools
+        try:
+            d = _pedir(f"{self.url}/cachedContents?key={self.clave}", cuerpo, {})
+        except (Exception, SystemExit):
+            # Una caché que no se puede crear no puede costar la carrera: se sigue sin
+            # ella. Es un ahorro, no un requisito.
+            self._cache_g = None
+            return None
+        self._cache_borrar()
+        self._cache_g = {"nombre": d["name"], "hasta": len(prefijo),
+                         "tokens": int((d.get("usageMetadata") or {})
+                                       .get("totalTokenCount", 0))}
+        return self._cache_g
+
+    def _cache_borrar(self) -> None:
+        """Una caché que sobrevive a la tarea se sigue cobrando por horas."""
+        vieja = getattr(self, "_cache_g", None)
+        if not vieja:
+            return
+        try:
+            import urllib.request
+            urllib.request.urlopen(urllib.request.Request(
+                f"{self.url}/{vieja['nombre']}?key={self.clave}", method="DELETE"),
+                timeout=20)
+        except Exception:  # noqa: BLE001 — el TTL la barrerá igual
+            pass
+        self._cache_g = None
+
+    def cerrar(self) -> None:
+        """Al acabar la tarea. Sin esto, cada carrera deja caché pagándose sola."""
+        if self.dialecto == "gemini":
+            self._cache_borrar()
+
+    def _gemini(self, mensajes, herramientas, max_tokens):
+        contenidos = self._gemini_contenidos(mensajes)
+        sistema = self._sistema(mensajes)
+        tools = None
         if herramientas:
-            cuerpo["tools"] = [{"functionDeclarations": [
+            tools = [{"functionDeclarations": [
                 {"name": h["function"]["name"],
                  "description": h["function"].get("description", ""),
                  "parameters": _limpiar_esquema(h["function"].get("parameters", {}))}
                 for h in herramientas]}]
+
+        cuerpo = {"generationConfig": {"temperature": self.temperatura,
+                                       "maxOutputTokens": max_tokens}}
+        # El prefijo cacheable es todo menos el último turno: ese cambia siempre, y
+        # meterlo en la caché obligaría a recrearla cada vuelta, que es justo la
+        # operación que no sale a cuenta.
+        prefijo, cola = contenidos[:-1], contenidos[-1:]
+        c = getattr(self, "_cache_g", None)
+        if self.cachear and prefijo:
+            # el mínimo del API se estima antes de pedirlo: un 400 previsible no se
+            # provoca para luego capturarlo
+            aprox = _aprox_tokens(prefijo)
+            if aprox >= self.CACHE_MINIMO and (
+                    not c
+                    # la cola sin cachear ya pesa la mitad de lo cacheado: reescribir
+                    or _aprox_tokens(contenidos[c["hasta"]:-1])
+                    >= self.CACHE_COLA_MAX * max(1, c["tokens"])):
+                c = self._cache_crear(prefijo, sistema, tools)
+            elif c and len(prefijo) < c["hasta"]:
+                # la transcripción encogió (renacimiento): la caché ya no es prefijo
+                self._cache_borrar()
+                c = None
+
+        if c:
+            cuerpo["cachedContent"] = c["nombre"]
+            cuerpo["contents"] = contenidos[c["hasta"]:]
+        else:
+            cuerpo["contents"] = contenidos
+            if sistema:
+                cuerpo["systemInstruction"] = {"parts": [{"text": sistema}]}
+            if tools:
+                cuerpo["tools"] = tools
+
         url = f"{self.url}/models/{self.modelo}:generateContent?key={self.clave}"
-        d = _pedir(url, cuerpo, {})
+        try:
+            d = _pedir(url, cuerpo, {})
+        except (Exception, SystemExit):
+            if not c:
+                raise
+            # La caché pudo caducar entre que se creó y se usó. Se reintenta entera y
+            # sin ella: perder el ahorro es aceptable, perder la vuelta no.
+            self._cache_borrar()
+            cuerpo.pop("cachedContent", None)
+            cuerpo["contents"] = contenidos
+            if sistema:
+                cuerpo["systemInstruction"] = {"parts": [{"text": sistema}]}
+            if tools:
+                cuerpo["tools"] = tools
+            d = _pedir(url, cuerpo, {})
         texto, llamadas = "", []
         cand = (d.get("candidates") or [{}])[0]
         for i, parte in enumerate((cand.get("content") or {}).get("parts", [])):
@@ -398,6 +499,12 @@ class CerebroNube:
         cada llamada vienen del `usage` que devuelve la API y esas son las que van
         al registro."""
         return max(1, len(texto) // 4)
+
+
+def _aprox_tokens(partes) -> float:
+    """Tamaño en tokens, a ojo pero suficiente: solo decide CUÁNDO reescribir la caché,
+    y equivocarse por un 20 % cambia el momento, no la corrección."""
+    return sum(len(json.dumps(p, ensure_ascii=False)) for p in partes) / 4
 
 
 def _limpiar_esquema(esquema: dict) -> dict:

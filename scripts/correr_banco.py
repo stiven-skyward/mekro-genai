@@ -119,6 +119,11 @@ def correr_tarea(dir_tarea: Path, nombre_cerebro: str, modo: str,
     else:
         motivo_extra = ""
 
+    # Una caché explícita que sobrevive a la tarea se sigue cobrando por horas. El TTL
+    # acabaría barriéndola, pero pagarla hasta entonces es dinero tirado sin motivo.
+    if hasattr(cerebro, "cerrar"):
+        cerebro.cerrar()
+
     from genai.herramientas.subagente import GASTO_AUXILIAR
     aux = dict(GASTO_AUXILIAR)
     aux["tokens"] = aux.get("tokens", 0) + getattr(sesion, "gasto_auxiliar", 0)
@@ -207,6 +212,11 @@ def main() -> int:
     # (docs/ahorro.md). Sin esta cifra, la poda se estaría midiendo con una métrica
     # que no toca.
     ent = sum(f["tokens_entrada"] for f in filas) / n
+    # cache_pct: qué fracción de la entrada la cobró el proveedor con descuento. Es LA
+    # cifra del ahorro de nube, porque la entrada es el 89 % de la factura (C82).
+    cl = sum(f.get("cache", {}).get("leidos", 0) for f in filas)
+    ct = sum(f.get("cache", {}).get("totales", 0) for f in filas)
+    cache_pct = 100 * cl / ct if ct else 0.0
     seg = sum(f["segundos"] for f in filas) / n
     interv = sum(f["intervenciones"] for f in filas)
 
@@ -224,6 +234,7 @@ def main() -> int:
          "resumen": {"tareas_pct": round(100 * pasan / n, 1),
                      "tokens_media": round(tok, 1),
                      "entrada_media": round(ent, 1),
+                     "cache_pct": round(cache_pct, 1),
                      "segundos_media": round(seg, 1),
                      "intervenciones": interv}},
         indent=2, ensure_ascii=False), encoding="utf-8")
@@ -233,6 +244,7 @@ def main() -> int:
     print(f"CIFRA tareas_pct {100 * pasan / n:.1f}")
     print(f"CIFRA tokens_media {tok:.1f}")
     print(f"CIFRA entrada_media {ent:.1f}")
+    print(f"CIFRA cache_pct {cache_pct:.1f}")
     print(f"CIFRA segundos_media {seg:.1f}")
     print(f"CIFRA intervenciones {interv}")
     print(f"\n{pasan}/{n} tareas · registro → {reg.relative_to(RAIZ)}")

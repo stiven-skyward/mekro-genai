@@ -135,18 +135,42 @@ Esto reordena las tres herramientas de referencia. La que ataca la variable corr
 es RTK ni headroom: es **ponytail**, que reduce vueltas y salida. Lo que no cambia es
 que sus números tampoco están verificados contra un banco determinista.
 
-### La caché de prefijo: la palanca mayor, y está a oscuras en Gemini
+### La caché de prefijo: medida, y es la palanca de verdad (C83, 2026-08-28)
 
-Es la única que toca el **100 %** de la entrada. Pero una sonda de tres peticiones
-idénticas de 6.008 tokens contra `gemini-3.7-flash` mostró que **`cachedContentTokenCount`
-no se reporta nunca**: la caché implícita no está actuando ahí. No es un fallo del
-prefijo de este arnés —es estable por construcción— sino un hecho del proveedor. Para
-Gemini haría falta `cachedContents` explícito, y está **sin hacer**.
+Es la única que toca el **100 %** de la entrada, y ahora está medida con clave real en
+dos proveedores.
 
-En Anthropic el marcador `cache_control` va puesto y en OpenAI/DeepSeek la caché es
-automática y se contabiliza, pero **no hay clave para verificarlo de punta a punta**, así
-que no se declara. La cifra que lo diría ya está en el registro de cada carrera
-(`cache.leidos` / `cache.totales`): quien tenga clave la ve sin tocar código.
+| proveedor | tres peticiones idénticas de ~6 K | carrera real |
+|---|---|---|
+| `gemini-3.7-flash`, implícita | **nunca reporta** caché | 0 % |
+| `gemini-3.7-flash`, `cachedContents` | — | **50,0 %** sobre `n1` entero, 6/6 en verde |
+| `gpt-4.1-mini`, automática | 5.760 de 5.957 en la 2.ª (**96,7 %**) | **76,6 %** en `n1/anadir` |
+
+**Gemini no tiene caché implícita.** No es un fallo del prefijo de este arnés —es
+estable por construcción— sino un hecho del proveedor: hay que pedirle `cachedContents`
+explícito, con un mínimo de 1.024 tokens (medido contra un 400 que lo dice).
+
+**OpenAI la aplica sola, y sin tocar una línea de código.** Ahí está lo que más vale de
+todo esto: el prefijo append-exacto que C22 impuso por la caché KV del modelo *local* es
+exactamente la forma que la caché del *proveedor* necesita. **La misma arquitectura paga
+dos veces.**
+
+Tres cosas que hubo que resolver, y las tres eran silenciosas:
+
+1. **Cuándo reescribir la caché.** Escribirla cuesta como entrada normal: escribir *T* y
+   leerlo *K* veces con descuento sale a *T*·(1 + 0,25·*K*) frente a *T*·*K*, así que
+   gana solo a partir de *K* > 1,33 — la segunda lectura. El umbral lo escribí primero
+   contando **mensajes**, y la economía depende de **tokens**: un turno de 20 caracteres
+   y otro de 40.000 pesan igual en la cuenta de mensajes y nada parecido en la factura.
+2. **Las herramientas viven dentro de la caché.** El riesgo real era que el modelo
+   dejara de verlas. Las seis tareas de `n1` pasaron con la caché puesta, así que no.
+3. **Una caché que sobrevive a la tarea se sigue cobrando por horas.** `cerrar()` existía
+   y no lo llamaba nadie. Ahora lo cierran el banco y la CLI, verificado con la lista del
+   proveedor en cero tras una carrera.
+
+En Anthropic el marcador `cache_control` va puesto pero **no hay clave para verificarlo
+de punta a punta**, así que no se declara. La cifra ya sale en cada carrera
+(`CIFRA cache_pct`): quien tenga clave la ve sin tocar código.
 
 ### Entonces, ¿para qué sirve la poda?
 

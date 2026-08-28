@@ -33,8 +33,8 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
 
-METRICAS = ("tareas_pct", "tokens_media", "entrada_media", "segundos_media",
-            "intervenciones")
+METRICAS = ("tareas_pct", "tokens_media", "entrada_media", "cache_pct",
+            "segundos_media", "intervenciones")
 RE_UMBRAL = re.compile(r"^(<|>|<=|>=|==)\s*\d+(\.\d+)?$")
 RANGOS = {"tope_vueltas": (1, 32), "tope_tokens": (500, 16000),
           "tope_segundos": (60, 7200)}
@@ -310,7 +310,7 @@ campo de texto va en 2-4 frases y menos de 400 caracteres; un JSON que rumie dud
 dentro de un campo se rechaza por longitud.
 Responde SOLO con un JSON, sin nada alrededor, con esta forma exacta:
 {"pregunta": "...", "revision": "qué se sabe ya y de dónde", "metrica": "una de
-tareas_pct|tokens_media|entrada_media|segundos_media|intervenciones", "umbral": "<1200",
+tareas_pct|tokens_media|entrada_media|cache_pct|segundos_media|intervenciones", "umbral": "<1200",
 "porque": "la aritmética o el mecanismo que justifica el umbral",
 "carrera": {"nivel": "n0|n1|n2|n3", "tarea": "opcional", "cerebro": "gguf",
 "tope_vueltas": 16, "tope_tokens": 3000, "tope_segundos": 5400}}"""

@@ -1,0 +1,183 @@
+{
+  "cuando": "2026-08-28_0718",
+  "nivel": "n1",
+  "cerebro": "nube:gemini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 354,
+      "tokens_entrada": 17904,
+      "cache": {
+        "leidos": 10072,
+        "totales": 17904
+      },
+      "poda": {
+        "antes": 2637,
+        "despues": 2637
+      },
+      "segundos": 26.2,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-76om9glv/caja"
+    },
+    {
+      "id": "bitacora",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 15,
+      "intervenciones": 1,
+      "tokens_salida": 369,
+      "tokens_entrada": 53963,
+      "cache": {
+        "leidos": 27245,
+        "totales": 53963
+      },
+      "poda": {
+        "antes": 4007,
+        "despues": 4007
+      },
+      "segundos": 83.2,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-bitacora-gtpb1eje/caja"
+    },
+    {
+      "id": "cadena",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 14,
+      "intervenciones": 0,
+      "tokens_salida": 514,
+      "tokens_entrada": 42093,
+      "cache": {
+        "leidos": 21656,
+        "totales": 42093
+      },
+      "poda": {
+        "antes": 3805,
+        "despues": 3332
+      },
+      "segundos": 68.1,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-cadena-vavs44cm/caja"
+    },
+    {
+      "id": "fuga",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 10,
+      "intervenciones": 0,
+      "tokens_salida": 329,
+      "tokens_entrada": 23142,
+      "cache": {
+        "leidos": 9544,
+        "totales": 23142
+      },
+      "poda": {
+        "antes": 1839,
+        "despues": 1839
+      },
+      "segundos": 68.9,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-fuga-sy88ssjz/caja"
+    },
+    {
+      "id": "migrar",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 11,
+      "intervenciones": 0,
+      "tokens_salida": 394,
+      "tokens_entrada": 29678,
+      "cache": {
+        "leidos": 14946,
+        "totales": 29678
+      },
+      "poda": {
+        "antes": 3346,
+        "despues": 2998
+      },
+      "segundos": 44.9,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-migrar-cinsyq3h/caja"
+    },
+    {
+      "id": "rojo",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 284,
+      "tokens_entrada": 14899,
+      "cache": {
+        "leidos": 7392,
+        "totales": 14899
+      },
+      "poda": {
+        "antes": 1650,
+        "despues": 1650
+      },
+      "segundos": 40.0,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-rojo-a3yqfkt4/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 374.0,
+    "entrada_media": 30279.8,
+    "cache_pct": 50.0,
+    "segundos_media": 55.2,
+    "intervenciones": 1
+  }
+}
