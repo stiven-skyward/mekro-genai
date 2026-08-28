@@ -337,16 +337,60 @@ En la configuración MCP de Antigravity (o Claude Desktop):
 
 Con eso, el modelo que ya pagas puede llamar a `leer`, `editar`, `referencias`
 (la de LSP), `git`, `subagente`, la malla — todo lo que ya existe, sin duplicar nada.
+Con Claude Code sirve igual — de hecho es un caso más limpio, porque MCP es soporte de
+primera clase suyo y no algo verificado a ciegas: `claude mcp add mekro-genai --
+python3 -m genai.cli mcp` y `claude mcp get mekro-genai` → **`✔ Connected`**, probado
+con cuenta real el 2026-08-28. Un `tools/call` contra `git log` devolvió el historial
+real de este repositorio, y contra `bash rm -rf /` respondió `DENEGADO: VETADO`.
 
 **Pasa por la misma `Politica` que el bucle normal**, en modo `lista` por defecto: no
 hay humano al otro lado de un cliente remoto para «preguntar», y `todo` confiaría en el
 cliente más de lo que se confía en el propio agente. El veto duro de `permisos.py`
-(`rm -rf /`, forzar un push, etc.) actúa igual venga la llamada de donde venga —
-verificado con un `tools/call` real contra `bash rm -rf /`.
+(`rm -rf /`, forzar un push, etc.) actúa igual venga la llamada de donde venga.
 
 **Lo que esto NO es**: no es Mekro-Genai usando tu suscripción. Es tu suscripción,
-dentro de la app de Google, usando Mekro-Genai. El cerebro sigue siendo el de Google; lo
-que se comparte es la caja de herramientas.
+dentro de la app de Google o de Claude Code, usando Mekro-Genai. El cerebro sigue siendo
+el suyo; lo que se comparte es la caja de herramientas.
+
+### Ahorro por MCP: una palanca transfiere, otra no puede (2026-08-28)
+
+Aquí cada token que este servidor devuelve cuenta contra TU cuota, y el cliente lo
+reenvía en cada vuelta siguiente. Pero no las dos palancas de docs/ahorro.md se aplican
+igual — el límite es estructural, no de esfuerzo:
+
+- **La poda en el origen SÍ transfiere**, y `genai/mcp.py` la tenía SIN CABLEAR hasta
+  hoy: `_llamar` solo aplicaba el tope duro de 12.000 caracteres de `base.py`, sin pasar
+  por `podar()`. Medido con un `grep` real acotado a un directorio: recortado, 12.153
+  caracteres; podado, 2.647 — **78 % menos**. Ahora se aplica a toda llamada.
+
+  El ajuste no es idéntico al del bucle propio: `podar()` aprieta según *vueltas
+  restantes*, y eso lo sabe `bucle.py` porque es dueño de la conversación entera. **Un
+  servidor MCP no tiene esa visibilidad** — cada `tools/call` es una llamada aislada.
+  Se asume el peor caso (`VUELTAS_ASUMIDAS = 20`, que ya toca el suelo de agresividad de
+  `factor_vueltas`), porque lo que se manda de más aquí no se puede compactar después,
+  a diferencia de `sesion.renacer()`.
+
+- **La caché de prefijo NO transfiere**, y no es un fallo: vive dentro de las llamadas
+  HTTP que Mekro-Genai hace cuando ÉL ES el cliente del modelo (`genai/cerebro/nube.py`).
+  Aquí la conversación con el proveedor la gestiona el propio Claude Code o Antigravity,
+  con su SDK; este servidor nunca ve esa petición.
+
+- **El impuesto por vuelta de los esquemas es propio de MCP** y no está en
+  docs/ahorro.md: `tools/list` con las 16 herramientas pesa 7.603 caracteres (~1.900
+  tokens), reenviados por el cliente en CADA vuelta, se use o no la herramienta esa
+  vuelta. `filtro_herramientas` (o `MG_MCP_HERRAMIENTAS=leer,grep,git` por variable de
+  entorno) recorta la exposición a lo que de verdad hace falta — medido con tres
+  herramientas: 78 % menos peso en `tools/list`.
+
+Lo que **no** se declara porque no se puede medir desde aquí: cuánto de tu presupuesto
+semanal ahorra esto en la práctica. Depende de cómo el cliente factura y cachea su
+propia conversación, que es opaco para este servidor. Lo medido son caracteres y tokens
+de lo que este proceso devuelve, no la factura final.
+
+```bash
+export MG_MCP_HERRAMIENTAS="leer,grep,editar,git"   # solo estas cuatro, en vez de 16
+export MG_MCP_PODA=0                                # apaga la poda (brazo de control)
+```
 
 ## Coste y velocidad, medidos
 

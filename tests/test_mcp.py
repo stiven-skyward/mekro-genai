@@ -4,9 +4,16 @@ No se prueba "que hable JSON", se prueba lo único que importa de exponer el arn
 cliente remoto: que la política de permisos actúe IGUAL que en el bucle normal. Un
 cliente MCP no es más de confianza que el propio agente — si esto se pudiera saltar el
 veto duro o la lista blanca, exponerlo por MCP sería un agujero, no una funcionalidad.
+
+También se vigila el ahorro (docs/nube.md §MCP), que aquí tiene una forma distinta a la
+del bucle propio: la poda en el origen SÍ transfiere —y estaba sin cablear, `_llamar`
+llamaba a `res.recortado()` y nada más—, y el filtro de herramientas es una palanca
+propia de MCP (el esquema de cada herramienta se reenvía en CADA vuelta del cliente que
+llama, se use o no).
 """
 import io
 import json
+import os
 
 from _util import Cuenta
 
@@ -103,5 +110,62 @@ r = _hablar(srv2, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
 c(r[0]["result"]["isError"],
   "en modo plan ni siquiera lo de la lista blanca pasa: la política se respeta, no se "
   "ignora por venir de un cliente MCP")
+
+# ── ahorro: la poda en el origen SÍ transfiere, y estaba sin cablear ────────
+d = os.environ.get("MG_MCP_HERRAMIENTAS"); os.environ.pop("MG_MCP_HERRAMIENTAS", None)
+args = {"patron": "def ", "ruta": "genai/herramientas"}
+srv_sin = ServidorMCP(poda=False)
+srv_con = ServidorMCP(poda=True)
+crudo = _hablar(srv_sin, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                          "params": {"name": "grep", "arguments": args}}
+                )[0]["result"]["content"][0]["text"]
+podado = _hablar(srv_con, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                           "params": {"name": "grep", "arguments": args}}
+                 )[0]["result"]["content"][0]["text"]
+c(len(podado) < len(crudo) * 0.5,
+  f"un grep real acotado a un directorio pesa bastante menos podado ({len(crudo)} → "
+  f"{len(podado)} caracteres): la poda en el origen SÍ transfiere al servidor MCP")
+c(srv_sin.poda is False and srv_con.poda is True,
+  "hay un brazo de control (`poda=False` / `MG_MCP_PODA=0`): sin él, ningún ahorro "
+  "sería demostrable, solo afirmado")
+
+# sin visibilidad de cuántas vueltas quedan en la conversación de quien llama, se
+# asume el peor caso — muchas por delante — porque lo que se manda de más aquí NO se
+# puede compactar después, a diferencia de sesion.renacer() en el bucle propio
+from genai.ahorro import factor_vueltas  # noqa: E402
+from genai.mcp import VUELTAS_ASUMIDAS  # noqa: E402
+c(factor_vueltas(VUELTAS_ASUMIDAS) == factor_vueltas(VUELTAS_ASUMIDAS * 10),
+  "VUELTAS_ASUMIDAS ya toca el suelo de agresividad de factor_vueltas: asumir más "
+  "vueltas todavía no cambiaría nada, así que la asunción es deliberadamente "
+  "conservadora y no un número cualquiera")
+
+# ── ahorro: el impuesto por vuelta de los esquemas, y su filtro ─────────────
+completo = ServidorMCP()
+recortado = ServidorMCP(filtro_herramientas={"leer", "grep", "git"})
+c(len(recortado.registro) == 3 and len(completo.registro) > len(recortado.registro),
+  "el filtro deja expuestas solo las herramientas pedidas")
+peso_completo = len(json.dumps(completo.registro.firmas(), ensure_ascii=False))
+peso_recortado = len(json.dumps(recortado.registro.firmas(), ensure_ascii=False))
+c(peso_recortado < peso_completo * 0.5,
+  f"y el peso de tools/list baja con él ({peso_completo} → {peso_recortado} "
+  f"caracteres): ese esquema se reenvía en CADA vuelta del cliente, se use la "
+  f"herramienta o no, así que menos herramientas expuestas es menos impuesto fijo")
+
+vacio = ServidorMCP(filtro_herramientas={"esto_no_existe_en_ningun_lado"})
+c(len(vacio.registro) == len(completo.registro),
+  "un filtro que no deja NINGUNA herramienta en pie se ignora entero: en un servidor "
+  "por stdio no hay dónde avisar de un nombre mal escrito sin romper el protocolo, así "
+  "que dejar al agente sin nada sería peor que ignorarlo")
+
+os.environ["MG_MCP_HERRAMIENTAS"] = "leer,git"
+c(len(ServidorMCP().registro) == 2,
+  "el filtro también se lee de MG_MCP_HERRAMIENTAS, para configurarlo sin tocar código")
+os.environ["MG_MCP_HERRAMIENTAS"] = ""
+c(len(ServidorMCP().registro) == len(completo.registro),
+  "y la variable vacía no filtra nada: es el mismo defecto que no ponerla")
+if d is None:
+    os.environ.pop("MG_MCP_HERRAMIENTAS", None)
+else:
+    os.environ["MG_MCP_HERRAMIENTAS"] = d
 
 raise SystemExit(c.fin())

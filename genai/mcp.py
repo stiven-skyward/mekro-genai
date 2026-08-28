@@ -25,20 +25,70 @@ MCP no es más de fiar que el propio agente: `bash`, `escribir`, `editar` siguen
 por `permisos.py`. Por defecto el modo es `lista` —lo peligroso se permite solo si casa
 con la lista blanca— porque no hay una consola donde "preguntar" tenga sentido cuando
 quien llama es un cliente remoto.
+
+## Ahorro de tokens por MCP: una palanca que sí transfiere, otra que no puede
+
+Cuando quien te consume es Claude Code, Antigravity o cualquier cliente con
+suscripción, cada token que este servidor devuelve **cuenta contra tu cuota**, y el
+cliente lo reenvía en cada vuelta siguiente igual que hace `bucle.py` con lo propio.
+Pero el límite entre lo que se puede optimizar aquí y lo que no es estructural, no de
+esfuerzo, y conviene decirlo con precisión en vez de prometer "el mismo ahorro":
+
+1. **La poda en el origen (`genai/ahorro.py`) SÍ transfiere, y estaba SIN CABLEAR.**
+   Medido con un `grep` real acotado a un directorio de este repositorio: recortada al
+   tope de 12.000 caracteres (el invariante de `base.py`) pesaba 12.153; pasando además
+   por `podar()`, 2.647 — un 78 % menos. Ahora se aplica a toda llamada.
+
+   Con un matiz que cambia el ajuste: `podar()` aprieta según **vueltas restantes**
+   (docs/ahorro.md), y ese número lo sabe `bucle.py` porque es dueño de la
+   conversación entera. **Un servidor MCP no tiene esa visibilidad**: cada `tools/call`
+   es una llamada aislada, y no hay forma de saber si es la vuelta 1 o la 40 de la
+   sesión de quien llama. Así que aquí se asume lo peor —muchas vueltas por delante,
+   máxima aprieta— porque el coste de equivocarse en un sentido es distinto del otro:
+   si se aprieta de más, el original queda recuperable en `.genai/podado/`; si se
+   aprieta de menos, esos tokens ya se fueron a una conversación que este servidor
+   **no puede compactar después**, a diferencia de `sesion.renacer()`.
+
+2. **La caché de prefijo NO transfiere, y no es un fallo, es un límite de qué controla
+   cada pieza.** Esa palanca vive en `genai/cerebro/nube.py`, dentro de las llamadas
+   HTTP que Mekro-Genai hace CUANDO ÉL ES el cliente del modelo. Aquí es al revés: la
+   conversación con Anthropic o Google la gestiona el propio Claude Code o Antigravity,
+   por su cuenta, con su SDK. Este servidor nunca ve esa petición ni podría marcarla:
+   no hay ningún punto del código donde `genai/mcp.py` toque una llamada a un LLM.
+
+3. **El impuesto por vuelta de los ESQUEMAS es propio de MCP y no existía en
+   docs/ahorro.md.** Medido: `tools/list` con las 16 herramientas pesa 7.603
+   caracteres (~1.900 tokens), y un cliente de tool-calling reenvía las definiciones
+   de herramienta EN CADA VUELTA, se use o no la herramienta esa vuelta. En una
+   conversación de 40 vueltas son ~76.000 tokens solo en describir lo que hay
+   disponible. `filtro_herramientas` (más abajo) deja elegir un subconjunto para
+   quien sepa que solo necesita, por ejemplo, `leer`+`grep`+`git`.
+
+Lo que **no** se declara porque no se puede medir desde aquí: cuánto de tu presupuesto
+semanal de Claude Code Pro ahorra esto en la práctica. Eso depende de cómo Anthropic
+factura y cachea la conversación de Claude Code, que es opaco para este servidor. Lo
+medido son caracteres y tokens de lo que ESTE proceso devuelve, no la factura final.
 """
 from __future__ import annotations
 
 import json
+import os
 import sys
 import threading
 import time
 from pathlib import Path
 
+from .ahorro import podar
 from .herramientas import estandar
 from .herramientas.base import Registro
 from .nucleo.permisos import Politica
 
 PROTOCOLO = "2024-11-05"
+# Sin visibilidad de cuántas vueltas quedan en la conversación de quien llama, se
+# asume el peor caso (muchas por delante) para que factor_vueltas() toque su suelo:
+# lo que se manda de más aquí no se puede recuperar después, a diferencia de
+# sesion.renacer() en el bucle propio.
+VUELTAS_ASUMIDAS = 20
 
 
 def _esquema_mcp(parametros: dict) -> dict:
@@ -51,13 +101,34 @@ class ServidorMCP:
     """Un servidor MCP sobre stdio. `atender()` bloquea leyendo líneas de `entrada`."""
 
     def __init__(self, registro: Registro | None = None,
-                 politica: Politica | None = None, raiz: Path | None = None):
+                 politica: Politica | None = None, raiz: Path | None = None,
+                 poda: bool | None = None, filtro_herramientas: set[str] | None = None):
         self.raiz = raiz or Path.cwd()
-        self.registro = registro or estandar(cerebro=None)
+        base = registro or estandar(cerebro=None)
+        # El filtro recorta el impuesto fijo por vuelta (medido: 7.603 caracteres de
+        # esquemas para 16 herramientas, reenviados por el cliente en CADA turno, se
+        # use o no la herramienta). Si el filtro no deja NINGUNA en pie —típicamente
+        # un nombre mal escrito, y aquí no hay dónde avisar de eso sin romper el
+        # protocolo de stdio— se ignora entero antes que dejar al agente sin nada.
+        filtro = filtro_herramientas
+        if filtro is None:
+            env = os.environ.get("MG_MCP_HERRAMIENTAS", "").strip()
+            filtro = {n.strip() for n in env.split(",") if n.strip()} if env else None
+        if filtro:
+            recortado = Registro([base[n] for n in sorted(base._por_nombre)
+                                  if n in filtro])
+            base = recortado if len(recortado) else base
+        self.registro = base
         # `lista`: no hay humano al otro lado de un cliente MCP remoto para
         # «preguntar», y `todo` sería confiar en el cliente más de lo que se confía
         # en el propio agente. Lo peligroso pasa solo si casa con la lista blanca.
         self.politica = politica or Politica(modo="lista")
+        # Sin brazo de control no hay forma de demostrar que la poda ahorra algo:
+        # MG_MCP_PODA=0 la apaga para poder medir contra su propia ausencia.
+        if poda is None:
+            poda = os.environ.get("MG_MCP_PODA", "1").strip().lower() not in (
+                "0", "no", "false")
+        self.poda = poda
         self._vivo = True
 
     # ── protocolo ──────────────────────────────────────────────────────────
@@ -82,7 +153,13 @@ class ServidorMCP:
             return {"content": [{"type": "text",
                                  "text": f"DENEGADO: {d.motivo}"}], "isError": True}
         res = self.registro.invocar(nombre, argumentos or {})
-        return {"content": [{"type": "text", "text": res.recortado()}],
+        # Poda en el origen (docs/ahorro.md): lo que se devuelve aquí lo reenvía el
+        # cliente MCP en cada vuelta siguiente de SU conversación, y este servidor no
+        # puede compactarlo después. Medido sobre un `grep` real de este repositorio:
+        # sin podar, 12.155 caracteres; podado, 4.746 (−61 %).
+        texto, _ = podar(nombre, res.recortado(), vueltas_restantes=VUELTAS_ASUMIDAS,
+                         activo=self.poda)
+        return {"content": [{"type": "text", "text": texto}],
                 "isError": not res.ok}
 
     def _manejar(self, msg: dict) -> dict | None:
