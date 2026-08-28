@@ -1,13 +1,18 @@
 {
   "id": "C82",
   "pregunta": "¿La poda en el origen baja los tokens de entrada sin romper ninguna tarea?",
-  "fase": "revisado",
+  "fase": "predicho",
   "abierto": "2026-08-28 06:18",
   "revision": {
     "cuando": "2026-08-28 06:18",
     "texto": "docs/ahorro.md mide 40:1 entrada/salida en dos carreras (n1/anadir nube, n2/hallar local): el gasto es la transcripcion reenviada cada vuelta. RTK poda salida de shell (60-90% sobre lo interceptado, no sobre la factura); headroom comprime en vuelo sin romper el prefijo; ponytail hace que el modelo escriba menos. Ninguno pondera por vueltas restantes. No hay cifra propia de poda todavia: esta es la primera."
   },
-  "prediccion": null,
+  "prediccion": {
+    "cuando": "2026-08-28 06:29",
+    "metrica": "entrada_media",
+    "espero": "<11000",
+    "porque": "n1/anadir con gemini gasto 13869 de entrada en 6 vueltas (docs/ahorro.md); con el gguf local espero un orden parecido. La poda recorta observaciones antes de que entren, asi que espero al menos un 15% menos: <11000. El brazo de control (MG_PODA=0) esta corriendo AHORA y su cifra aun no la he visto, que es justo el punto de escribir esto antes. La puerta honesta no es esta: es tareas_pct==100. Si la poda ahorra entrada pero rompe la tarea, la hipotesis queda REFUTADA aunque el numero de entrada baje, porque un ahorro que esconde al modelo lo que necesitaba es una averia con buena prensa."
+  },
   "sonda": null,
   "medicion": null,
   "veredicto": null,
@@ -20,6 +25,10 @@
     {
       "cuando": "2026-08-28 06:18",
       "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-28 06:29",
+      "que": "predicho entrada_media <11000"
     }
   ]
 }

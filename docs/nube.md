@@ -109,6 +109,33 @@ O de forma permanente en `~/.config/genai/cerebros.json`:
 3. **Se configura a mano y se ve.** No hay reparto automático «inteligente»: elegir
    cerebro es una decisión de experimento, no algo que se cuele sin que nadie lo vea.
 
+## Ahorro: la nube cuesta dinero, y aquí se aprieta
+
+Con un cerebro local, un token es tiempo. Con uno de nube, **es dinero**. El análisis
+completo, con las cifras, está en **[ahorro.md](ahorro.md)**; lo que hay que saber para
+usarlo cabe aquí.
+
+**El gasto es la entrada, en proporción ~40:1**, porque la transcripción entera se
+reenvía en cada vuelta. Así que el ahorro ataca la entrada, con dos mecanismos que
+vienen puestos de fábrica:
+
+| mecanismo | qué hace | se apaga con |
+|---|---|---|
+| **caché de prefijo** | el proveedor cobra ~0,1× (Anthropic) a 0,5× (OpenAI) por lo ya visto. Aquí el prefijo es estable por construcción desde C22 | `"cachear": false` en el proveedor |
+| **poda en el origen** | recorta observaciones ruidosas ANTES de que entren, y aprieta más cuanto más lejos esté el final de la tarea | `MG_PODA=0` |
+
+Dos cosas que conviene entender porque son contraintuitivas:
+
+- **La poda aprieta pronto y afloja tarde.** Un dato que entra en la vuelta 2 de una
+  tarea de 10 se reenvía nueve veces; el mismo en la vuelta 9, una sola. El coste de un
+  dato no es su tamaño: es su tamaño **por lo que le queda de vida**.
+- **Nunca se comprime hacia atrás.** Reescribir transcripción ya enviada rompe el
+  prefijo cacheado y sale *más* caro que no tocar nada. Por eso `renacer()` —que sí
+  reescribe— es el último recurso y no una optimización.
+
+**Podar no es perder**: lo recortado se guarda entero en `.genai/podado/` y el aviso que
+ve el modelo dice con qué referencia recuperarlo.
+
 ## Las dos reglas que no se negocian
 
 1. **Una carrera de nube nunca cuenta como cifra local.** El cerebro se registra como

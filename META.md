@@ -79,6 +79,26 @@ Medido el 2026-08-27 con la clave del autor: `n1/anadir` PASA en **25,6 s con
 gemini-3.7-flash** frente a **757-969 s con el cerebro local** — ~30× de reloj, misma
 tarea y mismo verificador (`registros/2026-08-28_0411_nube-gemini-anadir.json`).
 
+### El coste de la nube es entrada, y se aprieta ahí (2026-08-28)
+
+Si el usuario paga por token, ahorrarle tokens es parte de la meta y no un extra. La
+medición que ordena el diseño: el gasto es **entrada contra salida ~40:1**, porque la
+transcripción se reenvía entera cada vuelta. Todo lo demás se deduce de ahí, y está en
+[docs/ahorro.md](docs/ahorro.md).
+
+Tres reglas, que valen tanto como las dos de arriba:
+
+1. **Se poda ANTES de entrar, jamás después.** Comprimir hacia atrás rompe el prefijo
+   cacheado del proveedor y re-cobra a precio completo todo lo que venía cacheado: sale
+   *más* caro que no tocar nada. Por eso `renacer()` es un último recurso y no una
+   optimización.
+2. **El tope de una observación depende de las vueltas que QUEDAN**, no de un número
+   fijo. Un dato que entra en la vuelta 2 de una tarea de 10 se paga nueve veces.
+3. **Un ahorro solo cuenta si `tareas_pct` sigue en 100.** Es lo que separa esto de las
+   herramientas que reclaman porcentajes sin verificador: aquí «sin pérdida de calidad»
+   es una cifra del banco, y un ahorro que rompe una tarea es una avería con buena
+   prensa.
+
 ## El cerebro OFICIAL local (decidido por el autor, 2026-08-27)
 
 **`Qwen3.8-27B-UD-Q2_K_XL.gguf` (9,15 GB, 2,83 bits) es el cerebro oficial de

@@ -44,7 +44,7 @@ def main() -> int:
         REG.registrar(h)
     nombres = {f["function"]["name"] for f in REG.firmas()}
     ok(nombres == {"leer", "escribir", "editar", "grep", "simbolos", "bash",
-                   "fondo_lanzar", "fondo_revisar", "subagente",
+                   "fondo_lanzar", "fondo_revisar", "subagente", "git",
                    "holos", "foco", "anotar"},
        f"el juego con hologramas es exactamente este ({len(nombres)})")
 
