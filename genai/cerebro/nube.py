@@ -136,7 +136,7 @@ class CerebroNube:
         self._firmas_pensamiento: dict[str, str] = {}
         # caché de prefijo: se puede apagar para medir el A/B (docs/ahorro.md)
         self.cachear = cfg.get("cachear", True)
-        self.cache = {"leidos": 0, "totales": 0}
+        self.cache = {"leidos": 0, "totales": 0, "escritos": 0, "escrituras": 0}
         self._cache_g = None          # caché explícita viva, solo dialecto gemini
         # M7.4 — qué puede MIRAR este cerebro. `ver` lo consulta antes de mandar bytes:
         # un adjunto que el proveedor tira en silencio hace que el modelo responda con
@@ -323,9 +323,14 @@ class CerebroNube:
             self._cache_g = None
             return None
         self._cache_borrar()
+        escritos = int((d.get("usageMetadata") or {}).get("totalTokenCount", 0))
+        # Escribir una caché NO es gratis: se contabiliza aparte para que el ahorro
+        # neto sea una cifra y no una esperanza. Si `escritos` se acerca a `leidos`,
+        # la caché explícita no está ahorrando nada.
+        self.cache["escritos"] = self.cache.get("escritos", 0) + escritos
+        self.cache["escrituras"] = self.cache.get("escrituras", 0) + 1
         self._cache_g = {"nombre": d["name"], "hasta": len(prefijo),
-                         "tokens": int((d.get("usageMetadata") or {})
-                                       .get("totalTokenCount", 0))}
+                         "tokens": escritos}
         return self._cache_g
 
     def _cache_borrar(self) -> None:

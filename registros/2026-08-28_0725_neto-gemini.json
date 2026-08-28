@@ -1,0 +1,50 @@
+{
+  "cuando": "2026-08-28_0725",
+  "nivel": "n1",
+  "cerebro": "nube:gemini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "bitacora",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 14,
+      "intervenciones": 1,
+      "tokens_salida": 353,
+      "tokens_entrada": 50619,
+      "cache": {
+        "leidos": 22894,
+        "totales": 50619,
+        "escritos": 5650,
+        "escrituras": 2
+      },
+      "poda": {
+        "antes": 3256,
+        "despues": 3256
+      },
+      "segundos": 61.4,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-bitacora-3dmcegra/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 353.0,
+    "entrada_media": 50619.0,
+    "cache_pct": 45.2,
+    "segundos_media": 61.4,
+    "intervenciones": 1
+  }
+}
