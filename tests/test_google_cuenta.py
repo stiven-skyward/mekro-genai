@@ -47,6 +47,10 @@ c(not _re.search(r"GOCSPX-[A-Za-z0-9_\-]{20,}", fuente_mod),
 os.environ.pop("GENAI_GOOGLE_CLIENTE", None)
 os.environ.pop("GENAI_GOOGLE_SECRETO", None)
 G.CLIENTE_FICHERO = tmp / "no-existe.json"
+# La máquina que corre esto puede TENER gemini-cli instalado —la del autor lo tiene—,
+# así que se aísla: lo que se prueba es qué pasa cuando no hay de dónde sacarlas.
+_gemini_real = G._de_gemini_cli
+G._de_gemini_cli = lambda: ("", "")
 cid, sec, q = G.credenciales()
 c(not cid and "gemini-cli" in q and "AI Studio" in q,
   "sin ellas se dice CÓMO conseguirlas —tres formas, la fácil primero— y se recuerda "
@@ -57,6 +61,17 @@ os.environ["GENAI_GOOGLE_SECRETO"] = "GOC" + "SPX-" + "de-mentira-para-prueba"
 cid, sec, q = G.credenciales()
 c(cid.endswith(".apps.googleusercontent.com") and not q,
   "y con las variables de entorno puestas, se usan")
+
+# ── emparejar de gemini-cli: DOS clientes y un secreto ─────────────────────
+# Con gemini-cli 0.57.0 de verdad, coger el primero de cada patrón emparejaba mal y
+# Google respondía «client secret is invalid». Se empareja por cercanía y se verifica.
+fuente_mod2 = fuente_mod
+c("_pareja_valida" in fuente_mod2 and "cercanía" in fuente_mod2.lower(),
+  "las credenciales se emparejan por CERCANÍA en el fichero y la pareja se verifica "
+  "contra Google antes de aceptarla: gemini-cli lleva dos client_id y un solo secreto")
+c("invalid_grant" in fuente_mod2,
+  "y la verificación no autoriza nada: manda un código inventado y mira de qué se "
+  "queja Google — del código si la pareja casa, del cliente si no")
 
 G.CLIENTE_FICHERO = tmp / "cliente.json"
 G.CLIENTE_FICHERO.write_text(json.dumps(
