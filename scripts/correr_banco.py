@@ -91,7 +91,7 @@ def correr_tarea(dir_tarea: Path, nombre_cerebro: str, modo: str,
 
     if sin_pensar and hasattr(cerebro, "pensar"):
         cerebro.pensar = False
-    os.environ["MG_CEREBRO"] = nombre_cerebro    # lo hereda el subagente
+    os.environ["MG_CEREBRO"] = nombre_cerebro    # lo heredan los roles auxiliares
     registro = estandar()
     for h in HOLO:
         registro.registrar(h)
@@ -119,7 +119,11 @@ def correr_tarea(dir_tarea: Path, nombre_cerebro: str, modo: str,
     else:
         motivo_extra = ""
 
+    from genai.herramientas.subagente import GASTO_AUXILIAR
+    aux = dict(GASTO_AUXILIAR)
+    aux["tokens"] = aux.get("tokens", 0) + getattr(sesion, "gasto_auxiliar", 0)
     return {"id": tarea["id"], "paso": paso, "motivo": r.motivo,
+            "auxiliar": aux,
             "motivo_extra": motivo_extra,
             "vueltas": r.vueltas, "intervenciones": r.intervenciones,
             "tokens_salida": r.uso.tokens_salida,
@@ -144,6 +148,10 @@ def main() -> int:
     p.add_argument("--tope-segundos", type=int, default=1800)
     p.add_argument("--pensar-vueltas", type=int, default=0,
                    help="think solo en las N primeras vueltas (0 = siempre)")
+    p.add_argument("--hibrido", default="",
+                   help="cerebro de nube para los roles auxiliares (subagente y "
+                        "resumidor), conservando el principal. Una carrera híbrida "
+                        "NO es una carrera local: el registro lo anota")
     p.add_argument("--sin-pensar", action="store_true",
                    help="apagar el razonamiento <think> del cerebro en cada vuelta (M3)")
     p.add_argument("--adoptados", action="store_true",
@@ -161,6 +169,10 @@ def main() -> int:
     if not tareas:
         raise SystemExit(f"sin tareas en banco/{a.nivel}")
 
+    if a.hibrido:
+        for rol in ("subagente", "resumidor"):
+            os.environ[f"MG_CEREBRO_{rol.upper()}"] = a.hibrido
+        print(f"   modo HÍBRIDO · principal: {a.cerebro} · auxiliares: {a.hibrido}")
     topes = {"tope_vueltas": a.tope_vueltas, "tope_tokens": a.tope_tokens,
              "tope_segundos": a.tope_segundos}
     if a.pensar_vueltas:

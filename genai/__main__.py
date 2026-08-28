@@ -46,7 +46,17 @@ def cmd_tarea(a) -> int:
     import os
     from pathlib import Path
 
-    os.environ["MG_CEREBRO"] = a.cerebro       # lo hereda el subagente
+    os.environ["MG_CEREBRO"] = a.cerebro       # lo heredan los roles auxiliares
+    # modo híbrido: el principal sigue siendo el de --cerebro; los auxiliares, otro
+    for rol, valor in (("subagente", a.cerebro_subagente or a.hibrido),
+                       ("resumidor", a.cerebro_resumidor or a.hibrido)):
+        if valor:
+            os.environ[f"MG_CEREBRO_{rol.upper()}"] = valor
+    if a.hibrido or a.cerebro_subagente or a.cerebro_resumidor:
+        from genai.cerebro import para_rol
+        print("modo híbrido · principal: " + a.cerebro + " · "
+              + " · ".join(f"{r}: {para_rol(r, a.cerebro)}"
+                           for r in ("subagente", "resumidor")))
     cerebro = cargar(a.cerebro)
     ultima = Path(".genai") / "ultima.json"
     if a.continuar:
@@ -126,6 +136,13 @@ def main(argv=None) -> int:
     t.add_argument("--segundos", type=int, default=3600)
     t.add_argument("--continuar", action="store_true",
                    help="retomar la última sesión de este directorio (.genai/ultima.json)")
+    t.add_argument("--cerebro-subagente", default="",
+                   help="modo híbrido: cerebro para los subagentes de exploración")
+    t.add_argument("--cerebro-resumidor", default="",
+                   help="modo híbrido: cerebro para el resumen del renacimiento")
+    t.add_argument("--hibrido", default="",
+                   help="atajo: PROVEEDOR de nube para TODOS los roles auxiliares, "
+                        "conservando el cerebro principal local (ej.: --hibrido nube:gemini)")
     t.add_argument("--malla", action="store_true",
                    help="modo Mesh: permite delegar tareas a pares (docs/malla.md)")
     t.add_argument("--sin-streaming", action="store_true",

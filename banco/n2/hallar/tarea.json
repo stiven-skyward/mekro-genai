@@ -1,0 +1,17 @@
+{
+ "id": "hallar",
+ "nivel": "n2",
+ "encargo": "La prueba falla: uno de los ocho módulos de `app/` tiene el LIMITE mal puesto y debe ser 100. Encuéntralo y corrígelo. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "La tarea de EXPLORACIÓN de M7: ocho módulos casi idénticos de ~2 KB, y solo uno tiene el fallo. Leerlos todos llena el contexto; es justo el caso donde los subagentes con contexto aislado deberían pagar, y donde el modo híbrido puede medirse contra el local puro.",
+ "guion": [
+  "<think>Ocho módulos parecidos: busco el valor, no los leo.</think>\n<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"grep\", \"arguments\": {\"patron\": \"LIMITE = \", \"ruta\": \"app/\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"app/mod5.py\", \"cambios\": [{\"buscar\": \"LIMITE = 7\", \"poner\": \"LIMITE = 100\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "El módulo `app/mod5.py` tenía `LIMITE = 7`; corregido a 100. 8/8."
+ ]
+}

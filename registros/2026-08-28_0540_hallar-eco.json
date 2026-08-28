@@ -1,0 +1,38 @@
+{
+  "cuando": "2026-08-28_0540",
+  "nivel": "n2",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "hallar",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 135,
+      "tokens_entrada": 9302,
+      "segundos": 0.1,
+      "verificador": "8/8 asertos ✓",
+      "trabajo": "/tmp/banco-hallar-usaxmg21/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 135.0,
+    "segundos_media": 0.1,
+    "intervenciones": 0
+  }
+}

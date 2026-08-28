@@ -71,6 +71,44 @@ en texto porque es lo que Qwen trae entrenado; los modelos de nube tienen llamad
 funciones nativa y es mucho más fiable. El bucle, los permisos y el banco no notan la
 diferencia.
 
+## Modo híbrido: local para decidir, nube para explorar
+
+El reparto que pidió el autor, generalizado a **roles**: el cerebro principal sigue
+siendo el local —quien decide y edita, donde vive la soberanía— y los papeles
+auxiliares pueden ir a un modelo de nube.
+
+```bash
+# atajo: todos los roles auxiliares a la nube, principal local
+genai tarea "arregla el bug" --cerebro gguf --hibrido nube:gemini
+
+# o rol a rol
+genai tarea "..." --cerebro gguf --cerebro-subagente nube:gemini \
+                  --cerebro-resumidor nube:deepseek
+```
+
+O de forma permanente en `~/.config/genai/cerebros.json`:
+
+```json
+{"principal": "gguf", "subagente": "nube:gemini", "resumidor": "nube:gemini"}
+```
+
+**Por qué estos dos roles, con las cifras delante:**
+
+| rol | qué hace | por qué a la nube |
+|---|---|---|
+| `subagente` | explorar | muchas vueltas baratas en tokens y carísimas en reloj: el prefill manda. Medido: 3 exploraciones = 22 vueltas (~11 min en local, 46 s en nube) |
+| `resumidor` | el resumen del renacimiento | UNA generación de prosa; en local cuesta minutos y por eso el defecto ahí es el resumen mecánico. Con resumidor de nube, **un Qwen local también conserva el porqué** |
+
+**Tres reglas que lo hacen honesto:**
+
+1. **La nube nunca es carga crítica.** Si falta la clave o el proveedor falla, el rol
+   cae al cerebro principal con un aviso. Sin nube, todo sigue funcionando.
+2. **Una carrera híbrida NO es una carrera local.** El registro anota los dos cerebros
+   y el gasto auxiliar (`auxiliar`) aparte del de la carrera. Comparar sus cifras con
+   las de M2 —que se declararon con el cerebro local puro— sería mentir.
+3. **Se configura a mano y se ve.** No hay reparto automático «inteligente»: elegir
+   cerebro es una decisión de experimento, no algo que se cuele sin que nadie lo vea.
+
 ## Las dos reglas que no se negocian
 
 1. **Una carrera de nube nunca cuenta como cifra local.** El cerebro se registra como

@@ -62,4 +62,49 @@ r = explorar([f"pregunta {i}" for i in range(12)])
 os.chdir(antes)
 c("6 subagente(s)" in r.salida, "más de seis encargos se recortan a seis")
 
+# ── modo híbrido (M7.1b): un cerebro por rol, con caída al principal ────────
+from genai.cerebro import ROLES, cargar_rol, para_rol   # noqa: E402
+
+os.environ["MG_CEREBRO"] = "gguf"
+for r in ROLES:
+    os.environ.pop(f"MG_CEREBRO_{r.upper()}", None)
+os.environ["MG_CEREBROS"] = str(tmp / "cerebros-no-existe.json")
+c(para_rol("subagente") == "gguf",
+  "sin reparto, cada rol usa el cerebro principal: el defecto no cambia")
+
+os.environ["MG_CEREBRO_SUBAGENTE"] = "nube:gemini"
+c(para_rol("subagente") == "nube:gemini" and para_rol("principal") == "gguf",
+  "con reparto, el subagente va a la nube y el principal sigue siendo el local")
+
+(tmp / "cerebros.json").write_text('{"resumidor": "nube:deepseek"}', encoding="utf-8")
+os.environ["MG_CEREBROS"] = str(tmp / "cerebros.json")
+c(para_rol("resumidor") == "nube:deepseek",
+  "el reparto también se configura por fichero, no solo por entorno")
+os.environ["MG_CEREBRO_RESUMIDOR"] = "eco"
+c(para_rol("resumidor") == "eco",
+  "y el entorno gana al fichero: una carrera puede fijar el reparto sin tocar nada")
+
+# la nube NUNCA es carga crítica
+os.environ["MG_CEREBRO_SUBAGENTE"] = "nube:proveedor-inexistente"
+cerebro, usado = cargar_rol("subagente", "eco")
+c(usado == "eco",
+  "si el cerebro del rol no está disponible, cae al principal en vez de romper")
+c(cerebro is not None, "y devuelve un cerebro utilizable: la tarea continúa")
+
+try:
+    para_rol("inventado")
+    rol_malo = False
+except ValueError:
+    rol_malo = True
+c(rol_malo, "un rol que no existe se rechaza en vez de resolverse a cualquier cosa")
+
+# la contabilidad auxiliar existe y es aparte
+from genai.herramientas.subagente import GASTO_AUXILIAR   # noqa: E402
+c(set(GASTO_AUXILIAR) >= {"vueltas", "tokens", "segundos", "cerebros"},
+  "el gasto de los roles auxiliares se acumula APARTE del de la carrera")
+
+for r in ROLES:
+    os.environ.pop(f"MG_CEREBRO_{r.upper()}", None)
+os.environ.pop("MG_CEREBROS", None)
+
 raise SystemExit(c.fin())

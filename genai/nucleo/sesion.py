@@ -147,12 +147,24 @@ class Sesion:
             "qué queda por hacer. Cita rutas concretas. No inventes nada que no esté "
             "en la traza.\n\nENCARGO ORIGINAL:\n" + peticion[:800]
             + "\n\nTRAZA:\n" + "\n".join(traza[-60:])[:6000])
+        # modo híbrido (M7.1b): el resumidor puede ser un cerebro DISTINTO del
+        # principal. Es lo que permite que un Qwen local conserve el PORQUÉ: el
+        # resumen es una generación de prosa que en local cuesta minutos y en nube
+        # segundos. Si no hay reparto, resume el cerebro de la sesión, como siempre.
         try:
-            r = self.cerebro.generar(
+            from ..cerebro import cargar_rol, para_rol
+            propio = getattr(self.cerebro, "nombre", "")
+            del_rol = para_rol("resumidor", propio)
+            cerebro = (self.cerebro if del_rol == propio
+                       else cargar_rol("resumidor", propio)[0])
+            r = cerebro.generar(
                 [Mensaje("sistema", "Resumes tu propio trabajo para continuarlo. "
                                     "Directo, concreto y sin adornos."),
                  Mensaje("usuario", peticion_resumen)], (), max_tokens=2000)
             texto = (r.texto or "").strip()
+            if texto and del_rol != propio:
+                self.gasto_auxiliar = getattr(self, "gasto_auxiliar", 0) + \
+                    r.uso.tokens_salida
         except Exception:
             texto = ""
         return texto

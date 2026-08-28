@@ -1,0 +1,34 @@
+{
+  "id": "C81",
+  "pregunta": "modo híbrido (M7.1b): ¿baja el reloj de una tarea de EXPLORACIÓN mandando los subagentes a la nube y conservando el Qwen local como cerebro principal?",
+  "fase": "predicho",
+  "abierto": "2026-08-28 05:41",
+  "revision": {
+    "cuando": "2026-08-28 05:41",
+    "texto": "El autor pidió un modo híbrido: local para lo importante, nube para los subagentes, ahorrando tokens de nube y tiempo local. Implementado como asignación por ROL (principal/subagente/resumidor), que además desbloquea algo que él no pidió: con resumidor de nube, un principal LOCAL también obtiene resumen semántico en el renacimiento (hasta ahora era mecánico por coste). Tres reglas: la nube nunca es carga crítica (si falta la clave, el rol cae al principal), el registro anota los dos cerebros y el gasto auxiliar aparte, y se configura a mano. La tarea n2/hallar es la diana: ocho módulos casi idénticos y solo uno con el fallo — leerlos todos llena el contexto, que es justo donde los subagentes pagan. Referencias de reloj en esta máquina: una tarea n2 con GGUF local ronda 900-2.300 s; una exploración de 3 subagentes en nube costó 46 s frente a los ~11 min que serían en local."
+  },
+  "prediccion": {
+    "cuando": "2026-08-28 05:41",
+    "metrica": "segundos_media",
+    "espero": "<1400",
+    "porque": "El camino natural de esta tarea es explorar los ocho modulos. Con GGUF puro, cada vuelta de exploracion cuesta ~200-400 s de prefill mas generacion; ocho lecturas mas la edicion y la verificacion rondan 1.800-2.400 s. En hibrido, la exploracion entera se va a la nube (decenas de segundos) y el Qwen local solo gasta las vueltas de DECISION: leer la conclusion, editar, verificar y cerrar — tres o cuatro vueltas, ~900-1.300 s. La barra en 1.400 exige que el ahorro supere con holgura el ruido de maquina (x1,35 medido entre dias). Lo que decide: <1400 con 100% confirma que el reparto por rol es la palanca que el autor intuyo y M7.1b queda medida; >=1400 con 100% diria que el modelo local NO delega —usa grep en vez de subagentes, que para ESTA tarea es hasta mejor— y entonces lo medido seria que el modo hibrido no se impone solo: hay que pedirlo en el prompt del sistema, y eso es otro ciclo; fallo de tarea seria un bug del cableado hibrido y a mirarlo antes que nada."
+  },
+  "sonda": null,
+  "medicion": null,
+  "veredicto": null,
+  "leccion": null,
+  "bitacora": [
+    {
+      "cuando": "2026-08-28 05:41",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-28 05:41",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-28 05:41",
+      "que": "predicho segundos_media <1400"
+    }
+  ]
+}

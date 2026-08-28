@@ -46,11 +46,13 @@ AVERIGUAR y responder, no cambiar nada: solo tienes herramientas de lectura.
 
 def _uno(encargo: str, cerebro_nombre: str, topes: dict) -> tuple[str, dict]:
     """Una exploración completa en sesión aislada. Devuelve (conclusión, cifras)."""
-    from ..cerebro import cargar
+    from ..cerebro import cargar, cargar_rol
     from ..nucleo import Politica, Sesion, turno
     from . import estandar
 
-    cerebro = cargar(cerebro_nombre)
+    # modo híbrido: el subagente puede tener SU propio cerebro (típicamente de nube)
+    # mientras el principal sigue siendo el local. Si el suyo falla, cae al principal.
+    cerebro, cerebro_nombre = cargar_rol("subagente", cerebro_nombre)
     sesion = Sesion(sistema=SISTEMA, cerebro=cerebro)
     # SIN la herramienta subagente: un subagente que puede lanzar subagentes es una
     # recursión sin fondo. La exploración anidada la decide el agente principal.
@@ -61,7 +63,8 @@ def _uno(encargo: str, cerebro_nombre: str, topes: dict) -> tuple[str, dict]:
               Politica(modo="plan"),          # «plan» niega todo lo que escriba
               encargo, traza_por_pantalla=False, **topes)
     cifras = {"vueltas": r.vueltas, "tokens": r.uso.tokens_salida,
-              "segundos": round(r.uso.segundos, 1), "motivo": r.motivo}
+              "segundos": round(r.uso.segundos, 1), "motivo": r.motivo,
+              "cerebro": cerebro_nombre}
     texto = r.texto.strip() or "(el subagente no llegó a una conclusión)"
     if r.motivo != "fin":
         texto += f"\n[AVISO: el subagente paró por «{r.motivo}»: la respuesta puede " \
@@ -77,9 +80,11 @@ def explorar(encargos: list | str, cerebro: str = "", paralelo: bool = True) -> 
     if not encargos:
         return Resultado(False, "no hay nada que explorar: pasa uno o más encargos.")
 
-    nombre = cerebro or _cerebro_por_defecto()
+    from ..cerebro import para_rol
+    nombre = cerebro or para_rol("subagente", _cerebro_por_defecto())
     # concurrencia real SOLO con cerebro de nube: con un GGUF local hay un modelo y
-    # una CPU, y fingir hilos ahí solo añadiría contención
+    # una CPU, y fingir hilos ahí solo añadiría contención. En modo híbrido esto se
+    # cumple aunque el PRINCIPAL sea local — lo que manda es el cerebro del subagente.
     hilos = len(encargos) if (paralelo and nombre.startswith("nube")) else 1
 
     resultados = []
@@ -91,14 +96,32 @@ def explorar(encargos: list | str, cerebro: str = "", paralelo: bool = True) -> 
         resultados = [_uno(e, nombre, dict(TOPES)) for e in encargos]
 
     partes, gasto = [], {"vueltas": 0, "tokens": 0, "segundos": 0.0}
+    usados = set()
     for encargo, (texto, cifras) in zip(encargos, resultados):
         partes.append(f"── {encargo[:90]}\n{texto}")
+        usados.add(cifras.get("cerebro", nombre))
         for k in gasto:
             gasto[k] = round(gasto[k] + cifras.get(k, 0), 1)
-    cabecera = (f"[{len(encargos)} subagente(s) · {'en paralelo' if hilos > 1 else 'en serie'}"
-                f" · {gasto['vueltas']} vueltas y {gasto['tokens']} tokens SUYOS, que no "
-                f"entran en tu contexto]")
+    gasto["cerebro"] = ", ".join(sorted(usados))
+    # la contabilidad va aparte y se ve: un gasto de nube dentro de una carrera local
+    # que no se declara convierte la cifra de la carrera en una mentira
+    _anotar_gasto(gasto)
+    cabecera = (f"[{len(encargos)} subagente(s) con «{gasto['cerebro']}» · "
+                f"{'en paralelo' if hilos > 1 else 'en serie'} · {gasto['vueltas']} "
+                f"vueltas y {gasto['tokens']} tokens SUYOS, que no entran en tu contexto]")
     return Resultado(True, cabecera + "\n\n" + "\n\n".join(partes), {"gasto": gasto})
+
+
+# gasto acumulado de los roles auxiliares en esta ejecución: lo lee el registro
+GASTO_AUXILIAR: dict = {"vueltas": 0, "tokens": 0, "segundos": 0.0, "cerebros": []}
+
+
+def _anotar_gasto(gasto: dict) -> None:
+    for k in ("vueltas", "tokens", "segundos"):
+        GASTO_AUXILIAR[k] = round(GASTO_AUXILIAR[k] + gasto.get(k, 0), 1)
+    for c in str(gasto.get("cerebro", "")).split(", "):
+        if c and c not in GASTO_AUXILIAR["cerebros"]:
+            GASTO_AUXILIAR["cerebros"].append(c)
 
 
 def _cerebro_por_defecto() -> str:

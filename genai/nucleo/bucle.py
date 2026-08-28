@@ -106,7 +106,11 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
             # semántico si el cerebro es barato en reloj (nube: ~2 s por resumen);
             # mecánico con cerebro local, donde una generación extra cuesta minutos.
             # Mismo criterio honesto que el paralelismo del subagente.
-            semantico = str(getattr(sesion.cerebro, "nombre", "")).startswith("nube")
+            # semántico si el RESUMIDOR es barato en reloj — que en modo híbrido
+            # puede ser de nube aunque el principal sea el Qwen local (M7.1b)
+            from ..cerebro import para_rol
+            _propio = str(getattr(sesion.cerebro, "nombre", ""))
+            semantico = para_rol("resumidor", _propio).startswith("nube")
             ahorro = sesion.renacer(semantico=semantico)
             if hasattr(sesion.cerebro, "olvidar"):
                 sesion.cerebro.olvidar()   # la caché vieja no casa con la vida nueva
