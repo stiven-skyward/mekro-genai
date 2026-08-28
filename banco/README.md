@@ -41,7 +41,12 @@ intención:
 | nivel | `gpt-4.1-nano` | `gguf` local | `gemini-3.7-flash` | `gpt-4.1-mini` |
 |---|---|---|---|---|
 | **n1** | 16,7 % | 100 % | 100 % | 100 % |
-| **n3** | 0 % | *(pendiente)* | 75 % | 100 % |
+| **n3** | 0 % | 100 % † | 75 % | 100 % |
+
+† el GGUF local necesita `--tope-segundos 6000`: con los 1.800 de fábrica da 0 %, y a
+~530 s por vuelta no le llega ni para editar. Es un aviso para quien mida: **contra el
+cerebro local, un tope de reloj corto convierte cualquier nivel en un medidor de
+velocidad**, y lo que parece dificultad de razonamiento es dificultad de agenda.
 
 Léase con cuidado, porque durante un tiempo aquí se dijo otra cosa: **n1 sí discrimina**
 —separa un modelo débil de uno capaz— pero **no separa a los capaces entre sí**. Para eso
