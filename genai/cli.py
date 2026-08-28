@@ -148,6 +148,20 @@ def main(argv: list[str] | None = None) -> int:
     # `genai proveedores [texto]` — qué se puede enchufar, del catálogo.
     if a.peticion[0] == "proveedores":
         return cmd_proveedores(" ".join(a.peticion[1:]))
+    if a.peticion[0] == "copilot":
+        from . import copilot as C
+        sub = a.peticion[1] if len(a.peticion) > 1 else "estado"
+        if sub == "entrar":
+            ok, msg = C.entrar()
+            print(("✓ " if ok else "✗ ") + msg)
+            if ok:
+                print("  Ya puedes: genai tarea \"...\" --cerebro nube:copilot")
+            return 0 if ok else 1
+        if sub == "salir":
+            print(C.salir())
+            return 0
+        print(C.estado())
+        return 0
     if a.peticion[0] == "sesiones":
         return cmd_sesiones(a.peticion[1:])
 

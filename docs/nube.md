@@ -226,6 +226,26 @@ mismo patrón que los proveedores compatibles con OpenAI:
 `{q}`, `{n}` y `{clave}` se sustituyen. Para POST, añade `"metodo": "POST"` y un
 `"cuerpo": {...}` con las mismas marcas.
 
+## GitHub Copilot, con tu cuenta
+
+```bash
+genai copilot entrar     # device flow: abres una URL y tecleas un código
+genai tarea "..." --cerebro nube:copilot
+genai copilot            # estado
+genai copilot salir      # borra la credencial
+```
+
+**Lo que hay que saber antes de usarlo, sin adornos**: este es el camino que usan los
+clientes de Copilot que no son de GitHub —se presenta con el identificador de cliente
+del editor—. Funciona, y es lo que hace OpenCode, pero **no es una integración que
+GitHub bendiga para terceros**. Necesitas suscripción activa de Copilot, la usas bajo
+sus términos, y si GitHub cierra esta puerta dejará de funcionar sin previo aviso. Con
+una clave de API de cualquier otro proveedor no tienes esa incertidumbre.
+
+El token de Copilot caduca en minutos y se renueva solo, con 60 s de margen. Vive en
+`~/.config/genai/copilot.json` con permisos 600 y **aparte** de `claves.json`: no es una
+clave que escribieras tú, sino una credencial que este programa obtuvo en tu nombre.
+
 ## Las dos reglas que no se negocian
 
 1. **Una carrera de nube nunca cuenta como cifra local.** El cerebro se registra como

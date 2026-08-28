@@ -113,6 +113,12 @@ class CerebroNube:
         # Los ocho de fábrica MANDAN: son los que tienen medición detrás (caché, firmas
         # de pensamiento, PDF) y el catálogo no sabe nada de eso. Solo si el nombre no
         # está aquí ni escrito a mano se busca entre los 207 de models.dev.
+        if proveedor == "copilot" and not cfg.get("clave"):
+            # Copilot no usa una clave que escribas: usa tu SESIÓN de GitHub, y su
+            # token caduca en minutos, así que se pide fresco en cada arranque.
+            from ..copilot import config as _copiloto
+            cfg = {**_copiloto(), **cfg}
+            base = {}
         if base is None and not cfg.get("url"):
             from ..catalogo import resolver
             base, queja = resolver(proveedor)
