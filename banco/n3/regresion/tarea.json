@@ -1,0 +1,17 @@
+{
+ "id": "regresion",
+ "nivel": "n3",
+ "encargo": "`prueba.py` describe siete reglas de tarificación y hoy fallan dos: las de fin de semana. Haz que pasen las siete tocando solo `tarifas.py`. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "DISCRIMINA (brecha 6). El arreglo evidente —meter el recargo de fin de semana como primera regla— hace pasar las dos que fallan y ROMPE una que ya pasaba: el festivo que cae en sábado. Mide si el agente lee las reglas que YA funcionan antes de tocarlas, o si solo persigue el aserto rojo. Medido: parche ingenuo 5/7 con una regresión; arreglo correcto 7/7.",
+ "guion": [
+  "<think>Dos asertos en rojo, pero hay cinco en verde que puedo romper. Leo la prueba entera antes de tocar nada.</think>\n<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"prueba.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"tarifas.py\"}}\n</tool_call>",
+  "<think>El festivo del 15 de agosto es sábado y debe dar 1200, no 1100: el recargo de finde NO se acumula al de festivo. Así que el festivo tiene que seguir cortando, y el recargo de finde va DESPUÉS del descuento de socio, sobre el precio ya calculado.</think>\n<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"tarifas.py\", \"cambios\": [{\"buscar\": \"    if cliente in SOCIOS:\\n        return round(base * 0.80)\\n    return base\", \"poner\": \"    if cliente in SOCIOS:\\n        base = round(base * 0.80)\\n    if es_finde(dia):\\n        base = round(base * 1.10)\\n    return base\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "El festivo sigue cortando antes que todo, así que el 15 de agosto en sábado paga 1200 y no acumula. El recargo de finde se aplica sobre el precio ya descontado. 7/7."
+ ]
+}
