@@ -74,6 +74,12 @@ class _SinSaltos(urllib.request.HTTPRedirectHandler):
             raise urllib.error.URLError(f"redirección bloqueada: {motivo}")
         return super().redirect_request(req, fp, code, msg, headers, nueva)
 
+    # `HTTPRedirectHandler` de la biblioteca estándar no trae `http_error_308` en
+    # Python 3.10: un 308 (Redirección Permanente) se propaga como HTTPError en vez de
+    # seguirse. Documentación real que lo usa: cursor.com. Se reutiliza el MISMO
+    # camino validado de arriba, no uno nuevo.
+    http_error_308 = urllib.request.HTTPRedirectHandler.http_error_301
+
 
 def _a_texto(bruto: str) -> str:
     """HTML → texto legible. Sin dependencias: el proyecto tiene UNA y no se toca."""

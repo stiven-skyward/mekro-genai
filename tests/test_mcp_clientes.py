@@ -1,17 +1,23 @@
 """El menú de clientes MCP: qué está probado de verdad y qué no.
 
-Lo que se vigila, sin depender de que `claude` ni `codex` estén instalados en la
-máquina que corre la prueba:
+Lo que se vigila, sin depender de que `claude`, `codex` ni `cursor-agent` estén
+instalados en la máquina que corre la prueba:
 
-1. que **solo lo verificado esta sesión** (Claude Code, Codex) lleve un comando
-   ejecutable; lo demás (Antigravity, Kimi Code CLI) da instrucciones y el fragmento
+1. que **solo lo verificado esta sesión** (Claude Code, Codex, Cursor) lleve una
+   instalación ejecutable —de subcomando (`mcp add`) o de fichero (Cursor no lo
+   tiene)—; lo demás (Antigravity, Kimi Code CLI) da instrucciones y el fragmento
    JSON genérico, nunca una sintaxis inventada;
 2. que un binario ausente, un cliente desconocido o un cliente sin comando se digan
    con claridad y no revienten;
-3. que **no exista** un camino de "suscripción directa" para OpenAI ni Anthropic —
+3. que Cursor, al no tener `mcp add`, escriba `.cursor/mcp.json` sin destruir lo que
+   ya hubiera ahí — un usuario con otros servidores MCP configurados no puede perderlos
+   por instalar el nuestro;
+4. que **no exista** un camino de "suscripción directa" para OpenAI ni Anthropic —
    es la línea que se decidió no cruzar, y tiene que seguir sin cruzarse mañana.
 """
 import json
+import tempfile
+from pathlib import Path
 
 from _util import Cuenta
 
@@ -21,11 +27,17 @@ c = Cuenta("mcp_clientes")
 
 # ── el registro, coherente consigo mismo ────────────────────────────────────
 for clave, cl in CLIENTES.items():
-    if cl.get("verificado"):
+    if cl.get("verificado") and cl.get("comando"):
         c(callable(cl.get("comando")) and callable(cl.get("quitar")),
-          f"[{clave}] verificado lleva comando Y quitar ejecutables")
+          f"[{clave}] verificado por subcomando lleva comando Y quitar ejecutables")
         c(bool(cl.get("binario")),
           f"[{clave}] verificado dice qué binario detectar")
+    elif cl.get("verificado"):
+        c(callable(cl.get("instalador")) and callable(cl.get("desinstalador")),
+          f"[{clave}] verificado sin `mcp add` lleva instalador/desinstalador propios "
+          f"en vez de un comando inventado")
+        c(bool(cl.get("binario")),
+          f"[{clave}] también dice qué binario detectar")
     else:
         c(cl.get("comando") is None,
           f"[{clave}] SIN verificar no ofrece un comando: inventar la sintaxis de un "
@@ -107,6 +119,61 @@ MC.subprocess.run = _orig_run
 
 c(quitar("antigravity")[0] is False,
   "un cliente sin comando de desinstalación lo dice, no finge haber quitado algo")
+
+# ── Cursor: se instala por FICHERO, no por `mcp add` ────────────────────────
+tmp = Path(tempfile.mkdtemp(prefix="cursor-inst-"))
+antes_cwd = Path.cwd()
+
+import genai.mcp_clientes as MC2  # noqa: E402
+
+llamadas = []
+
+
+def _run_falso_cursor(orden, **kw):
+    llamadas.append(orden)
+    return type("R", (), {"returncode": 0, "stdout": "habilitado", "stderr": ""})()
+
+
+import os  # noqa: E402
+os.chdir(tmp)
+MC2.shutil.which = lambda n: "/usr/bin/cursor-agent" if n == "cursor-agent" else None
+MC2.subprocess.run = _run_falso_cursor
+try:
+    ok, msg = instalar("cursor", nombre="mekro-genai")
+    c(ok and msg == "habilitado", "cursor se instala sin `mcp add`: escribe el "
+                                  "fichero y aprueba con `mcp enable`")
+    cfg = json.loads((tmp / ".cursor" / "mcp.json").read_text(encoding="utf-8"))
+    c(cfg["mcpServers"]["mekro-genai"]["args"] == ["-m", "genai.cli", "mcp"],
+      "el fichero escrito apunta al mismo proceso servidor que los demás clientes")
+    c(llamadas[-1] == ["cursor-agent", "mcp", "enable", "mekro-genai"],
+      "y se aprueba con la orden real de cursor-agent")
+
+    # otro servidor YA configurado no puede desaparecer por instalar el nuestro
+    otro = json.loads((tmp / ".cursor" / "mcp.json").read_text(encoding="utf-8"))
+    otro["mcpServers"]["otro-servidor"] = {"command": "algo"}
+    (tmp / ".cursor" / "mcp.json").write_text(json.dumps(otro), encoding="utf-8")
+    instalar("cursor", nombre="mekro-genai")
+    final = json.loads((tmp / ".cursor" / "mcp.json").read_text(encoding="utf-8"))
+    c("otro-servidor" in final["mcpServers"],
+      "un servidor MCP que el usuario ya tenía configurado sobrevive a instalar el "
+      "nuestro: el fichero se lee y se completa, nunca se sobrescribe entero")
+
+    ok, msg = quitar("cursor", nombre="mekro-genai")
+    tras_quitar = json.loads((tmp / ".cursor" / "mcp.json").read_text(encoding="utf-8"))
+    c(ok and "mekro-genai" not in tras_quitar["mcpServers"],
+      "quitar borra SOLO la entrada propia del fichero")
+    c("otro-servidor" in tras_quitar["mcpServers"],
+      "y sigue sin tocar lo que era de otro servidor")
+
+    (tmp / ".cursor" / "mcp.json").write_text("esto no es json", encoding="utf-8")
+    ok, msg = instalar("cursor")
+    c(not ok and "no es JSON válido" in msg,
+      "un mcp.json corrupto se dice en vez de sobrescribirlo a ciegas, perdiendo lo "
+      "que hubiera dentro")
+finally:
+    os.chdir(antes_cwd)
+    MC2.shutil.which = _orig_which
+    MC2.subprocess.run = _orig_run
 
 # ── la línea que no se cruza: sin suscripción directa para OpenAI ni Anthropic ──
 c(not any(k in CLIENTES for k in ("openai", "chatgpt", "anthropic", "claude")),

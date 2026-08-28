@@ -337,9 +337,24 @@ intacto— y nunca en el 2.
 
 ```bash
 genai mcp clientes             # qué se ha probado de verdad, y qué solo se documenta
-genai mcp instalar <cliente>   # claude-code, codex — verificados con cuenta real
+genai mcp instalar <cliente>   # claude-code, codex, cursor — verificados con cuenta real
 genai mcp quitar <cliente>
 ```
+
+**Cursor** (`cursor-agent`) se verificó el 2026-08-28 con cuenta real: `mcp list-tools`
+vio las 16 herramientas y `cursor-agent --api-key ... -p` llamó a `git` por MCP,
+devolviendo el log real de este repositorio. Admite las **dos** autenticaciones que se
+pidió soportar, y las dos son nativas de `cursor-agent` — Mekro-Genai no tiene que hacer
+nada distinto para cada una:
+
+- **Por cuenta**: `cursor-agent login` (abre el navegador; se comprobó que el flujo
+  arranca y da la URL, sin completar el login interactivo).
+- **Por token**: `cursor-agent --api-key <clave>` o `export CURSOR_API_KEY=<clave>` —
+  esta es la que se probó de punta a punta.
+
+Cursor no tiene `mcp add`: se instala escribiendo `.cursor/mcp.json` del proyecto y
+aprobando con `cursor-agent mcp enable`, **sin pisar otros servidores** que ya tuvieras
+configurados ahí — se lee el fichero existente y solo se añade la entrada propia.
 
 Para Antigravity y Kimi Code CLI —que se sabe que hablan MCP, pero no se ha ejecutado
 su instalación exacta desde aquí— `genai mcp instalar` da instrucciones y el fragmento
