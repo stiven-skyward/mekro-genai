@@ -1,0 +1,61 @@
+{
+  "id": "C84",
+  "pregunta": "¿Sigue n1 discriminando, o lo pasa hasta el modelo más débil que hay a mano?",
+  "fase": "cerrado",
+  "abierto": "2026-08-28 08:12",
+  "revision": {
+    "cuando": "2026-08-28 08:12",
+    "texto": "C28 midio que el banco dejo de discriminar (100% en todas partes) y por eso 'funciona' se afirma sobre tareas que dejaron de ser dificiles. Desde entonces n1 lo pasan al 100% el gguf local, gemini-3.7-flash y gpt-4.1-mini. Nunca se ha probado con un modelo deliberadamente DEBIL, asi que 'esta saturado' es una sospecha, no una cifra. n3/regresion ya separo gguf (0) de gemini (100), pero por reloj, no por la trampa."
+  },
+  "prediccion": {
+    "cuando": "2026-08-28 08:12",
+    "metrica": "tareas_pct",
+    "espero": "==100",
+    "porque": "Con gpt-4.1-nano, el modelo mas debil accesible con la clave, espero que n1 siga dando 100. Si lo hace, n1 esta saturado y queda demostrado que ya no mide dificultad: mide que el bucle funcione, que es lo que mide n0. Predigo la SATURACION, es decir que mi propio banco no sirve para lo que dice servir; si nano falla alguna, me equivoco y n1 todavia discrimina algo. La misma carrera sobre n3 da el contraste: ahi espero que NO de 100."
+  },
+  "sonda": null,
+  "medicion": {
+    "cuando": "2026-08-28 08:21",
+    "comando": "bash /tmp/c84.sh",
+    "codigo": 0,
+    "segundos": 0.0,
+    "cifras": {
+      "tareas_pct": 16.7,
+      "tokens_media": 261.3,
+      "entrada_media": 10997.7,
+      "intervenciones": 0.0
+    },
+    "salida_cola": "CIFRA tareas_pct 16.7\nCIFRA tokens_media 261.3\nCIFRA entrada_media 10997.7\nCIFRA intervenciones 0"
+  },
+  "veredicto": {
+    "cuando": "2026-08-28 08:21",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "tareas_pct",
+    "valor": 16.7,
+    "espero": "==100"
+  },
+  "leccion": "n1 NO esta saturado y yo lo he estado repitiendo sin comprobarlo. Predije que gpt-4.1-nano lo pasaria al 100% y saco 16,7%: una de seis, y las cinco por 'fin' -declaro terminado y el verificador dijo que no-, no por topes. El reparto completo, medido hoy: en n1, nano 16,7 frente a 100 del gguf local, de gemini y de gpt-4.1-mini; en n3, nano 0/4, gemini 3/4, mini 4/4. Gemini fallo n3/lista sin llegar a crear el modulo. Asi que el banco discrimina, y ademas discrimina entre modelos CAPACES, que es justo lo que C28 dijo que se habia perdido. La leccion no es sobre el banco, es sobre mi. C28 midio 100% en todas partes con tres cerebros que resultaron ser todos capaces, y de ahi salio la frase 'el banco dejo de discriminar'. Herede esa frase, la repeti esta misma sesion en el commit de n3/ruidosa, en docs/ahorro.md y en tres respuestas al autor, y nunca gaste los siete minutos que costaba refutarla con un modelo debil. Una conclusion heredada de otra medicion no es una medicion: es una cita, y las citas envejecen. Lo que C28 midio de verdad, dicho con precision, es que el banco no separaba a los TRES cerebros concretos que se probaron entonces, todos capaces. Eso es una frase mucho mas pequena que 'el banco no discrimina', y la diferencia entre las dos me llevo a escribir tareas nuevas para arreglar algo que no estaba roto del todo. Las tareas de n3 valen igual -separan gemini de mini, cosa que n1 no hace- pero el diagnostico con el que las justifique era falso.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-28 08:12",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-28 08:12",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-28 08:12",
+      "que": "predicho tareas_pct ==100"
+    },
+    {
+      "cuando": "2026-08-28 08:21",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-28 08:21",
+      "que": "veredicto: REFUTA (tareas_pct=16.7)"
+    }
+  ]
+}

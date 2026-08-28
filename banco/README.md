@@ -33,6 +33,23 @@ exigírsela a un modelo de 2 bits. Ese efecto lateral vale tanto como la prueba.
 - **n1 — reales.** Ingeniería de verdad, uno o dos ficheros, con prueba en rojo antes y en
   verde después. Sostienen M2. Están por escribir: [H3](../holos/H3.md).
 
+## Qué discrimina cada nivel (medido, C84 · 2026-08-28)
+
+Un banco solo sirve si separa. Esto es lo que separa cada nivel, con cifras y no con
+intención:
+
+| nivel | `gpt-4.1-nano` | `gguf` local | `gemini-3.7-flash` | `gpt-4.1-mini` |
+|---|---|---|---|---|
+| **n1** | 16,7 % | 100 % | 100 % | 100 % |
+| **n3** | 0 % | *(pendiente)* | 75 % | 100 % |
+
+Léase con cuidado, porque durante un tiempo aquí se dijo otra cosa: **n1 sí discrimina**
+—separa un modelo débil de uno capaz— pero **no separa a los capaces entre sí**. Para eso
+está n3, donde `gemini` y `mini` ya difieren (`lista`). C28 midió 100 % en todas partes,
+pero con tres cerebros que resultaron ser todos capaces; de ahí salió la frase «el banco
+dejó de discriminar», que se repitió sin comprobarse hasta C84. Una conclusión heredada
+de otra medición no es una medición.
+
 ## Correrlo
 
 ```bash

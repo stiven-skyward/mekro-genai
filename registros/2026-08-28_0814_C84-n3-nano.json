@@ -1,0 +1,137 @@
+{
+  "cuando": "2026-08-28_0814",
+  "nivel": "n3",
+  "cerebro": "nube:openai/gpt-4.1-nano",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "larga",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 22,
+      "intervenciones": 0,
+      "tokens_salida": 947,
+      "tokens_entrada": 48907,
+      "cache": {
+        "leidos": 41728,
+        "totales": 48907,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 1650,
+        "despues": 1650
+      },
+      "segundos": 22.2,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-larga-80cndeh0/caja/prueba.py\", line 6, in <module>\n    assert m.calcula(5) == 5 + i, f'm{i} sigue con el signo cambiado'\nAssertionError: m0 sigue con el signo cambiado",
+      "trabajo": "/tmp/banco-larga-80cndeh0/caja"
+    },
+    {
+      "id": "lista",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 2,
+      "intervenciones": 0,
+      "tokens_salida": 517,
+      "tokens_entrada": 3233,
+      "cache": {
+        "leidos": 1664,
+        "totales": 3233,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 56,
+        "despues": 56
+      },
+      "segundos": 4.2,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-lista-y_t9quqh/caja/prueba.py\", line 28, in <module>\n    assert codigo == 0 and salida == \"leche\"; ok += 1\nAssertionError",
+      "trabajo": "/tmp/banco-lista-y_t9quqh/caja"
+    },
+    {
+      "id": "regresion",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 286,
+      "tokens_entrada": 9424,
+      "cache": {
+        "leidos": 6016,
+        "totales": 9424,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 1168,
+        "despues": 1168
+      },
+      "segundos": 3.6,
+      "verificador": "✓ festivo manda sobre socio\n✓ festivo a no socio\n✓ socio en dia laborable\n✓ no socio en dia laborable\n✓ festivo que ademas cae en finde\n✗ finde a no socio: esperaba 1100, obtuve 1000\n✗ finde a socio: esperaba 880, obtuve 800",
+      "trabajo": "/tmp/banco-regresion-cqab1zwj/caja"
+    },
+    {
+      "id": "ruidosa",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 271,
+      "tokens_entrada": 11222,
+      "cache": {
+        "leidos": 7936,
+        "totales": 11222,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 10280,
+        "despues": 4066
+      },
+      "segundos": 6.2,
+      "verificador": "caja/prueba.py\", line 5, in <module>\n    import validadores\n  File \"/tmp/banco-ruidosa-x3lj9l3w/caja/validadores.py\", line 246\n    \"\"\"Acepta cadenas de hasta 40 caracteres.\"\"\"\n                                             ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 247)",
+      "trabajo": "/tmp/banco-ruidosa-x3lj9l3w/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 0.0,
+    "tokens_media": 505.2,
+    "entrada_media": 18196.5,
+    "cache_pct": 78.8,
+    "segundos_media": 9.1,
+    "intervenciones": 0
+  }
+}

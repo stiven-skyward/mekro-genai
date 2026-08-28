@@ -1,0 +1,195 @@
+{
+  "cuando": "2026-08-28_0813",
+  "nivel": "n1",
+  "cerebro": "nube:openai/gpt-4.1-nano",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 279,
+      "tokens_entrada": 7590,
+      "cache": {
+        "leidos": 5632,
+        "totales": 7590,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 722,
+        "despues": 722
+      },
+      "segundos": 5.4,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-j_buqvm7/caja"
+    },
+    {
+      "id": "bitacora",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 150,
+      "tokens_entrada": 5507,
+      "cache": {
+        "leidos": 3840,
+        "totales": 5507,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 298,
+        "despues": 298
+      },
+      "segundos": 3.6,
+      "verificador": "bitácora vacía\n  File \"/tmp/banco-bitacora-ytb_b2b3/caja/bitacora.py\", line 8, in eventos\n    return cargar(ruta)\n  File \"/tmp/banco-bitacora-ytb_b2b3/caja/disco.py\", line 6, in cargar\n    with open(ruta, encoding=\"utf-8\") as f:\nFileNotFoundError: [Errno 2] No such file or directory: 'eventos.jsonl'",
+      "trabajo": "/tmp/banco-bitacora-ytb_b2b3/caja"
+    },
+    {
+      "id": "cadena",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 9,
+      "intervenciones": 0,
+      "tokens_salida": 329,
+      "tokens_entrada": 14119,
+      "cache": {
+        "leidos": 10112,
+        "totales": 14119,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 833,
+        "despues": 833
+      },
+      "segundos": 11.2,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-cadena-le977nyc/caja/prueba.py\", line 6, in <module>\n    assert precio_final(100, 0.5, descuento=0.5) == 75.0; ok += 1         # el descuento va ANTES del IVA\nAssertionError",
+      "trabajo": "/tmp/banco-cadena-le977nyc/caja"
+    },
+    {
+      "id": "fuga",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 13,
+      "intervenciones": 0,
+      "tokens_salida": 437,
+      "tokens_entrada": 20536,
+      "cache": {
+        "leidos": 14208,
+        "totales": 20536,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 789,
+        "despues": 789
+      },
+      "segundos": 11.5,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-fuga-3do9ij55/caja/prueba.py\", line 5, in <module>\n    assert agrupar([\"col\"]) == {\"c\": [\"col\"]}; ok += 1   # una cesta nueva parte de cero\nAssertionError",
+      "trabajo": "/tmp/banco-fuga-3do9ij55/caja"
+    },
+    {
+      "id": "migrar",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 151,
+      "tokens_entrada": 8891,
+      "cache": {
+        "leidos": 6784,
+        "totales": 8891,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 627,
+        "despues": 627
+      },
+      "segundos": 5.3,
+      "verificador": "/tmp/banco-migrar-1p3s3qla/caja/prueba.py\", line 4, in <module>\n    assert cabecera(\"  ventas  \") == \"[VENTAS]\"; ok += 1\n  File \"/tmp/banco-migrar-1p3s3qla/caja/informe.py\", line 6, in cabecera\n    return etiqueta(titulo, True, True)\nTypeError: etiqueta() takes 1 positional argument but 3 were given",
+      "trabajo": "/tmp/banco-migrar-1p3s3qla/caja"
+    },
+    {
+      "id": "rojo",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 222,
+      "tokens_entrada": 9343,
+      "cache": {
+        "leidos": 3840,
+        "totales": 9343,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 2079,
+        "despues": 2079
+      },
+      "segundos": 7.0,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-rojo-9hia4gga/caja/prueba.py\", line 6, in <module>\n    assert not solapan((0, 10), (10, 20)); ok += 1   # tocarse en el borde no es pisarse\nAssertionError",
+      "trabajo": "/tmp/banco-rojo-9hia4gga/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 16.7,
+    "tokens_media": 261.3,
+    "entrada_media": 10997.7,
+    "cache_pct": 67.3,
+    "segundos_media": 7.3,
+    "intervenciones": 0
+  }
+}

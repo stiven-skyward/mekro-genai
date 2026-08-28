@@ -1,0 +1,137 @@
+{
+  "cuando": "2026-08-28_0815",
+  "nivel": "n3",
+  "cerebro": "nube:openai/gpt-4.1-mini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "larga",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 908,
+      "tokens_entrada": 17614,
+      "cache": {
+        "leidos": 12288,
+        "totales": 17614,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 9917,
+        "despues": 9917
+      },
+      "segundos": 16.4,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-larga-t_7rio9m/caja"
+    },
+    {
+      "id": "lista",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 2,
+      "intervenciones": 0,
+      "tokens_salida": 721,
+      "tokens_entrada": 3397,
+      "cache": {
+        "leidos": 1920,
+        "totales": 3397,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 54,
+        "despues": 54
+      },
+      "segundos": 7.9,
+      "verificador": "6/6 asertos ✓",
+      "trabajo": "/tmp/banco-lista-a0ewc_o_/caja"
+    },
+    {
+      "id": "regresion",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 11,
+      "intervenciones": 0,
+      "tokens_salida": 597,
+      "tokens_entrada": 21690,
+      "cache": {
+        "leidos": 16640,
+        "totales": 21690,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 2828,
+        "despues": 2828
+      },
+      "segundos": 15.2,
+      "verificador": "✓ festivo manda sobre socio\n✓ festivo a no socio\n✓ socio en dia laborable\n✓ no socio en dia laborable\n✓ finde a no socio\n✓ finde a socio\n✓ festivo que ademas cae en finde\n7/7 asertos ✓",
+      "trabajo": "/tmp/banco-regresion-_zy52s3z/caja"
+    },
+    {
+      "id": "ruidosa",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 9,
+      "intervenciones": 0,
+      "tokens_salida": 317,
+      "tokens_entrada": 32833,
+      "cache": {
+        "leidos": 22272,
+        "totales": 32833,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 19444,
+        "despues": 10837
+      },
+      "segundos": 10.7,
+      "verificador": "True, obtuvo True\nok  campo_58 justa-40: esperaba True, obtuvo True\nok  campo_58 larga-41: esperaba False, obtuvo False\nok  campo_59 corta: esperaba True, obtuvo True\nok  campo_59 justa-40: esperaba True, obtuvo True\nok  campo_59 larga-41: esperaba False, obtuvo False\n--- 180/180 casos correctos ---",
+      "trabajo": "/tmp/banco-ruidosa-_mcfhvtv/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 635.8,
+    "entrada_media": 18883.5,
+    "cache_pct": 70.3,
+    "segundos_media": 12.6,
+    "intervenciones": 0
+  }
+}

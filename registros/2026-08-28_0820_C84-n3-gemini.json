@@ -1,0 +1,137 @@
+{
+  "cuando": "2026-08-28_0820",
+  "nivel": "n3",
+  "cerebro": "nube:gemini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "larga",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 18,
+      "intervenciones": 0,
+      "tokens_salida": 680,
+      "tokens_entrada": 74008,
+      "cache": {
+        "leidos": 50765,
+        "totales": 74008,
+        "escritos": 3905,
+        "escrituras": 1
+      },
+      "poda": {
+        "antes": 7257,
+        "despues": 6142
+      },
+      "segundos": 170.1,
+      "verificador": "10/10 asertos ✓",
+      "trabajo": "/tmp/banco-larga-6tncjl06/caja"
+    },
+    {
+      "id": "lista",
+      "paso": false,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 3,
+      "intervenciones": 0,
+      "tokens_salida": 68,
+      "tokens_entrada": 6275,
+      "cache": {
+        "leidos": 0,
+        "totales": 6275,
+        "escritos": 0,
+        "escrituras": 0
+      },
+      "poda": {
+        "antes": 1438,
+        "despues": 1438
+      },
+      "segundos": 33.9,
+      "verificador": "Traceback (most recent call last):\n  File \"/tmp/banco-lista-12y1jpp_/caja/prueba.py\", line 18, in <module>\n    from lista import anadir, pendientes, tachar\nModuleNotFoundError: No module named 'lista'",
+      "trabajo": "/tmp/banco-lista-12y1jpp_/caja"
+    },
+    {
+      "id": "regresion",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 9,
+      "intervenciones": 0,
+      "tokens_salida": 384,
+      "tokens_entrada": 31260,
+      "cache": {
+        "leidos": 15540,
+        "totales": 31260,
+        "escritos": 3108,
+        "escrituras": 1
+      },
+      "poda": {
+        "antes": 4342,
+        "despues": 4342
+      },
+      "segundos": 51.2,
+      "verificador": "✓ festivo manda sobre socio\n✓ festivo a no socio\n✓ socio en dia laborable\n✓ no socio en dia laborable\n✓ finde a no socio\n✓ finde a socio\n✓ festivo que ademas cae en finde\n7/7 asertos ✓",
+      "trabajo": "/tmp/banco-regresion-xqantty0/caja"
+    },
+    {
+      "id": "ruidosa",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 281,
+      "tokens_entrada": 17741,
+      "cache": {
+        "leidos": 7755,
+        "totales": 17741,
+        "escritos": 2585,
+        "escrituras": 1
+      },
+      "poda": {
+        "antes": 18863,
+        "despues": 2128
+      },
+      "segundos": 30.1,
+      "verificador": "True, obtuvo True\nok  campo_58 justa-40: esperaba True, obtuvo True\nok  campo_58 larga-41: esperaba False, obtuvo False\nok  campo_59 corta: esperaba True, obtuvo True\nok  campo_59 justa-40: esperaba True, obtuvo True\nok  campo_59 larga-41: esperaba False, obtuvo False\n--- 180/180 casos correctos ---",
+      "trabajo": "/tmp/banco-ruidosa-ic8um4w0/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 75.0,
+    "tokens_media": 353.2,
+    "entrada_media": 32321.0,
+    "cache_pct": 57.3,
+    "segundos_media": 71.3,
+    "intervenciones": 0
+  }
+}

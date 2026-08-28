@@ -6,7 +6,7 @@
  "verificar_intacto": [
   "prueba.py"
  ],
- "porque": "DISCRIMINA y EJERCITA EL CONTEXTO (brecha 6). La salida son 182 líneas y el veredicto final NO dice cuál falla: la señal está en la única línea que empieza por FALLO, en medio. Mide leer una observación grande en vez de mirar la cola. Es además la primera tarea del banco con observaciones grandes, que es lo que C82 echó en falta para poder medir la poda: en crudo son 8.967 caracteres y podados 916 (90 % menos) conservando la aguja.",
+ "porque": "EJERCITA EL CONTEXTO (brecha 6). La salida son 182 líneas y el veredicto final NO dice cuál falla: la señal está en la única línea que empieza por FALLO, en medio. Mide leer una observación grande en vez de mirar la cola. Es además la primera tarea del banco con observaciones grandes, que es lo que C82 echó en falta para poder medir la poda: en crudo son 8.967 caracteres y podados 916 (90 % menos) conservando la aguja.",
  "guion": [
   "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
   "<think>182 líneas y el final solo dice cuántos fallan, no cuál. La aguja es la línea que empieza por FALLO: campo_37 con la cadena de 40 justos.</think>\n<tool_call>\n{\"name\": \"grep\", \"arguments\": {\"patron\": \"def campo_37\", \"ruta\": \"validadores.py\"}}\n</tool_call>",
