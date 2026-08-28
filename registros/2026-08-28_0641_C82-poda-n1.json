@@ -1,0 +1,134 @@
+{
+  "cuando": "2026-08-28_0641",
+  "nivel": "n1",
+  "cerebro": "nube:gemini",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 293,
+      "tokens_entrada": 19012,
+      "segundos": 18.7,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-xepnoy1b/caja"
+    },
+    {
+      "id": "bitacora",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 14,
+      "intervenciones": 1,
+      "tokens_salida": 409,
+      "tokens_entrada": 44934,
+      "segundos": 45.6,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-bitacora-87t28kq8/caja"
+    },
+    {
+      "id": "cadena",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 11,
+      "intervenciones": 0,
+      "tokens_salida": 462,
+      "tokens_entrada": 30571,
+      "segundos": 29.9,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-cadena-bcxwfdol/caja"
+    },
+    {
+      "id": "fuga",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 273,
+      "tokens_entrada": 15380,
+      "segundos": 43.2,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-fuga-a_k5dss1/caja"
+    },
+    {
+      "id": "migrar",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 14,
+      "intervenciones": 0,
+      "tokens_salida": 450,
+      "tokens_entrada": 39371,
+      "segundos": 35.2,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-migrar-_3fqs4nc/caja"
+    },
+    {
+      "id": "rojo",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 7,
+      "intervenciones": 0,
+      "tokens_salida": 251,
+      "tokens_entrada": 16790,
+      "segundos": 13.4,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-rojo-had0nvzy/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 356.3,
+    "entrada_media": 27676.3,
+    "segundos_media": 31.0,
+    "intervenciones": 1
+  }
+}

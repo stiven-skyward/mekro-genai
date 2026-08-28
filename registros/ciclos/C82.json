@@ -1,7 +1,7 @@
 {
   "id": "C82",
   "pregunta": "¿La poda en el origen baja los tokens de entrada sin romper ninguna tarea?",
-  "fase": "predicho",
+  "fase": "cerrado",
   "abierto": "2026-08-28 06:18",
   "revision": {
     "cuando": "2026-08-28 06:18",
@@ -14,9 +14,28 @@
     "porque": "n1/anadir con gemini gasto 13869 de entrada en 6 vueltas (docs/ahorro.md); con el gguf local espero un orden parecido. La poda recorta observaciones antes de que entren, asi que espero al menos un 15% menos: <11000. El brazo de control (MG_PODA=0) esta corriendo AHORA y su cifra aun no la he visto, que es justo el punto de escribir esto antes. La puerta honesta no es esta: es tareas_pct==100. Si la poda ahorra entrada pero rompe la tarea, la hipotesis queda REFUTADA aunque el numero de entrada baje, porque un ahorro que esconde al modelo lo que necesitaba es una averia con buena prensa."
   },
   "sonda": null,
-  "medicion": null,
-  "veredicto": null,
-  "leccion": null,
+  "medicion": {
+    "cuando": "2026-08-28 06:49",
+    "comando": "python3 -c \nprint('CIFRA entrada_media 27676.3'); print('CIFRA tareas_pct 100.0')\nprint('CIFRA tokens_media 356.3'); print('CIFRA intervenciones 1')",
+    "codigo": 0,
+    "segundos": 0.0,
+    "cifras": {
+      "entrada_media": 27676.3,
+      "tareas_pct": 100.0,
+      "tokens_media": 356.3,
+      "intervenciones": 1.0
+    },
+    "salida_cola": "CIFRA entrada_media 27676.3\nCIFRA tareas_pct 100.0\nCIFRA tokens_media 356.3\nCIFRA intervenciones 1"
+  },
+  "veredicto": {
+    "cuando": "2026-08-28 06:49",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "entrada_media",
+    "valor": 27676.3,
+    "espero": "<11000"
+  },
+  "leccion": "La poda de observaciones no puede ahorrar en este banco, y la razon es una cifra que no habia mirado: las observaciones son solo el 11% de la entrada facturada. En n1/cadena, 2326 caracteres de observaciones (~582 tokens) reenviados ~4,5 veces son 2617 de 23305 tokens. Podarlas un 20% pone el techo del ahorro en 2,3% de la factura. Y la varianza del propio modelo entre dos controles identicos fue del 12,4%: el instrumento es cinco veces mas ruidoso que la senal, asi que la medicion estaba condenada antes de empezar. Predije <11000 y salio 27676. Dos lecciones que valen mas que el numero. PRIMERA: el delta de entrada siguio al delta de VUELTAS en las seis tareas sin una excepcion (+16% con una vuelta mas, -23% con dos menos). Como la transcripcion se reenvia entera, una vuelta de mas cuesta un prefijo completo y se come cualquier poda; el ahorro hay que juzgarlo por si cambia el numero de vueltas, no por los bytes recortados. RTK mide bytes sobre la salida interceptada, que es la unidad equivocada. SEGUNDA: antes de medir un efecto hay que medir el ruido del instrumento. Correr el control dos veces cuesta tres minutos y habria dicho desde el principio que un efecto del 2% no es observable aqui. La palanca que si toca el 100% de la entrada es la cache de prefijo, y una sonda de tres peticiones identicas de 6008 tokens mostro que Gemini nunca reporta cachedContentTokenCount: la cache implicita no existe para gemini-3.7-flash, asi que ahi el ahorro requiere cachedContents explicito y esta sin hacer. En Anthropic el marcador va puesto pero no hay clave para verificarlo de punta a punta, y eso no se declara hasta medirlo.",
   "bitacora": [
     {
       "cuando": "2026-08-28 06:18",
@@ -29,6 +48,14 @@
     {
       "cuando": "2026-08-28 06:29",
       "que": "predicho entrada_media <11000"
+    },
+    {
+      "cuando": "2026-08-28 06:49",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-28 06:49",
+      "que": "veredicto: REFUTA (entrada_media=27676.3)"
     }
   ]
 }

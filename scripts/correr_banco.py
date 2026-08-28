@@ -128,6 +128,10 @@ def correr_tarea(dir_tarea: Path, nombre_cerebro: str, modo: str,
             "vueltas": r.vueltas, "intervenciones": r.intervenciones,
             "tokens_salida": r.uso.tokens_salida,
             "tokens_entrada": r.uso.tokens_entrada,
+            # Cuánto de la entrada vino de la caché del proveedor y cuánto se podó en
+            # el origen. Sin estas dos, «ahorra» sería un adjetivo (docs/ahorro.md).
+            "cache": dict(getattr(cerebro, "cache", {"leidos": 0, "totales": 0})),
+            "poda": dict(getattr(sesion, "ahorro", {"antes": 0, "despues": 0})),
             "segundos": round(time.time() - t0, 1),
             "verificador": v.stdout.strip()[-300:] or v.stderr.strip()[-300:],
             "trabajo": str(trabajo)}

@@ -86,6 +86,76 @@ Y su corolario incómodo: `renacer()` —que reescribe la transcripción entera�
 rompe-cachés**. Se justifica solo porque la alternativa es morir por desbordamiento, y
 con ventanas de nube de 1M debería no dispararse casi nunca.
 
+## Lo que dijo la medición (C82, 2026-08-28) — y desmintió medio diseño
+
+El diseño de arriba se midió con el banco y **la predicción quedó refutada**. Lo que
+salió es más útil que lo que esperaba, así que queda aquí entero.
+
+### Las observaciones son el 11 % de la factura, no la mayoría
+
+En `n1/cadena` con `gemini-3.7-flash`: 2.326 caracteres de observaciones (~582 tokens)
+reenviados unas 4,5 veces son 2.617 de los 23.305 tokens de entrada facturados.
+**El 11 %.** Podarlas un 20 % pone el techo del ahorro en un **2,3 % de la factura**.
+
+El resto —el 89 %— es el sistema, las firmas de las herramientas y la salida acumulada
+del propio modelo, todo reenviado en cada vuelta. La poda no lo toca.
+
+### El instrumento es cinco veces más ruidoso que la señal
+
+Dos controles idénticos, sin tocar nada entre uno y otro, dieron **+12,4 %** de
+diferencia. El efecto que se buscaba era del 2 %. La medición estaba condenada antes de
+empezar, y tres minutos de correr el control dos veces lo habrían dicho.
+
+| brazo | entrada total | tareas |
+|---|---|---|
+| control 1 | 149.733 | 6/6 |
+| control 2 | 168.236 | 6/6 |
+| con poda | 166.058 | 6/6 |
+
+### Lo que sí se vio, y no estaba en ninguna de las tres herramientas
+
+**El delta de entrada siguió al delta de VUELTAS en las seis tareas, sin una excepción**:
+
+| tarea | vueltas | entrada |
+|---|---|---|
+| `anadir` | 6 → 7 | +16,1 % |
+| `bitacora` | 12 → 14 | +40,1 % |
+| `cadena` | 13 → 11 | **−23,2 %** |
+| `fuga` | 8 → 7 | **−16,7 %** |
+| `migrar` | 12 → 14 | +37,7 % |
+| `rojo` | 6 → 7 | +16,2 % |
+
+Como la transcripción se reenvía entera, **una vuelta de más cuesta un prefijo completo**
+y se come cualquier poda. De ahí la ley que sustituye a la intuición de «recortar bytes»:
+
+> Un ahorro se juzga por si cambia el **número de vueltas**, no por los bytes que
+> recorta. RTK mide bytes sobre la salida interceptada: es la unidad equivocada.
+
+Esto reordena las tres herramientas de referencia. La que ataca la variable correcta no
+es RTK ni headroom: es **ponytail**, que reduce vueltas y salida. Lo que no cambia es
+que sus números tampoco están verificados contra un banco determinista.
+
+### La caché de prefijo: la palanca mayor, y está a oscuras en Gemini
+
+Es la única que toca el **100 %** de la entrada. Pero una sonda de tres peticiones
+idénticas de 6.008 tokens contra `gemini-3.7-flash` mostró que **`cachedContentTokenCount`
+no se reporta nunca**: la caché implícita no está actuando ahí. No es un fallo del
+prefijo de este arnés —es estable por construcción— sino un hecho del proveedor. Para
+Gemini haría falta `cachedContents` explícito, y está **sin hacer**.
+
+En Anthropic el marcador `cache_control` va puesto y en OpenAI/DeepSeek la caché es
+automática y se contabiliza, pero **no hay clave para verificarlo de punta a punta**, así
+que no se declara. La cifra que lo diría ya está en el registro de cada carrera
+(`cache.leidos` / `cache.totales`): quien tenga clave la ve sin tocar código.
+
+### Entonces, ¿para qué sirve la poda?
+
+Para el caso que este banco **no tiene**: un `grep` de 40 aciertos, una compilación
+ruidosa, una suite de 400 líneas en verde. En `n1` las observaciones son pequeñas y por
+eso no hay nada que ahorrar. Que el banco no ejercite el caso es la brecha 6 otra vez, y
+la poda se queda encendida porque no cuesta nada (las tareas siguieron en 100 %) y
+porque el caso para el que se hizo llegará en cuanto el banco lo tenga.
+
 ## El diseño, en orden de dinero
 
 1. **Caché de prefijo del proveedor** — la palanca mayor y la más barata de conseguir,
