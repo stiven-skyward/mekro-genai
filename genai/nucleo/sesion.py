@@ -53,6 +53,12 @@ class Sesion:
         self.mensajes.append(Mensaje("asistente", texto, llamadas=llamadas or [],
                                      razonamiento=razonamiento))
 
+    def adjuntar(self, adjunto: dict) -> None:
+        """Mete una imagen o un PDF en el hilo, en un mensaje de usuario propio."""
+        self.mensajes.append(Mensaje(
+            "usuario", f"[adjunto: {adjunto.get('nombre', 'fichero')}]",
+            adjuntos=[adjunto]))
+
     def observacion(self, id_llamada: str, texto: str) -> None:
         self.mensajes.append(Mensaje("herramienta", texto, id_llamada=id_llamada))
 

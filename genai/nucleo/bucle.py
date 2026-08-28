@@ -200,6 +200,13 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
             sesion.ahorro["antes"] += ahorro["antes"]
             sesion.ahorro["despues"] += ahorro["despues"]
             sesion.observacion(ll.id, texto)
+            # M7.4: una imagen no cabe en una observación —Gemini y OpenAI no las
+            # aceptan ahí— así que viaja en un mensaje de usuario propio, justo
+            # detrás. Un adjunto que el proveedor tira en silencio es peor que no
+            # mandarlo: el modelo respondería con seguridad sobre algo que no vio.
+            adj = (res.datos or {}).get("adjunto")
+            if adj:
+                sesion.adjuntar(adj)
             traza.append({"vuelta": vuelta, "llamada": ll.firma(),
                           "ok": res.ok, "segundos": round(seg, 2)})
             if traza_por_pantalla:

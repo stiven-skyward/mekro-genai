@@ -56,7 +56,7 @@ reg = estandar()
 # dice cuál cambió; el conjunto documenta el juego y falla señalando el culpable
 c({h["function"]["name"] for h in reg.firmas()} ==
   {"leer", "escribir", "editar", "grep", "simbolos", "bash",
-   "fondo_lanzar", "fondo_revisar", "subagente", "git"},
+   "fondo_lanzar", "fondo_revisar", "subagente", "git", "ver"},
   "el juego estándar es exactamente este")
 c("bash" not in estandar(incluir_peligrosas=False), "sin peligrosas no hay bash")
 c("fondo_lanzar" not in estandar(incluir_peligrosas=False),

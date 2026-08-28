@@ -44,7 +44,8 @@ def cargar_plugins() -> tuple[list[Herramienta], list[str]]:
 
 
 def estandar(incluir_peligrosas: bool = True, plugins: bool = True,
-             malla: bool = False, web: bool = False) -> Registro:
+             malla: bool = False, web: bool = False,
+             cerebro=None) -> Registro:
     from . import bash, buscar, ficheros, fondo, git, subagente
     todas: list[Herramienta] = []
     for modulo in (ficheros, buscar, bash, fondo, git, subagente):
@@ -54,6 +55,8 @@ def estandar(incluir_peligrosas: bool = True, plugins: bool = True,
         # agente ni sabe que la malla es una posibilidad — el defecto no cambia.
         from ..malla import HERRAMIENTAS as MALLA
         todas.extend(MALLA)
+    from .vista import para as _vista
+    todas.extend(_vista(cerebro))
     if web:
         # M7.3: la red está APAGADA por defecto. Un arnés que presume de local y abre
         # la red sin decirlo miente sobre lo que es; sin este `web=True`, el agente ni

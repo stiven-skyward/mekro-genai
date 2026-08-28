@@ -29,6 +29,12 @@ class Mensaje:
     # El razonamiento NO vuelve al contexto en el turno siguiente (ver plantilla.py):
     # se guarda para la transcripción y para depurar, no para gastarlo otra vez.
     razonamiento: str = ""
+    # M7.4 — imágenes y PDFs. Cada uno: {"medio": "image/png", "datos": "<base64>",
+    # "nombre": "captura.png"}. Van SIEMPRE en un mensaje de usuario propio y nunca
+    # dentro de una observación de herramienta: ni Gemini ni OpenAI aceptan imágenes
+    # en la respuesta a una llamada, y un adjunto que el proveedor tira en silencio es
+    # peor que no mandarlo.
+    adjuntos: list[dict] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.rol not in ROLES:

@@ -137,6 +137,11 @@ class CerebroNube:
         # caché de prefijo: se puede apagar para medir el A/B (docs/ahorro.md)
         self.cachear = cfg.get("cachear", True)
         self.cache = {"leidos": 0, "totales": 0}
+        # M7.4 — qué puede MIRAR este cerebro. `ver` lo consulta antes de mandar bytes:
+        # un adjunto que el proveedor tira en silencio hace que el modelo responda con
+        # seguridad sobre algo que nunca vio.
+        self.multimodal = cfg.get("multimodal", True)
+        self.pdf = cfg.get("pdf", self.dialecto in ("gemini", "anthropic"))
 
     def _anotar_cache(self, leidos: int, totales: int) -> None:
         """Cuánto de la entrada vino de caché. Es la cifra que dice si el ahorro
@@ -155,13 +160,28 @@ class CerebroNube:
     def _sistema(mensajes: Sequence[Mensaje]) -> str:
         return "\n\n".join(m.contenido for m in mensajes if m.rol == "sistema")
 
+    @staticmethod
+    def _partes_openai(m) -> list[dict]:
+        """OpenAI y compatibles: imágenes como data: URI. PDF no se manda —`ver` ya lo
+        impidió arriba mirando `cerebro.pdf`, y duplicar aquí el veto sería fingir dos
+        guardias donde hay uno."""
+        fuera = [{"type": "text", "text": m.contenido}]
+        for a in m.adjuntos:
+            if a["medio"].startswith("image/"):
+                fuera.append({"type": "image_url",
+                              "image_url": {"url": f"data:{a['medio']};base64,"
+                                                   f"{a['datos']}"}})
+        return fuera
+
     def _openai_mensajes(self, mensajes: Sequence[Mensaje]) -> list[dict]:
         fuera = []
         for m in mensajes:
             if m.rol == "sistema":
                 fuera.append({"role": "system", "content": m.contenido})
             elif m.rol == "usuario":
-                fuera.append({"role": "user", "content": m.contenido})
+                fuera.append({"role": "user",
+                              "content": (self._partes_openai(m) if m.adjuntos
+                                          else m.contenido)})
             elif m.rol == "asistente":
                 msg = {"role": "assistant", "content": m.contenido or None}
                 if m.llamadas:
@@ -177,13 +197,29 @@ class CerebroNube:
                               "content": m.contenido})
         return fuera
 
+    @staticmethod
+    def _bloques_adjuntos(m) -> list[dict]:
+        """Anthropic separa imagen (`image`) de PDF (`document`); el resto del cuerpo
+        es idéntico, así que se arma una vez."""
+        fuera = []
+        for a in m.adjuntos:
+            tipo = "document" if a["medio"] == "application/pdf" else "image"
+            fuera.append({"type": tipo, "source": {"type": "base64",
+                                                   "media_type": a["medio"],
+                                                   "data": a["datos"]}})
+        return fuera
+
     def _anthropic_mensajes(self, mensajes: Sequence[Mensaje]) -> list[dict]:
         fuera = []
         for m in mensajes:
             if m.rol == "sistema":
                 continue                       # va en el campo `system`, aparte
             if m.rol == "usuario":
-                fuera.append({"role": "user", "content": m.contenido})
+                cont = m.contenido
+                if m.adjuntos:
+                    cont = ([{"type": "text", "text": m.contenido}]
+                            + self._bloques_adjuntos(m))
+                fuera.append({"role": "user", "content": cont})
             elif m.rol == "asistente":
                 bloques = []
                 if m.contenido:
@@ -205,7 +241,11 @@ class CerebroNube:
             if m.rol == "sistema":
                 continue                       # va en systemInstruction, aparte
             if m.rol == "usuario":
-                fuera.append({"role": "user", "parts": [{"text": m.contenido}]})
+                partes = [{"text": m.contenido}]
+                for a in m.adjuntos:      # M7.4: Gemini acepta imagen y PDF en línea
+                    partes.append({"inlineData": {"mimeType": a["medio"],
+                                                  "data": a["datos"]}})
+                fuera.append({"role": "user", "parts": partes})
             elif m.rol == "asistente":
                 partes = []
                 if m.contenido:
