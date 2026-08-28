@@ -266,14 +266,30 @@ def _informe(c: dict, corrida: dict, etiqueta: str) -> None:
 
 
 def cmd_veredicto(args: list[str]) -> int:
-    """Confirma o refuta, y exige la lección. Un ciclo sin lección no se cierra."""
-    leccion = ""
+    """Confirma o refuta, y exige la lección. Un ciclo sin lección no se cierra.
+
+    `--vacuo` declara que el umbral se cumplió sin probar nada. Existe porque pasó dos
+    veces: C83 se dio por confirmado por ocho milésimas de punto, y en C86 un umbral
+    «>45» lo cumplió un 344,7 porque la latencia del proveedor se había multiplicado por
+    seis entre la predicción y la medición. La máquina cantaba CONFIRMA y la realidad
+    decía otra cosa; poder decirlo, y que cueste explicarlo, vale más que el número."""
+    leccion, vacuo = "", ""
+    # --vacuo va ANTES de --leccion al partir, para que su texto no se lo trague la
+    # lección.
+    if "--vacuo" in args:
+        i = args.index("--vacuo")
+        j = args.index("--leccion") if "--leccion" in args else len(args)
+        vacuo = " ".join(args[i + 1:j])
+        args = args[:i] + args[j:]
     if "--leccion" in args:
         i = args.index("--leccion")
         leccion = " ".join(args[i + 1:])
         args = args[:i]
     if not args:
-        raise SystemExit('uso: ciclo.py veredicto C1 --leccion "lo que ahora sabemos"')
+        raise SystemExit(
+            'uso: ciclo.py veredicto C1 --leccion "lo que ahora sabemos"\n'
+            '     ciclo.py veredicto C1 --vacuo "por qué el umbral no probó nada" '
+            '--leccion "..."')
     c = _leer(args[0])
     # Asimetría deliberada: una sonda barata que REFUTA cierra el ciclo —para eso está,
     # para zanjar antes de gastar la carrera cara—, pero una sonda que confirma NO basta.
@@ -299,11 +315,24 @@ def cmd_veredicto(args: list[str]) -> int:
             "  Una comprobación barata sirve para REFUTAR pronto, no para dar por bueno\n"
             "  un resultado sobre una muestra. Corre la medición de verdad:\n"
             f"    python3 ciclo.py medir {c['id']} -- <la carrera cara>")
+    # UMBRAL VACÍO (añadido tras C83 y C86). Un umbral puede cumplirse sin haber
+    # probado nada: C83 se dio por confirmado por ocho milésimas, y en C86 el umbral
+    # «>45» lo cumplió un 344,7 porque la latencia del proveedor se multiplicó por seis
+    # entre la predicción y la medición. En los dos casos la máquina cantó CONFIRMA y la
+    # realidad decía otra cosa. Ahora se puede decirlo, pero con precio: exige
+    # explicar POR QUÉ el umbral no probó nada, y el ciclo NO cuenta como confirmado.
+    if vacuo:
+        if not vacuo.strip():
+            raise SystemExit("--vacuo necesita el motivo: por qué el umbral no probó nada")
+        ok = False
     c["veredicto"] = {"cuando": _ahora(), "confirma": ok, "fuente": fuente,
                       "metrica": p["metrica"], "valor": v, "espero": p["espero"]}
+    if vacuo:
+        c["veredicto"]["umbral_vacio"] = vacuo.strip()
     c["leccion"] = leccion.strip()
     c["fase"] = "cerrado"
-    _bitacora(c, f"veredicto: {'CONFIRMA' if ok else 'REFUTA'} ({p['metrica']}={v})")
+    _bitacora(c, f"veredicto: {'CONFIRMA' if ok else 'REFUTA'}"
+                 f"{' (UMBRAL VACÍO)' if vacuo else ''} ({p['metrica']}={v})")
     _escribir(c)
 
     # MG_CONTINUIDAD existe porque la prueba fría del lazo escribía sus lecciones de

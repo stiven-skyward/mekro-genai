@@ -168,6 +168,26 @@ Tres cosas que hubo que resolver, y las tres eran silenciosas:
    y no lo llamaba nadie. Ahora lo cierran el banco y la CLI, verificado con la lista del
    proveedor en cero tras una carrera.
 
+**¿Y qué cuesta la caché en reloj? Nada medible** (C86, A/B con los dos brazos
+seguidos sobre `n1`):
+
+| brazo | s/tarea | cacheado | entrada |
+|---|---|---|---|
+| sin caché | 372,4 | 0 % | 35.424 |
+| con caché | 344,7 | 49,5 % | **30.312 (−14,4 %)** |
+
+El −7,4 % de reloj **no** es un beneficio: por tarea el rango va de −35,7 % a +58,7 %, y
+con seis tareas eso no distingue nada. Lo honesto es que la caché no mueve el reloj en
+ninguna dirección, y que lo sólido es el −14,4 % de entrada, que es contabilidad del
+proveedor y no un cronómetro.
+
+> **Aviso a quien mida aquí.** La latencia de un proveedor externo varía por seis en unas
+> horas: el mismo banco dio 34,5 s/tarea por la mañana y 372 por la tarde, sin tocar una
+> línea. **Una cifra de reloj no se compara entre carreras separadas en el tiempo.** Si
+> se compara, los dos brazos corren seguidos. Y un umbral sobre algo que depende de un
+> tercero se predice como **razón entre brazos**, no como valor absoluto — si no, se
+> cumple sin probar nada (C86, y antes C83).
+
 En Anthropic el marcador `cache_control` va puesto pero **no hay clave para verificarlo
 de punta a punta**, así que no se declara. La cifra ya sale en cada carrera
 (`CIFRA cache_pct`): quien tenga clave la ve sin tocar código.

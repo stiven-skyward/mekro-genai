@@ -1,7 +1,7 @@
 {
   "id": "C86",
   "pregunta": "¿Cuánto RELOJ cuesta la caché explícita de Gemini, que ahorra tokens?",
-  "fase": "predicho",
+  "fase": "cerrado",
   "abierto": "2026-08-28 13:47",
   "revision": {
     "cuando": "2026-08-28 13:47",
@@ -14,9 +14,19 @@
     "porque": "Si la caché cuesta reloj, el brazo CON cache debe quedar por encima de 45 s/tarea mientras el brazo SIN cache ronda los 34 que dieron los controles de C82. Predigo >45 para el brazo con cache. Lo que estoy prediciendo es que METI UN COSTE QUE NO DECLARE: en C83 canté un ahorro del 50% de la entrada sin mirar el segundo eje. Si sale por debajo de 45, la subida de C82 a C83 fue de otra cosa -ruido, o los cambios de codigo de por medio- y mi sospecha es falsa. La puerta honesta sigue siendo tareas_pct==100 en los dos brazos."
   },
   "sonda": null,
-  "medicion": null,
-  "veredicto": null,
-  "leccion": null,
+  "medicion": {
+    "cuando": "2026-08-28 14:59",
+    "comando": "bash /tmp/c86.sh",
+    "codigo": 0,
+    "segundos": 0.0,
+    "cifras": {
+      "segundos_media": 344.7,
+      "tareas_pct": 100.0,
+      "cache_pct": 49.5,
+      "entrada_media": 30312.0
+    },
+    "salida_cola": "CIFRA segundos_media 344.7\nCIFRA tareas_pct 100.0\nCIFRA cache_pct 49.5\nCIFRA entrada_media 30312"
+  },
   "bitacora": [
     {
       "cuando": "2026-08-28 13:47",
@@ -29,6 +39,28 @@
     {
       "cuando": "2026-08-28 13:47",
       "que": "predicho segundos_media >45"
+    },
+    {
+      "cuando": "2026-08-28 14:59",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-28 15:00",
+      "que": "veredicto: CONFIRMA (segundos_media=344.7)"
+    },
+    {
+      "cuando": "2026-08-28 15:01",
+      "que": "veredicto: REFUTA (UMBRAL VACÍO) (segundos_media=344.7)"
     }
-  ]
+  ],
+  "veredicto": {
+    "cuando": "2026-08-28 15:01",
+    "confirma": false,
+    "fuente": "medicion",
+    "metrica": "segundos_media",
+    "valor": 344.7,
+    "espero": ">45",
+    "umbral_vacio": "Predije segundos_media>45 esperando una base de 34 s/tarea. Los dos brazos salieron en 350 porque la latencia de Gemini se multiplico por seis entre la manana y la tarde. 344,7>45 es verdad y no prueba nada: un umbral cuyo significado depende de una base que se movio diez veces no es una prueba, es una casualidad con formato de cifra."
+  },
+  "leccion": "LA CACHE NO CUESTA RELOJ, y mi hipotesis era falsa. A/B con los dos brazos seguidos, mismo banco y misma hora: SIN cache 372,4 s/tarea con 0% cacheado; CON cache 344,7 s/tarea con 49,5% cacheado, 14,4% menos tokens de entrada y 100% de tareas en los dos. El -7,4% de reloj TAMPOCO es un beneficio: por tarea el rango va de -35,7% a +58,7%, asi que con seis tareas el agregado no distingue nada. Lo correcto es decir que no hay efecto medible sobre el reloj en ninguna direccion, y que lo solido es el -14,4% de entrada, que es contabilidad del proveedor y no un cronometro. La leccion de metodo, tercera de la sesion sobre la misma raiz: UNA CIFRA DE RELOJ CONTRA UN PROVEEDOR EXTERNO NO SE COMPARA ENTRE CARRERAS SEPARADAS EN EL TIEMPO. C82 dio 34,5 s/tarea y C83 dio 55,2, y de esa resta saque una hipotesis entera; hoy el mismo banco sin tocar nada da 372. La resta era entre dos momentos distintos de la red, no entre dos versiones del codigo. Si se compara reloj, los dos brazos corren seguidos o no se compara. Y para umbrales sobre magnitudes que dependen de un tercero hay que predecir la RAZON entre brazos -con_cache/sin_cache > 1,2- y no un valor absoluto. De aqui sale --vacuo en ciclo.py: la maquina no sabia registrar que un umbral se cumpla sin probar nada, que ya habia pasado en C83 con las ocho milesimas."
 }
