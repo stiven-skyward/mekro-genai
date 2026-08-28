@@ -103,7 +103,11 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
             # renacer y no compactar: C20 midió que reescribir por el medio cuesta un
             # arranque en frío del contexto GRANDE (la caché no admite borrado
             # parcial); renacer paga un frío PEQUEÑO y la tarea sigue viva (M5.1).
-            ahorro = sesion.renacer()
+            # semántico si el cerebro es barato en reloj (nube: ~2 s por resumen);
+            # mecánico con cerebro local, donde una generación extra cuesta minutos.
+            # Mismo criterio honesto que el paralelismo del subagente.
+            semantico = str(getattr(sesion.cerebro, "nombre", "")).startswith("nube")
+            ahorro = sesion.renacer(semantico=semantico)
             if hasattr(sesion.cerebro, "olvidar"):
                 sesion.cerebro.olvidar()   # la caché vieja no casa con la vida nueva
             traza.append({"vuelta": vuelta, "renacimiento": ahorro})

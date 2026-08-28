@@ -26,6 +26,14 @@ dependencias. Las tres formas de API que existen hoy:
                 (OpenAI, DeepSeek, Kimi/Moonshot, xAI, Groq, Together, y cualquier
                  endpoint compatible que el usuario configure)
 
+UNA TRAMPA MEDIDA: EL THINK CUENTA DENTRO DE max_tokens
+-------------------------------------------------------
+Los modelos con razonamiento (Gemini 3.x entre ellos) cuentan los tokens de think
+dentro de `maxOutputTokens`. Medido el 2026-08-28: con `max_tokens=600`, Gemini 3.7
+gastó 579 pensando y devolvió 21 tokens de texto truncado; con 2.000, devolvió 121 de
+texto útil. Si pides prosa a un modelo pensante, dale presupuesto de sobra — un
+`max_tokens` apretado no lo hace conciso, lo hace mudo.
+
 LLAMADAS A HERRAMIENTAS: NATIVAS, NO HERMES
 -------------------------------------------
 El cerebro local emite Hermes en texto porque es lo que Qwen trae entrenado. Los

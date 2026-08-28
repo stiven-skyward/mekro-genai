@@ -112,7 +112,52 @@ class Sesion:
         self.compactaciones += 1
         return ahorro
 
-    def renacer(self, conservar_ultimas: int = 4) -> int:
+    def _resumen_del_cerebro(self, hechas: list, tocados: list) -> str:
+        """El resumen SEMÁNTICO (M7.2): lo escribe el cerebro y conserva el PORQUÉ.
+
+        El mecánico dice «se llamó a editar sobre m3.py»; este dice «m3.py devolvía el
+        signo cambiado y se corrigió, quedan m4-m9». Cuesta UNA generación extra
+        (~400 tokens) y compra que el agente no repita trabajo ni pierda el hilo de su
+        propia decisión — que es justo lo que C72 dejó como hipótesis sin medir.
+
+        Si el cerebro falla o devuelve vacío, se cae al mecánico: perder el resumen
+        jamás puede costar la sesión.
+
+        El presupuesto es 2.000 y no 600 por una trampa medida: los modelos con
+        razonamiento cuentan el think DENTRO de `maxOutputTokens` — con 600, Gemini
+        3.7 gastó 579 pensando y devolvió 21 tokens de resumen truncado."""
+        from ..cerebro.base import Mensaje
+
+        peticion = next((m.contenido for m in self.mensajes if m.rol == "usuario"), "")
+        # se le da la transcripción RECORTADA: lo que importa es la traza de
+        # decisiones, no el contenido íntegro de lo leído
+        traza = []
+        for m in self.mensajes:
+            if m.rol == "asistente":
+                if m.contenido:
+                    traza.append("PENSÉ: " + m.contenido[:400])
+                for ll in m.llamadas:
+                    traza.append("HICE: " + ll.firma())
+            elif m.rol == "herramienta":
+                traza.append("RESULTADO: " + m.contenido[:200])
+        peticion_resumen = (
+            "Resume el trabajo hecho hasta ahora para que puedas continuarlo sin "
+            "repetir nada. En 6-10 frases, y en este orden: (1) qué se pedía; (2) qué "
+            "has averiguado y qué has cambiado, con el PORQUÉ de cada decisión; (3) "
+            "qué queda por hacer. Cita rutas concretas. No inventes nada que no esté "
+            "en la traza.\n\nENCARGO ORIGINAL:\n" + peticion[:800]
+            + "\n\nTRAZA:\n" + "\n".join(traza[-60:])[:6000])
+        try:
+            r = self.cerebro.generar(
+                [Mensaje("sistema", "Resumes tu propio trabajo para continuarlo. "
+                                    "Directo, concreto y sin adornos."),
+                 Mensaje("usuario", peticion_resumen)], (), max_tokens=2000)
+            texto = (r.texto or "").strip()
+        except Exception:
+            texto = ""
+        return texto
+
+    def renacer(self, conservar_ultimas: int = 4, semantico: bool = False) -> int:
         """El renacimiento (M5 brecha 1): la transcripción entera se sustituye por un
         contexto NUEVO y pequeño — sistema, petición original, resumen mecánico de lo
         hecho, y las últimas vueltas—. Cuesta UN prefill frío pequeño. Las alternativas
@@ -134,12 +179,18 @@ class Sesion:
                     ll.argumentos, dict) else None
                 if ll.nombre in ("editar", "escribir") and ruta and ruta not in tocados:
                     tocados.append(ruta)
+        cuerpo = self._resumen_del_cerebro(hechas, tocados) if semantico else ""
+        if not cuerpo:            # mecánico: siempre disponible, nunca miente
+            cuerpo = (f"Llamadas ya ejecutadas ({len(hechas)}), en orden:\n- "
+                      + "\n- ".join(hechas[-40:])
+                      + (f"\nFicheros ya modificados: {', '.join(tocados)}"
+                         if tocados else ""))
+        elif tocados:             # el semántico se ancla con los hechos duros
+            cuerpo += f"\n\n[Ficheros ya modificados: {', '.join(tocados)}]"
         resumen = (
             "[RENACIMIENTO: la transcripción anterior se resumió aquí para no "
             "desbordar la ventana. NO repitas lo ya hecho; continúa desde este punto.]\n"
-            f"Llamadas ya ejecutadas ({len(hechas)}), en orden:\n- "
-            + "\n- ".join(hechas[-40:])
-            + (f"\nFicheros ya modificados: {', '.join(tocados)}" if tocados else ""))
+            + cuerpo)
         nuevos = [m for m in self.mensajes if m.rol == "sistema"][:1]
         if peticion is not None:
             nuevos.append(peticion)

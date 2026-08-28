@@ -193,6 +193,52 @@ c(s_a.aprieta(), "el hueco absoluto sí: 8000-5500=2500 < 1800+1024")
 s_a.cerebro.contexto_max = 32768
 c(not s_a.aprieta(), "con ventana holgada, el mismo contenido no aprieta")
 
+# ── renacimiento SEMÁNTICO (M7.2): el porqué sobrevive, y si falla, no se pierde ──
+from genai.cerebro.base import Respuesta, Uso   # noqa: E402
+
+
+class CerebroResumidor:
+    """Devuelve un resumen con el porqué; el mecánico nunca lo haría."""
+    nombre, contexto_max = "nube:falso", 32768
+
+    def generar(self, mensajes, herramientas=(), max_tokens=512):
+        return Respuesta("Se pedía arreglar m0-m9. Se corrigió m0 PORQUE tenía el "
+                         "signo invertido. Queda m1.", [], Uso(10, 20, 0.1))
+
+    def contar_tokens(self, texto):
+        return max(1, len(texto) // 4)
+
+
+class CerebroQueRevienta(CerebroResumidor):
+    def generar(self, mensajes, herramientas=(), max_tokens=512):
+        raise RuntimeError("el proveedor se cayó")
+
+
+def _sesion_con_trabajo(cerebro):
+    s = _Sesion(sistema="eres X", cerebro=cerebro)
+    s.usuario("arregla m0 y m1")
+    s.asistente("m0 tiene el signo mal", [Llamada("editar", {"ruta": "m0.py"}, id="e0")])
+    s.observacion("e0", "editado")
+    return s
+
+sem = _sesion_con_trabajo(CerebroResumidor())
+sem.renacer(semantico=True)
+resumen = sem.mensajes[2].contenido
+c("PORQUE" in resumen or "porque" in resumen,
+  "el resumen semántico conserva el PORQUÉ de la decisión")
+c("m0.py" in resumen,
+  "y se ancla con los hechos duros: los ficheros tocados van igualmente")
+
+roto = _sesion_con_trabajo(CerebroQueRevienta())
+roto.renacer(semantico=True)
+c("Llamadas ya ejecutadas" in roto.mensajes[2].contenido,
+  "si el cerebro revienta al resumir, se cae al mecánico: la sesión NUNCA se pierde")
+
+mec = _sesion_con_trabajo(CerebroResumidor())
+mec.renacer(semantico=False)
+c("Llamadas ya ejecutadas" in mec.mensajes[2].contenido,
+  "el mecánico sigue disponible y es el defecto con cerebro local")
+
 # ── el contexto vivo (C72): el think crudo de la caché también cuenta ──
 class CerebroConCache:
     """Eco con caché viva enorme: montar no la ve, tokens_en_contexto sí."""
