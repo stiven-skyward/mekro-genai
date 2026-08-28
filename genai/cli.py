@@ -148,6 +148,21 @@ def main(argv: list[str] | None = None) -> int:
     # `genai proveedores [texto]` — qué se puede enchufar, del catálogo.
     if a.peticion[0] == "proveedores":
         return cmd_proveedores(" ".join(a.peticion[1:]))
+    if a.peticion[0] == "google":
+        from . import google_cuenta as G
+        sub = a.peticion[1] if len(a.peticion) > 1 else "estado"
+        if sub == "entrar":
+            ok, msg = G.entrar()
+            print(("✓ " if ok else "✗ ") + msg)
+            if ok:
+                print("  Ya puedes: genai tarea \"...\" --cerebro nube:google")
+                print("  Usa la cuota de tu cuenta, no una clave de API.")
+            return 0 if ok else 1
+        if sub == "salir":
+            print(G.salir())
+            return 0
+        print(G.estado())
+        return 0
     if a.peticion[0] == "copilot":
         from . import copilot as C
         sub = a.peticion[1] if len(a.peticion) > 1 else "estado"

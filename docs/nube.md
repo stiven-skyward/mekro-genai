@@ -226,6 +226,40 @@ mismo patrón que los proveedores compatibles con OpenAI:
 `{q}`, `{n}` y `{clave}` se sustituyen. Para POST, añade `"metodo": "POST"` y un
 `"cuerpo": {...}` con las mismas marcas.
 
+## Con tu suscripción de Google, sin clave
+
+```bash
+genai google entrar      # abres una URL, entras con tu cuenta
+genai tarea "..." --cerebro nube:google
+genai google             # estado
+genai google salir       # borra la credencial
+```
+
+Google AI Pro/Ultra —y también la cuenta gratuita— traen cuota de **Code Assist**, que
+es la que usa `gemini-cli`. Entrando con tu cuenta se usa esa cuota en vez de pagar
+tokens de la API.
+
+**Hacen falta las credenciales del cliente, y NO vienen en este repositorio.** Son de
+`gemini-cli`, no nuestras, y publicarlas en un repositorio público las esparciría —
+GitHub rechazó con razón el primer intento de subirlas. Se leen, por este orden, de
+sitios que son tuyos:
+
+1. **un `gemini-cli` instalado** (`npm i -g @google/gemini-cli`) — se leen solas;
+2. las variables `GENAI_GOOGLE_CLIENTE` y `GENAI_GOOGLE_SECRETO`;
+3. `~/.config/genai/google_cliente.json`.
+
+**Y lo que hay que saber, sin adornos**: se presenta con el identificador de cliente de
+`gemini-cli` y habla con su mismo endpoint. Funciona —el cliente y su secreto están
+verificados contra Google— pero **no es una integración que Google bendiga para
+terceros**. La suscripción está pensada para los clientes de Google; la API existe para
+el uso programático. Puede cortarse sin aviso. La clave de AI Studio no tiene esa
+incertidumbre y también tiene nivel gratuito.
+
+Dos detalles técnicos que explican por qué esto no es «la clave de Gemini con otro
+nombre»: el flujo es de **bucle local** y no de dispositivo, porque el de dispositivo no
+admite el ámbito `cloud-platform` que Code Assist necesita; y Code Assist **envuelve**
+la petición y la respuesta de Gemini, con la credencial en cabecera en vez de en la URL.
+
 ## GitHub Copilot, con tu cuenta
 
 ```bash

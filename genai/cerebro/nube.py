@@ -113,6 +113,21 @@ class CerebroNube:
         # Los ocho de fábrica MANDAN: son los que tienen medición detrás (caché, firmas
         # de pensamiento, PDF) y el catálogo no sabe nada de eso. Solo si el nombre no
         # está aquí ni escrito a mano se busca entre los 207 de models.dev.
+        if proveedor == "google" and not cfg.get("clave"):
+            # Cuota de la SUSCRIPCIÓN, no clave de API: se entra con la cuenta y se
+            # habla con Code Assist, que envuelve la respuesta de Gemini.
+            from ..google_cuenta import acceso, proyecto
+            tok, q = acceso()
+            if not tok:
+                raise SystemExit(q)
+            pid, q2 = proyecto()
+            if not pid:
+                raise SystemExit(q2)
+            cfg = {"dialecto": "gemini", "url": "https://cloudcode-pa.googleapis.com/"
+                                                "v1internal",
+                   "clave": tok, "modelo": modelo or "gemini-2.5-pro",
+                   "proyecto_asist": pid, "cachear": False, **cfg}
+            base = {}
         if proveedor == "copilot" and not cfg.get("clave"):
             # Copilot no usa una clave que escribas: usa tu SESIÓN de GitHub, y su
             # token caduca en minutos, así que se pide fresco en cada arranque.
@@ -134,7 +149,6 @@ class CerebroNube:
                 if _os.environ.get(base["env"]):
                     cfg = {**cfg, "clave": _os.environ[base["env"]]}
         base = base or {}
-        self.proveedor = proveedor
         self.dialecto = cfg.get("dialecto") or base.get("dialecto", "openai")
         self.url = cfg.get("url") or base.get("url", "")
         self.modelo = modelo or cfg.get("modelo") or base.get("modelo", "")
@@ -160,6 +174,8 @@ class CerebroNube:
         # qué proveedor es, por nombre. `buscar_web` lo usa para que la búsqueda salga
         # por el proveedor que ya se está pagando y no por otro.
         self.proveedor = proveedor
+        # Si va por Code Assist, aquí está el proyecto; si no, cadena vacía.
+        self.asist = cfg.get("proyecto_asist", "")
         self._cache_g = None          # caché explícita viva, solo dialecto gemini
         # M7.4 — qué puede MIRAR este cerebro. `ver` lo consulta antes de mandar bytes:
         # un adjunto que el proveedor tira en silencio hace que el modelo responda con
@@ -418,9 +434,17 @@ class CerebroNube:
             if tools:
                 cuerpo["tools"] = tools
 
-        url = f"{self.url}/models/{self.modelo}:generateContent?key={self.clave}"
+        if self.asist:
+            # Code Assist no lleva la clave en la URL sino en la cabecera, y envuelve
+            # tanto la petición como la respuesta. Por dentro es el mismo Gemini.
+            url = f"{self.url}:generateContent"
+            cuerpo = {"model": self.modelo, "project": self.asist, "request": cuerpo}
+            cabs = {"Authorization": f"Bearer {self.clave}"}
+        else:
+            url = f"{self.url}/models/{self.modelo}:generateContent?key={self.clave}"
+            cabs = {}
         try:
-            d = _pedir(url, cuerpo, {})
+            d = _pedir(url, cuerpo, cabs)
         except (Exception, SystemExit):
             if not c:
                 raise
@@ -433,7 +457,9 @@ class CerebroNube:
                 cuerpo["systemInstruction"] = {"parts": [{"text": sistema}]}
             if tools:
                 cuerpo["tools"] = tools
-            d = _pedir(url, cuerpo, {})
+            d = _pedir(url, cuerpo, cabs)
+        if self.asist:
+            d = d.get("response", d)          # Code Assist envuelve la respuesta
         texto, llamadas = "", []
         cand = (d.get("candidates") or [{}])[0]
         for i, parte in enumerate((cand.get("content") or {}).get("parts", [])):
