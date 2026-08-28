@@ -21,6 +21,13 @@ def cargar(nombre: str, **kw):
     if nombre == "local_stream":
         from .local_stream import CerebroStream
         return CerebroStream(**kw)
+    if nombre == "nube" or nombre.startswith("nube:"):
+        # `nube:proveedor` o `nube:proveedor/modelo` — la clave la pone el usuario en
+        # ~/.config/genai/claves.json. Una carrera de nube NUNCA cuenta como local.
+        from .nube import CerebroNube
+        resto = nombre.split(":", 1)[1] if ":" in nombre else "gemini"
+        prov, _, modelo = resto.partition("/")
+        return CerebroNube(prov or "gemini", modelo, **kw)
     if nombre == "gguf":
         from .local_gguf import CerebroGGUF
         return CerebroGGUF(**kw)

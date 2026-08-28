@@ -1,0 +1,32 @@
+{
+  "cuando": "2026-08-28_0411",
+  "nivel": "n1",
+  "cerebro": "nube:gemini/gemini-3.7-flash",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 16,
+    "tope_tokens": 4000,
+    "tope_segundos": 400
+  },
+  "tareas": [
+    {
+      "id": "anadir",
+      "paso": true,
+      "motivo": "fin",
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 339,
+      "tokens_entrada": 13869,
+      "segundos": 25.6,
+      "verificador": "5/5 asertos ✓",
+      "trabajo": "/tmp/banco-anadir-mpdhbpr8/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 339.0,
+    "segundos_media": 25.6,
+    "intervenciones": 0
+  }
+}

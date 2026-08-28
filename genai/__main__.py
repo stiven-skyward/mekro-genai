@@ -114,7 +114,9 @@ def main(argv=None) -> int:
     sub = ap.add_subparsers(dest="orden")
     t = sub.add_parser("tarea", help="un encargo agéntico en el directorio actual")
     t.add_argument("encargo")
-    t.add_argument("--cerebro", default="gguf", choices=("gguf", "eco"))
+    t.add_argument("--cerebro", default="gguf",
+                   help="gguf (local, defecto) · eco (pruebas) · "
+                        "nube:PROVEEDOR[/MODELO] con TU clave (docs/nube.md)")
     t.add_argument("--modo", default="preguntar",
                    choices=("plan", "preguntar", "lista", "todo"))
     t.add_argument("--vueltas", type=int, default=16)

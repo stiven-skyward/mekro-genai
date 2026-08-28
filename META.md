@@ -58,7 +58,27 @@ lo que se declara es que la vía densa no lo alcanza en esta máquina y para qu�
 entonces: como **patrón de oro** contra el que medir cualquier cuantización. Las cifras y
 la extrapolación, en `docs/densa-en-cpu.md` §el techo de esta vía.
 
-## El cerebro OFICIAL (decidido por el autor, 2026-08-27)
+## Cerebros de nube con TU clave (decidido por el autor, 2026-08-27)
+
+El autor autoriza que cada usuario enchufe **su propia clave** del proveedor que
+prefiera (Gemini, Claude, GPT, DeepSeek, Kimi, o cualquier endpoint compatible con
+OpenAI). Esto **no deroga «sin nube»**, lo precisa: el proyecto no depende de ningún
+proveedor central —el cerebro oficial sigue siendo local y es el defecto— y quien
+quiera velocidad de nube pone su clave y asume su coste y su política.
+
+Dos reglas que protegen las cifras del proyecto:
+
+1. **Una carrera con cerebro de nube NUNCA cuenta como cifra local.** El registro
+   anota el cerebro como `nube:proveedor/modelo` y M0/M2 quedan como se declararon,
+   con el cerebro local. Comparar nube con local es comparar dos máquinas.
+2. **La clave vive fuera del repositorio** (`~/.config/genai/claves.json`, permisos
+   600) y no aparece en registros, logs ni nombres.
+
+Medido el 2026-08-27 con la clave del autor: `n1/anadir` PASA en **25,6 s con
+gemini-3.7-flash** frente a **757-969 s con el cerebro local** — ~30× de reloj, misma
+tarea y mismo verificador (`registros/2026-08-28_0411_nube-gemini-anadir.json`).
+
+## El cerebro OFICIAL local (decidido por el autor, 2026-08-27)
 
 **`Qwen3.8-27B-UD-Q2_K_XL.gguf` (9,15 GB, 2,83 bits) es el cerebro oficial de
 Mekro-Genai.** Sus cifras: PPL 4,71 (código) / 10,58 (español), 2,876 tok/s con 8 hilos,

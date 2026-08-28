@@ -54,6 +54,24 @@ borran nunca).
 registrar → medir → veredicto) y `scripts/supervisor.py` las encadena, con frenos:
 `touch logs/supervisor.parar` lo detiene todo.
 
+## Cerebros de nube con tu clave (opcional)
+
+Lo local es el defecto. Si quieres velocidad de nube, pon **tu** clave en
+`~/.config/genai/claves.json` (permisos 600, fuera del repo) y elige proveedor:
+
+```bash
+genai tarea "arregla el bug" --cerebro nube:gemini
+genai tarea "..." --cerebro nube:anthropic/claude-opus-5
+genai tarea "..." --cerebro nube:deepseek        # y kimi, openai, xai, groq…
+```
+
+Funcionan los tres dialectos que existen (Gemini nativo, Anthropic Messages, y
+compatible-OpenAI para todo lo demás), con llamada a herramientas **nativa** y sin
+añadir un solo SDK. Medido: `n1/anadir` pasa en **25,6 s** con `gemini-3.7-flash`
+frente a **757-969 s** en local — misma tarea, mismo verificador. Una carrera de nube
+**nunca** cuenta como cifra local: el registro anota `nube:proveedor/modelo`. Guía
+completa: [docs/nube.md](docs/nube.md).
+
 ## El modo malla (opcional)
 
 Lo local es y sigue siendo el defecto. La malla es **opt-in** y reparte al grano de

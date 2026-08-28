@@ -134,7 +134,8 @@ def main() -> int:
     p.add_argument("--tarea", default="",
                    help="correr solo esta tarea del nivel; las medidas de un ciclo solo "
                         "son comparables si abarcan las mismas tareas")
-    p.add_argument("--cerebro", default="eco")
+    p.add_argument("--cerebro", default="eco",
+                   help="eco · gguf · nube:PROVEEDOR[/MODELO] (nunca cuenta como local)")
     p.add_argument("--modo", default="lista")
     p.add_argument("--etiqueta", default="")
     p.add_argument("--tope-vueltas", type=int, default=24)
