@@ -1,0 +1,37 @@
+{
+  "name": "mekro-genai",
+  "displayName": "Mekro-Genai",
+  "description": "El arnés agéntico local, dentro del editor: sesiones, transcripciones y encargos.",
+  "version": "0.1.0",
+  "publisher": "stiven-skyward",
+  "license": "Apache-2.0",
+  "engines": { "vscode": "^1.75.0" },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "mekro.sesiones", "title": "Mekro-Genai: sesiones del proyecto" },
+      { "command": "mekro.tarea", "title": "Mekro-Genai: encargar una tarea" },
+      { "command": "mekro.transcripcion", "title": "Mekro-Genai: ver una transcripción" }
+    ],
+    "configuration": {
+      "title": "Mekro-Genai",
+      "properties": {
+        "mekro.puerto": {
+          "type": "number", "default": 7654,
+          "description": "Puerto del servidor de sesiones (siempre en 127.0.0.1)."
+        },
+        "mekro.cerebro": {
+          "type": "string", "default": "gguf",
+          "description": "Cerebro por defecto: gguf (local), nube:gemini, nube:copilot…"
+        },
+        "mekro.modo": {
+          "type": "string", "default": "preguntar",
+          "enum": ["plan", "preguntar", "lista", "todo"],
+          "description": "Modo de permisos. `preguntar` pide confirmación antes de cada acción peligrosa."
+        }
+      }
+    }
+  }
+}
