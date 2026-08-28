@@ -140,3 +140,30 @@ Tres decisiones de diseño, cada una con su motivo medido:
    que el símbolo no se usa y borre código vivo.
 3. **Solo lectura.** Renombrar en veinte ficheros lo hace el agente con `editar`, que
    pasa por permisos y deja diff. Un `workspace/applyEdit` silencioso, no.
+
+## Servidor de sesiones y multi-sesión (2026-08-28)
+
+La otra deuda que este documento citaba desde el primer día —«la separación
+servidor/cliente de OpenCode»— en `genai/servidor.py` y `genai/sesiones.py`.
+
+No es una API por tenerla: **convierte tres brechas en una**. Con un servidor,
+*multi-sesión* es listar y adjuntarse, *compartir* es exportar lo que el servidor ya
+sabe, y *cualquier editor* es un cliente más — una extensión de VS Code no reimplementa
+el arnés, solo habla HTTP.
+
+**El candado es de sesión, no de proyecto.** Bloquear el proyecto convertiría la
+multi-sesión en un turno de espera. Dos agentes pueden trabajar a la vez sobre el mismo
+repositorio; lo que no pueden es escribir el mismo hilo de conversación. Verificado con
+dos agentes reales en paralelo: 6 vueltas cada uno, ~13 s, y los dos trabajos
+sobrevivieron (`2/2 asertos ✓`).
+
+Tres decisiones, cada una contra una avería concreta:
+
+1. **El candado lleva el PID y se comprueba que viva.** Uno huérfano —Ctrl-C, OOM— es
+   peor que no tener candado: dejaría la sesión bloqueada para siempre. Aquí se recoge
+   y queda anotado que se recogió.
+2. **Se avisa de lo que el candado NO impide.** Dos agentes pueden editar el mismo
+   fichero del repositorio; ningún candado de sesión lo evita. `genai sesiones` lo dice.
+3. **127.0.0.1 y con clave.** En 0.0.0.0 estaría abriendo un agente con permiso de
+   escritura a toda la red local; para llegar de fuera está SSH. Y «solo local» no es
+   «solo tuyo» en una máquina compartida, así que la clave se genera sola con 600.

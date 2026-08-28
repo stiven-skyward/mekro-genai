@@ -67,6 +67,39 @@ def cmd_proveedores(patron: str = "") -> int:
     return 0
 
 
+def cmd_sesiones(args: list[str]) -> int:
+    """`genai sesiones [nueva|limpiar|servir] …` — varios agentes en un proyecto."""
+    from . import sesiones as S
+    sub = args[0] if args else "listar"
+    if sub == "nueva":
+        s = S.crear(" ".join(args[1:]))
+        print(f"{s['id']}  {s['titulo']}")
+        return 0
+    if sub == "limpiar":
+        print(f"{S.limpiar()} sesión(es) rancia(s) recogida(s)")
+        return 0
+    if sub == "servir":
+        from .servidor import PUERTO, servir
+        servir(int(args[1]) if len(args) > 1 else PUERTO)
+        return 0
+    todas = S.listar()
+    if not todas:
+        print("no hay sesiones. `genai sesiones nueva \"lo que vas a hacer\"`")
+        return 0
+    print(f"{'id':14}{'estado':10}{'vueltas':>8}  título")
+    for s in todas:
+        est = "activa" if s["viva"] else ("rancia" if s["rancia"] else "libre")
+        print(f"{s['id']:14}{est:10}{s.get('vueltas', 0):8}  {s['titulo']}")
+    ch = S.conflictos()
+    if ch:
+        # El candado es de sesión, no de ficheros. Callarse esto sería prometer un
+        # aislamiento que no existe.
+        print("\n⚠ mismo fichero tocado por varias sesiones vivas:")
+        for f, ids in ch:
+            print(f"    {f}  ←  {', '.join(ids)}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser("mekro-genai", description=__doc__)
     p.add_argument("peticion", nargs="*", help="el encargo, en lenguaje natural")
@@ -79,6 +112,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--sin-web", action="store_true",
                    help="quitar el acceso a la web (viene encendido; nunca alcanza "
                         "esta máquina ni esta red)")
+    p.add_argument("--sesion", default="",
+                   help="id de una sesión existente (`genai sesiones`); si no se da, "
+                        "se abre una nueva. Varios agentes pueden trabajar a la vez en "
+                        "el mismo proyecto, cada uno con la suya")
     p.add_argument("--callado", action="store_true", help="sin traza por pantalla")
     a = p.parse_args(argv)
 
@@ -89,13 +126,38 @@ def main(argv: list[str] | None = None) -> int:
     # `genai proveedores [texto]` — qué se puede enchufar, del catálogo.
     if a.peticion[0] == "proveedores":
         return cmd_proveedores(" ".join(a.peticion[1:]))
+    if a.peticion[0] == "sesiones":
+        return cmd_sesiones(a.peticion[1:])
+
+    # MULTI-SESIÓN: se coge una sesión en exclusiva antes de tocar nada. El candado es
+    # de sesión y no de proyecto a propósito — bloquear el proyecto convertiría esto en
+    # un turno de espera, que es lo contrario de lo que se busca.
+    from . import sesiones as _S
+    reg = (next((x for x in _S.listar() if x["id"] == a.sesion), None) if a.sesion
+           else _S.crear(" ".join(a.peticion)[:60]))
+    if a.sesion and not reg:
+        print(f"no existe la sesión «{a.sesion}». Mira `genai sesiones`.")
+        return 2
+    tomada, queja = _S.tomar(reg["id"])
+    if not tomada:
+        print(queja)
+        return 2
 
     sesion, registro, politica = construir(a)
-    r = turno(sesion, registro, politica, " ".join(a.peticion),
-              tope_vueltas=a.tope_vueltas, tope_tokens=a.tope_tokens,
-              tope_segundos=a.tope_segundos,
-              preguntar=preguntar_por_consola if a.modo == "preguntar" else None,
-              traza_por_pantalla=not a.callado)
+    try:
+        r = turno(sesion, registro, politica, " ".join(a.peticion),
+                  tope_vueltas=a.tope_vueltas, tope_tokens=a.tope_tokens,
+                  tope_segundos=a.tope_segundos,
+                  preguntar=preguntar_por_consola if a.modo == "preguntar" else None,
+                  traza_por_pantalla=not a.callado)
+    finally:
+        # Los ficheros tocados se anotan aunque la carrera muera: sirven para avisar
+        # de que dos sesiones vivas están editando lo mismo.
+        _S.latir(reg["id"], vueltas=sesion.vueltas,
+                 tocados=sorted({d for m in sesion.mensajes
+                                 for ll in m.llamadas
+                                 for d in [ll.argumentos.get("ruta")] if d}))
+        _S.soltar(reg["id"])
 
     # Una caché explícita de nube que sobrevive al turno se sigue cobrando por horas.
     if hasattr(sesion.cerebro, "cerrar"):
