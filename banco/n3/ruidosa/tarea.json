@@ -1,0 +1,18 @@
+{
+ "id": "ruidosa",
+ "nivel": "n3",
+ "encargo": "`prueba.py` recorre sesenta validadores y uno falla. Arréglalo en `validadores.py`. No toques la prueba.",
+ "verificar": "python3 prueba.py",
+ "verificar_intacto": [
+  "prueba.py"
+ ],
+ "porque": "DISCRIMINA y EJERCITA EL CONTEXTO (brecha 6). La salida son 182 líneas y el veredicto final NO dice cuál falla: la señal está en la única línea que empieza por FALLO, en medio. Mide leer una observación grande en vez de mirar la cola. Es además la primera tarea del banco con observaciones grandes, que es lo que C82 echó en falta para poder medir la poda: en crudo son 8.967 caracteres y podados 916 (90 % menos) conservando la aguja.",
+ "guion": [
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "<think>182 líneas y el final solo dice cuántos fallan, no cuál. La aguja es la línea que empieza por FALLO: campo_37 con la cadena de 40 justos.</think>\n<tool_call>\n{\"name\": \"grep\", \"arguments\": {\"patron\": \"def campo_37\", \"ruta\": \"validadores.py\"}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"leer\", \"arguments\": {\"ruta\": \"validadores.py\", \"desde\": 148, \"lineas\": 8}}\n</tool_call>",
+  "<think>El límite es 4 y debe ser 40, como sus cincuenta y nueve hermanos.</think>\n<tool_call>\n{\"name\": \"editar\", \"arguments\": {\"ruta\": \"validadores.py\", \"cambios\": [{\"buscar\": \"    return isinstance(v, str) and len(v) <= 4\\n\", \"poner\": \"    return isinstance(v, str) and len(v) <= 40\\n\"}]}}\n</tool_call>",
+  "<tool_call>\n{\"name\": \"bash\", \"arguments\": {\"comando\": \"python3 prueba.py\"}}\n</tool_call>",
+  "campo_37 tenía el límite en 4 en vez de 40. Corregido; los 180 casos pasan."
+ ]
+}

@@ -72,6 +72,33 @@ c(t == uno_por_fichero,
 c(ahorro.podar("bash", "salida corta", vueltas_restantes=20)[0] == "salida corta",
   "lo pequeño se deja en paz: podar 30 caracteres cuesta más de lo que ahorra")
 
+# ── REGRESIÓN: el filtro tiene que hablar los dos idiomas ──────────────────
+# Lo encontró banco/n3/ruidosa. El filtro solo-inglés no reconocía «FALLO», caía al
+# recorte por la mitad y se llevaba justo la línea por la que se llamó a la
+# herramienta. Un ahorro que esconde la aguja no es un ahorro: es una avería que
+# además miente, y encima silenciosa.
+import subprocess  # noqa: E402
+from pathlib import Path as _P  # noqa: E402
+
+sem = _P(__file__).resolve().parents[1] / "banco" / "n3" / "ruidosa" / "semilla"
+if sem.is_dir():
+    pr = subprocess.run(["python3", "prueba.py"], cwd=sem, capture_output=True, text=True)
+    crudo = pr.stdout + pr.stderr
+    t, cif = ahorro.podar("bash", crudo, vueltas_restantes=12)
+    c("campo_37" in t,
+      "la aguja SOBREVIVE a la poda en una salida de 182 líneas donde el veredicto "
+      "final no dice cuál falla")
+    c("FALLAN 1 de 180" in t, "y el veredicto también")
+    c(cif["despues"] < cif["antes"] * 0.25,
+      f"recortando de verdad: {cif['antes']} → {cif['despues']} caracteres")
+
+esp = "\n".join(f"ok validador_{i}" for i in range(50)) + "\nFALLO validador_9 mal\n1 de 50 casos"
+c("validador_9" in ahorro.podar("bash", esp, vueltas_restantes=12)[0],
+  "«FALLO» en español se reconoce igual que «FAILED» en inglés")
+c("aserto" in ahorro.podar("bash", "\n".join(["✗ x"] * 3 + ["1/3 asertos"]) * 40,
+                           vueltas_restantes=12)[0],
+  "y «✗», que es como escribe sus veredictos este proyecto")
+
 # ── la sesión lleva la cuenta ──────────────────────────────────────────────
 c(Sesion(sistema="x").ahorro == {"antes": 0, "despues": 0},
   "toda sesión nace con el contador de ahorro a cero, para que salga en el registro")

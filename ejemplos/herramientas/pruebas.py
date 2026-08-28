@@ -68,7 +68,10 @@ def pruebas(patron: str = "", ruta: str = ".") -> Resultado:
     lineas = salida.splitlines()
     # Lo que vuelve al contexto: el veredicto y los fallos con su contexto. El verde
     # de en medio dice lo mismo que la última línea y cuesta cien veces más.
-    marcas = re.compile(r"\b(FAIL|FAILED|ERROR|Traceback|assert|panicked|✗|not ok)\b")
+    # Los dos idiomas: una suite en español dice FALLO y ✗, y un filtro solo-inglés
+    # se lleva por delante justo la línea que se venía a buscar.
+    marcas = re.compile(r"(\b(FAIL|FAILED|ERROR|Traceback|assert|panicked|not ok)\b"
+                        r"|\bFALL(O|AN|A)\b|✗)")
     interesa: set[int] = set()
     for i, l in enumerate(lineas):
         if marcas.search(l):

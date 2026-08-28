@@ -71,15 +71,24 @@ def _dedup(texto: str) -> str:
     return "\n".join(fuera)
 
 
+# Lo que marca un fallo, en los dos idiomas que este proyecto ve. La versión en inglés
+# sola perdía la aguja en la salida de su PROPIO banco, que escribe «FALLO» y «✗»: el
+# filtro no reconocía la marca, caía al recorte por la mitad y se llevaba justo la línea
+# por la que se había llamado a la herramienta. Lo encontró banco/n3/ruidosa.
+_FALLO = re.compile(r"(\b(FAIL|FAILED|ERROR|Traceback|assert|panicked|not ok)\b"
+                    r"|\bFALL(O|AN|A)\b|✗)")
+
+
 def _pruebas(texto: str) -> str:
     """Salida de pruebas: lo que importa es lo que FALLA y el resumen.
 
     Un `pytest` verde de 400 líneas dice exactamente lo mismo que su última línea, y
     cuesta 400 veces más durante el resto de la tarea."""
-    if not re.search(r"\b(passed|failed|OK|FAILED|asertos|\d+ tests?)\b", texto):
+    if not re.search(r"\b(passed|failed|OK|FAILED|asertos?|casos?|\d+ tests?)\b",
+                     texto):
         return texto
     lineas = texto.splitlines()
-    if not any(re.search(r"\b(FAIL|FAILED|ERROR|Traceback|assert)\b", l) for l in lineas):
+    if not any(_FALLO.search(l) for l in lineas):
         cola = [l for l in lineas[-6:] if l.strip()]
         if len(lineas) > 12:
             return ("[poda: la suite pasó entera; se conserva el resumen. "
@@ -87,7 +96,7 @@ def _pruebas(texto: str) -> str:
     # hay fallos: se conservan con su contexto, se tira el verde de en medio
     guardar, fuera = set(), []
     for i, l in enumerate(lineas):
-        if re.search(r"\b(FAIL|FAILED|ERROR|Traceback|assert)\b", l):
+        if _FALLO.search(l):
             guardar.update(range(max(0, i - 2), min(len(lineas), i + 12)))
     guardar.update(range(max(0, len(lineas) - 5), len(lineas)))
     ultimo = -2

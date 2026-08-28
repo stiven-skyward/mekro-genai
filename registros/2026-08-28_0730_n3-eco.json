@@ -1,0 +1,48 @@
+{
+  "cuando": "2026-08-28_0730",
+  "nivel": "n3",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "ruidosa",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 6,
+      "intervenciones": 0,
+      "tokens_salida": 229,
+      "tokens_entrada": 13600,
+      "cache": {
+        "leidos": 0,
+        "totales": 0
+      },
+      "poda": {
+        "antes": 18609,
+        "despues": 1874
+      },
+      "segundos": 0.1,
+      "verificador": "True, obtuvo True\nok  campo_58 justa-40: esperaba True, obtuvo True\nok  campo_58 larga-41: esperaba False, obtuvo False\nok  campo_59 corta: esperaba True, obtuvo True\nok  campo_59 justa-40: esperaba True, obtuvo True\nok  campo_59 larga-41: esperaba False, obtuvo False\n--- 180/180 casos correctos ---",
+      "trabajo": "/tmp/banco-ruidosa-2n3sdj6p/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 229.0,
+    "entrada_media": 13600.0,
+    "cache_pct": 0.0,
+    "segundos_media": 0.1,
+    "intervenciones": 0
+  }
+}
