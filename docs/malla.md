@@ -53,6 +53,31 @@ C25 costó 102 min en serie — con 3 pares rondaría 35.
    `~/.config/genai/malla-cuenta.json`. Sin monedas, sin cadenas, sin mercados: la
    malla es cooperación medible, no un casino.
 
+## Lo que enseñó la primera malla real (GCP, 2026-08-28)
+
+Dos pares en Google Cloud (e2-small, cerebro `nube:gemini`) contra esta máquina,
+tareas `n1/anadir` y `n1/fuga` con su verificador determinista:
+
+| forma | reloj | resultado |
+|---|---|---|
+| serie, una máquina | 45,0 s | 2/2 verificadas |
+| **paralelo, 2 pares** | **29,3 s** | **2/2 verificadas** |
+
+**×1,54 con dos pares** — no ×2, y la diferencia es honesta: empaquetar, subir la
+semilla y sondear cuesta unos segundos por tarea, así que la malla gana cuando la
+tarea dura bastante más que su transporte. Con tareas de minutos (lo normal con
+cerebro local) el sobrecoste se diluye; con tareas de 20 s, se nota.
+
+Y dos cosas que la prueba de loopback no podía enseñar:
+
+1. **El puerto por defecto importa.** El 7337 salía bloqueado en la red doméstica del
+   autor (443 y 853 pasaban): muchas redes filtran puertos altos salientes. Si un par
+   no responde y el servidor está vivo, prueba el 443 antes de buscar más lejos.
+2. **Un par ocupado tumbaba `delegar`.** `_pedir` levanta `SystemExit` en un HTTP 503,
+   y `SystemExit` hereda de `BaseException`, no de `Exception` — el `except Exception`
+   que debía pasar al par siguiente no lo veía. Arreglado, con la constancia aquí
+   porque es el tipo de fallo que solo aparece cuando dos pares compiten de verdad.
+
 ## Doctrina
 
 «Sin nube» siempre significó sin dependencia de proveedores centrales. La malla entre

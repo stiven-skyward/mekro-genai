@@ -245,7 +245,10 @@ def delegar(encargo: str, nombre: str, directorio: str = ".") -> Resultado:
     for par in pares:
         try:
             r = _pedir(par, "/tarea", {"encargo": encargo, "semilla": semilla}, clave)
-        except Exception as e:
+        except (Exception, SystemExit):
+            # SystemExit hereda de BaseException, no de Exception: un par OCUPADO
+            # (503) tumbaba delegar en vez de pasar al siguiente. Lo destapó la
+            # primera malla real sobre GCP, no la prueba de loopback.
             continue
         if not r.get("id"):
             continue

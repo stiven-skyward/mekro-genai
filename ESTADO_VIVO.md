@@ -6,7 +6,22 @@ metadata:
   type: project
 ---
 
-**Actualizado: 2026-08-27 (noche-3) · 🕸 MODO MALLA CONSTRUIDO (M6).** P2P al grano de
+**Actualizado: 2026-08-28 · 🔑 CEREBROS DE NUBE (BYOK) + 🕸 MALLA MEDIDA EN GCP.**
+**Nube con tu clave**: `nube:PROVEEDOR[/MODELO]` habla los tres dialectos que existen
+(Gemini nativo, Anthropic Messages, compatible-OpenAI para OpenAI/DeepSeek/Kimi/xAI/
+Groq/OpenRouter y cualquier endpoint que el usuario añada), con llamada a herramientas
+NATIVA y sin un solo SDK nuevo. Clave del usuario en `~/.config/genai/claves.json`
+(600, fuera del repo), y una carrera de nube NUNCA cuenta como cifra local. Medido:
+`n1/anadir` PASA en **25,6 s con gemini-3.7-flash** contra 757-969 s en local.
+17 asertos de conversión sin red. Doctrina en META §cerebros de nube; guía en
+`docs/nube.md`. **Malla probada sobre WAN real**: 2 pares e2-small en GCP corrieron
+`anadir`+`fuga` en **29,3 s contra 45,0 s en serie (×1,54)**, 2/2 verificadas; la
+infraestructura se creó y se BORRÓ en la misma sesión. Dos fallos que solo aparecen en
+red real, ya arreglados: el puerto 7337 lo filtran muchas redes (usar 443) y un par
+ocupado tumbaba `delegar` (`SystemExit` no es `Exception`). **Pendiente si se retoma la
+malla: v2 con contenedor y firma por par para Internet abierto.**
+
+**Antes (noche-3): 🕸 MODO MALLA CONSTRUIDO (M6).** P2P al grano de
 TAREA, no de token: la inferencia repartida por capas está descartada con medición
 (C20/C26). `genai/malla.py` (stdlib, sin dependencias): servidor que dona una fracción
 de CPU y ejecuta tareas ajenas con la política de carrera (modo `lista` + veto +
