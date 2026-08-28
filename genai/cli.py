@@ -78,6 +78,28 @@ def cmd_sesiones(args: list[str]) -> int:
     if sub == "limpiar":
         print(f"{S.limpiar()} sesión(es) rancia(s) recogida(s)")
         return 0
+    if sub == "compartir":
+        if len(args) < 2:
+            print("uso: genai sesiones compartir <id> [fichero.html]")
+            return 2
+        from .compartir import exportar
+        from .servidor import _transcripcion
+        ident = args[1]
+        tr = _transcripcion(ident)
+        if not tr.get("mensajes"):
+            print(f"la sesión «{ident}» no tiene transcripción guardada todavía")
+            return 1
+        s = next((x for x in S.listar() if x["id"] == ident), {})
+        destino = args[2] if len(args) > 2 else f"sesion-{ident}.html"
+        p, cuenta = exportar(tr, destino, s.get("titulo", ""))
+        print(f"→ {p}")
+        total = sum(cuenta.values())
+        if total:
+            print(f"⚠ tachados {total} posibles secretos: "
+                  + ", ".join(f"{n} ×{v}" for n, v in sorted(cuenta.items())))
+        print("  El tachado va por patrones conocidos y NO puede cazarlo todo. "
+              "Léelo antes de mandarlo.")
+        return 0
     if sub == "servir":
         from .servidor import PUERTO, servir
         servir(int(args[1]) if len(args) > 1 else PUERTO)
