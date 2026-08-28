@@ -67,7 +67,7 @@ def cmd_tarea(a) -> int:
         cerebro.al_token = lambda trozo: print(trozo, end="", flush=True)
 
     def _correr(encargo: str, modo: str):
-        return turno(sesion, estandar(), Politica(modo=modo), encargo,
+        return turno(sesion, estandar(malla=a.malla), Politica(modo=modo), encargo,
                      tope_vueltas=a.vueltas, tope_tokens=a.tokens,
                      tope_segundos=a.segundos,
                      preguntar=_preguntar if modo == "preguntar" else None)
@@ -122,14 +122,22 @@ def main(argv=None) -> int:
     t.add_argument("--segundos", type=int, default=3600)
     t.add_argument("--continuar", action="store_true",
                    help="retomar la última sesión de este directorio (.genai/ultima.json)")
+    t.add_argument("--malla", action="store_true",
+                   help="modo Mesh: permite delegar tareas a pares (docs/malla.md)")
     t.add_argument("--sin-streaming", action="store_true",
                    help="no pintar el texto según se genera")
     sub.add_parser("version", help="qué hay instalado y qué cerebro ve")
+    m = sub.add_parser("malla", help="modo Mesh: donar cómputo o ver la cuenta")
+    m.add_argument("resto", nargs=argparse.REMAINDER,
+                   help="servir [--puerto N --hilos N] | cuenta")
     a = ap.parse_args(argv)
     if a.orden == "tarea":
         return cmd_tarea(a)
     if a.orden == "version":
         return cmd_version(a)
+    if a.orden == "malla":
+        from genai.malla import main as malla_main
+        return malla_main(a.resto)
     ap.print_help()
     return 0
 

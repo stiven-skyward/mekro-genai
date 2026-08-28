@@ -6,7 +6,19 @@ metadata:
   type: project
 ---
 
-**Actualizado: 2026-08-27 (noche-2) · 🚀 EL GGUF ES EL CEREBRO OFICIAL (decisión del
+**Actualizado: 2026-08-27 (noche-3) · 🕸 MODO MALLA CONSTRUIDO (M6).** P2P al grano de
+TAREA, no de token: la inferencia repartida por capas está descartada con medición
+(C20/C26). `genai/malla.py` (stdlib, sin dependencias): servidor que dona una fracción
+de CPU y ejecuta tareas ajenas con la política de carrera (modo `lista` + veto +
+vedadas, UNA a la vez), `malla_delegar` que envía tarea entera y espera por el
+mecanismo de fondo (M5.3), resultado siempre en CUARENTENA (`.genai/malla/`) hasta que
+el verificador LOCAL apruebe. Opt-in de verdad: sin `--malla` el agente ni ve la
+herramienta. 14 asertos con malla real por loopback (clave rechazada, sobre con `..`
+rechazado, árbol intacto, cuenta de reciprocidad). **Salvedad: el throughput no se
+puede medir en una máquina (dos cerebros compiten por la misma CPU) — es la primera
+medición pendiente, y exige dos máquinas.** Diseño: `docs/malla.md`.
+
+**Antes (noche-2): 🚀 EL GGUF ES EL CEREBRO OFICIAL (decisión del
 autor) Y EL PROYECTO SALE A GITHUB.** `Qwen3.8-27B-UD-Q2_K_XL` deja de ser «de trabajo»:
 es EL cerebro (META §cerebro oficial). M1/H1 RETIRADOS — cuantizar en casa no compite
 con los proyectos dedicados; la vía queda en E:\QuantModels por si vuelve. H8 retirado

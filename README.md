@@ -54,6 +54,32 @@ borran nunca).
 registrar → medir → veredicto) y `scripts/supervisor.py` las encadena, con frenos:
 `touch logs/supervisor.parar` lo detiene todo.
 
+## El modo malla (opcional)
+
+Lo local es y sigue siendo el defecto. La malla es **opt-in** y reparte al grano de
+**tarea**, no de token — repartir la inferencia por capas está descartado con medición
+(latencia por token + caché recurrente sin operaciones parciales). Un par ejecuta la
+tarea entera con su propio cerebro; **tu verificador local decide** si el resultado
+vale, y nada remoto toca tu árbol: llega a cuarentena en `.genai/malla/`.
+
+```bash
+# donar una fracción de tu CPU a pares de confianza
+genai malla servir --hilos 4
+
+# usar la malla en un encargo (el agente gana la herramienta malla_delegar)
+genai tarea "..." --malla
+
+genai malla cuenta          # segundos donados y consumidos
+```
+
+Configuración en `~/.config/genai/malla.json`:
+`{"clave": "secreta-compartida", "pares": ["192.168.1.50:7337"]}`
+
+v1 es para **pares de confianza** (tus máquinas, tu equipo): clave compartida, una
+tarea a la vez, y la tarea ajena corre con la misma política que una carrera del banco
+(modo `lista` + veto duro + rutas vedadas). Internet abierto pide contenedor y firma
+por par — eso es v2. Diseño completo y reglas: [docs/malla.md](docs/malla.md).
+
 ## Licencias
 
 - **El código y los documentos de este repositorio**: [Apache License 2.0](LICENSE).

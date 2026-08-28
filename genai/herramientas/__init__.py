@@ -43,11 +43,17 @@ def cargar_plugins() -> tuple[list[Herramienta], list[str]]:
     return extras, quejas
 
 
-def estandar(incluir_peligrosas: bool = True, plugins: bool = True) -> Registro:
+def estandar(incluir_peligrosas: bool = True, plugins: bool = True,
+             malla: bool = False) -> Registro:
     from . import bash, buscar, ficheros, fondo
     todas: list[Herramienta] = []
     for modulo in (ficheros, buscar, bash, fondo):
         todas.extend(modulo.HERRAMIENTAS)
+    if malla:
+        # M6: delegar solo existe si el usuario encendió el modo malla. En local, el
+        # agente ni sabe que la malla es una posibilidad — el defecto no cambia.
+        from ..malla import HERRAMIENTAS as MALLA
+        todas.extend(MALLA)
     if plugins:
         extras, quejas = cargar_plugins()
         nombres = {h.nombre for h in todas}
