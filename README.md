@@ -97,9 +97,12 @@ historial de la conversación.
 Elegir un cliente MCP no lo «carga» —no puede: el que genera sigue siendo ESE cliente,
 con su propia suscripción, no Mekro-Genai—, pero Mekro-Genai SÍ instala la integración
 ahí mismo (`mcp_clientes.instalar()`, lo mismo que hace `genai mcp instalar <cliente>`,
-sin tener que abrir otra terminal a escribirlo) para Claude Code, Codex CLI y Cursor;
-Antigravity y Kimi Code, sin instalador automático todavía, muestran las instrucciones
-exactas. Elegir un proveedor BYOK sin clave configurada la pide ahí mismo (oculta al
+sin tener que abrir otra terminal a escribirlo) para Claude Code, Codex CLI, Cursor **y
+Google Antigravity** —ruta y formato (`.agents/mcp_config.json`, raíz `mcpServers`)
+verificados contra la documentación oficial de Google—; solo falta que alguien lo abra
+de verdad y confirme la llamada en vivo, por eso sigue sin marcarse «verificado» como
+los otros tres. Kimi Code, sin ruta de configuración verificable todavía, muestra sus
+instrucciones tal cual. Elegir un proveedor BYOK sin clave configurada la pide ahí mismo (oculta al
 escribirla) y la guarda, en vez de mandar a editar `claves.json` a mano — misma idea:
 que Mekro-Genai haga la parte que de verdad puede hacer, no solo la explique. Es justo
 donde viven ChatGPT Plus/Pro y Claude Pro/Max: ninguna suscripción de OpenAI o

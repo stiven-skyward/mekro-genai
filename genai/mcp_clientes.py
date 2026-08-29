@@ -85,6 +85,45 @@ def _cursor_instalar(nombre: str) -> tuple[bool, str]:
     return True, (r.stdout or "habilitado").strip()
 
 
+def _antigravity_instalar(nombre: str) -> tuple[bool, str]:
+    """Antigravity IDE lee `.agents/mcp_config.json` en el proyecto (o
+    `~/.gemini/config/mcp_config.json` en global) — verificado contra la
+    documentación oficial (antigravity.google/docs/ide/mcp/, revisado
+    2026-08-29): raíz `mcpServers`, cada entrada con `command`/`args`/`env`/`cwd`.
+    Se usa la ruta de PROYECTO, igual que Cursor: no toca nada fuera de este
+    directorio. Se lee el fichero si ya existe, para no borrar otros servidores
+    que el usuario tenga puestos. Lo que esto NO tiene, a diferencia de Cursor,
+    es una llamada MCP real de vuelta que confirme que Antigravity de verdad lo
+    lee — la ruta y el formato están verificados por escrito, el efecto en vivo
+    no."""
+    from pathlib import Path
+    f = Path(".agents") / "mcp_config.json"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    cfg = {}
+    if f.is_file():
+        try:
+            cfg = json.loads(f.read_text(encoding="utf-8"))
+        except ValueError:
+            return False, f"{f} existe pero no es JSON válido; arréglalo a mano primero"
+    cfg.setdefault("mcpServers", {})[nombre] = {"command": "python3",
+                                                "args": ["-m", "genai.cli", "mcp"]}
+    f.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
+    return True, f"escribí {f} — abre Antigravity en este proyecto para verlo"
+
+
+def _antigravity_quitar(nombre: str) -> tuple[bool, str]:
+    from pathlib import Path
+    f = Path(".agents") / "mcp_config.json"
+    if f.is_file():
+        try:
+            cfg = json.loads(f.read_text(encoding="utf-8"))
+            cfg.get("mcpServers", {}).pop(nombre, None)
+            f.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
+        except ValueError:
+            pass
+    return True, f"quitado de {f}"
+
+
 def _cursor_quitar(nombre: str) -> tuple[bool, str]:
     from pathlib import Path
     f = Path(".cursor") / "mcp.json"
@@ -137,11 +176,19 @@ CLIENTES: dict[str, dict] = {
     "antigravity": {
         "nombre": "Google Antigravity",
         "binario": None,
-        "verificado": None,  # se sabe que admite MCP (MCP Store, mcp_config.json);
-        # no se ha ejecutado ninguna instalación desde aquí
-        "instrucciones": ("Antigravity lee `mcp_config.json` con el mismo fragmento "
-                          "JSON genérico de `json_generico()`. No se ha probado la "
-                          "ruta exacta del fichero en esta máquina."),
+        # La RUTA y el FORMATO están verificados por escrito (documentación
+        # oficial, antigravity.google/docs/ide/mcp/, 2026-08-29) y el instalador
+        # ya escribe `.agents/mcp_config.json` de verdad. Sigue en `None` porque
+        # falta lo que SÍ tienen Claude Code/Codex/Cursor: una llamada MCP real
+        # de vuelta que confirme que Antigravity de verdad lo lee y llama a una
+        # herramienta. Documentación verificada ≠ efecto en vivo comprobado.
+        "verificado": None,
+        "instrucciones": ("`genai mcp instalar antigravity` YA escribe "
+                          "`.agents/mcp_config.json` (ruta y formato verificados "
+                          "por la documentación oficial de Google) — lo que falta "
+                          "es que alguien abra Antigravity apuntando aquí y "
+                          "confirme que de verdad llama a una herramienta."),
+        "instalador": _antigravity_instalar, "desinstalador": _antigravity_quitar,
     },
     "kimi-code": {
         "nombre": "Kimi Code CLI (Moonshot, con membresía de Kimi)",
@@ -177,7 +224,10 @@ def instalar(clave: str, nombre: str = "mekro-genai") -> tuple[bool, str]:
     if not c.get("comando") and not c.get("instalador"):
         fragmento = json.dumps(json_generico(nombre), indent=2, ensure_ascii=False)
         return False, f"{c['nombre']}: {c['instrucciones']}\n\n  {fragmento}"
-    if not detectado(clave):
+    # sin binario que buscar (Antigravity es una IDE, no un CLI en el PATH) no hay
+    # nada que este chequeo pueda decir con sentido — se salta, no se inventa un
+    # "no encontrado" para algo que nunca tuvo forma de detectarse.
+    if c.get("binario") and not detectado(clave):
         return False, (f"no encuentro «{c['binario']}» en el PATH. Instala "
                        f"{c['nombre']} primero.")
     if c.get("instalador"):

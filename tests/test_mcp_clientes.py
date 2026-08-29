@@ -64,10 +64,10 @@ ok, msg = instalar("no-existe-este-cliente")
 c(not ok and "no conozco" in msg and "claude-code" in msg,
   "un cliente desconocido se dice, y la lista de conocidos sale en el propio mensaje")
 
-ok, msg = instalar("antigravity")
-c(not ok and "mcp_config.json" in msg and "mcpServers" in msg,
-  "un cliente sin comando (Antigravity) da las instrucciones Y el JSON genérico "
-  "pegado, para no obligar a ir a buscarlo aparte")
+ok, msg = instalar("kimi-code")
+c(not ok and "mcp-config" in msg,
+  "un cliente sin instalador (Kimi Code) da sus instrucciones tal cual, sin "
+  "inventar una sintaxis que nadie ha probado")
 
 # forzar «no detectado» sin depender de si el binario existe en esta máquina
 import genai.mcp_clientes as MC  # noqa: E402
@@ -117,7 +117,7 @@ c(not ok and "algo falló" in msg,
 MC.shutil.which = _orig_which
 MC.subprocess.run = _orig_run
 
-c(quitar("antigravity")[0] is False,
+c(quitar("kimi-code")[0] is False,
   "un cliente sin comando de desinstalación lo dice, no finge haber quitado algo")
 
 # ── Cursor: se instala por FICHERO, no por `mcp add` ────────────────────────
@@ -174,6 +174,40 @@ finally:
     os.chdir(antes_cwd)
     MC2.shutil.which = _orig_which
     MC2.subprocess.run = _orig_run
+
+# ── Antigravity: ruta y formato verificados por la documentación oficial de ──
+# Google (antigravity.google/docs/ide/mcp/, 2026-08-29) — sin binario que
+# detectar (es una IDE, no un CLI en el PATH), así que no hace falta mockear
+# `shutil.which`/`subprocess.run`: es solo escribir el fichero, como Cursor.
+tmp2 = Path(tempfile.mkdtemp(prefix="antigravity-inst-"))
+os.chdir(tmp2)
+try:
+    ok, msg = instalar("antigravity", nombre="mekro-genai")
+    c(ok, f"antigravity SÍ se instala solo ahora, sin binario que verificar ({msg})")
+    cfg = json.loads((tmp2 / ".agents" / "mcp_config.json").read_text(encoding="utf-8"))
+    c(cfg["mcpServers"]["mekro-genai"]["command"] == "python3",
+      "escribe .agents/mcp_config.json —la ruta de PROYECTO documentada— con el "
+      "mismo proceso servidor que los demás clientes")
+
+    otro = json.loads((tmp2 / ".agents" / "mcp_config.json").read_text(encoding="utf-8"))
+    otro["mcpServers"]["otro-servidor"] = {"command": "algo"}
+    (tmp2 / ".agents" / "mcp_config.json").write_text(json.dumps(otro), encoding="utf-8")
+    instalar("antigravity", nombre="mekro-genai")
+    final = json.loads((tmp2 / ".agents" / "mcp_config.json").read_text(encoding="utf-8"))
+    c("otro-servidor" in final["mcpServers"],
+      "un servidor que el usuario ya tenía configurado sobrevive a instalar el nuestro")
+
+    ok, _ = quitar("antigravity", nombre="mekro-genai")
+    tras = json.loads((tmp2 / ".agents" / "mcp_config.json").read_text(encoding="utf-8"))
+    c(ok and "mekro-genai" not in tras["mcpServers"] and "otro-servidor" in tras["mcpServers"],
+      "quitar borra solo la entrada propia, deja lo demás intacto")
+finally:
+    os.chdir(antes_cwd)
+
+c(CLIENTES["antigravity"]["verificado"] is None,
+  "pero sigue SIN marcarse «verificado»: la ruta y el formato están confirmados "
+  "por escrito, no que Antigravity de verdad llame a una herramienta en vivo — "
+  "esa es la barra que sí pasaron Claude Code, Codex y Cursor")
 
 # ── la línea que no se cruza: sin suscripción directa para OpenAI ni Anthropic ──
 c(not any(k in CLIENTES for k in ("openai", "chatgpt", "anthropic", "claude")),

@@ -186,12 +186,18 @@ def _elegir_cerebro_guiado() -> str | None:
         # ruta exacta de su configuración se ha verificado— y fabricar un sitio
         # donde escribir sin haberlo comprobado sería peor que no escribir nada.
         ok, msg = mcp_clientes.instalar(clave)
+        # el mensaje de un cliente SIN instalador automático (Antigravity, Kimi
+        # Code) ya trae su propio nombre delante — anteponerlo otra vez decía
+        # «Google Antigravity: Google Antigravity: ...». Los que sí tienen
+        # comando (claude-code, codex, cursor) devuelven la salida cruda del
+        # proceso, sin nombre, así que ahí sí hace falta ponerlo.
+        cuerpo = msg if msg.startswith(info["nombre"]) else f"{info['nombre']}: {msg}"
         if ok:
-            print(tui.exito(f"  {info['nombre']}: {msg}"))
+            print(tui.exito(f"  {cuerpo}"))
             print(tui.atenuado(f"  listo — abre {info['nombre']} normalmente, ya "
                                "ve las herramientas de Mekro-Genai."))
         else:
-            print(tui.aviso(f"  {info['nombre']}: {msg}"))
+            print(tui.aviso(f"  {cuerpo}"))
         return None
 
     if nombre == "_personalizado":
