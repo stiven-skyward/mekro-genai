@@ -119,7 +119,15 @@ c("no se pudo cargar" in r7.stdout,
 
 # ── /modelo SIN argumento: el menú guiado ───────────────────────────────────
 # los 8 de fábrica, en orden alfabético: 2=anthropic 3=deepseek 4=gemini 5=groq
-# 6=kimi 7=openai 8=openrouter 9=xai — luego 10=copilot 11=google 12=personalizado
+# 6=kimi 7=openai 8=openrouter 9=xai — luego 10=copilot 11=google, luego un
+# número por cada cliente MCP (crece si se añade uno nuevo: NO se fija a mano),
+# y el último es «personalizado».
+from genai.cerebro.nube import PROVEEDORES as _PROV
+from genai.mcp_clientes import CLIENTES as _MCP_CLIENTES
+
+_primer_mcp = 2 + len(_PROV) + 2
+_num_personalizado = _primer_mcp + len(_MCP_CLIENTES)
+
 claves_menu = tmp / "claves_menu.json"
 claves_menu.write_text(json.dumps({"gemini": {"clave": "clave-de-prueba"}}),
                        encoding="utf-8")
@@ -152,12 +160,26 @@ c("no se pudo cargar" in r10.stdout,
   "y se enseña el mensaje de cargar() —dónde poner la clave— tal cual, sin duplicar "
   "esa ayuda en el propio menú")
 
-r11 = _chat_menu("/modelo\n12\nnombre-que-no-existe\n/salir\n")
-c(r11.returncode == 0, "la opción «otro» (12) pide un nombre a mano sin reventar")
+r11 = _chat_menu(f"/modelo\n{_num_personalizado}\nnombre-que-no-existe\n/salir\n")
+c(r11.returncode == 0, "la opción «otro» pide un nombre a mano sin reventar")
 c("no se pudo cargar" in r11.stdout, "y lo intenta cargar igual, fallando limpio si no existe")
 
-r12 = _chat_menu("/modelo\n99\n/salir\n")
+r12 = _chat_menu("/modelo\n999\n/salir\n")
 c(r12.returncode == 0, "un número que no es ninguna opción de la lista no revienta")
 c("no es ninguna de las opciones" in r12.stdout, "y lo dice explícitamente")
+
+# ── MCP en el propio menú: Cursor, Claude Code, Codex (ChatGPT), Antigravity ──
+c(_MCP_CLIENTES, "hay al menos un cliente MCP registrado para esta prueba")
+_clave_mcp, _info_mcp = next(iter(_MCP_CLIENTES.items()))
+r13 = _chat_menu(f"/modelo\n{_primer_mcp}\n/salir\n")
+c(r13.returncode == 0, "elegir un cliente MCP desde el menú no revienta la conversación")
+c(_info_mcp["nombre"] in r13.stdout,
+  "se enseña de verdad qué cliente es —Cursor, Claude Code, Codex/ChatGPT Plus/Pro, "
+  "Antigravity, Kimi Code, según cuál sea el primero registrado— no una opción muda")
+c("genai mcp instalar" in r13.stdout,
+  "con el comando exacto para activarlo EN OTRA terminal")
+c("cerebro →" not in r13.stdout,
+  "y NO intenta cargarlo como si fuera un cerebro de chat: el que genera sigue "
+  "siendo el cliente externo con su propia suscripción, esto solo informa")
 
 raise SystemExit(c.fin())

@@ -134,6 +134,23 @@ def _elegir_cerebro_guiado() -> str | None:
     opciones[str(n)], opciones[str(n + 1)] = "nube:copilot", "nube:google"
     n += 2
 
+    # MCP: NO es un cerebro que /modelo pueda cargar —el que genera sigue siendo tu
+    # cliente, con SU suscripción—, pero es exactamente donde vive ChatGPT Plus/Pro,
+    # Claude Pro/Max y Google Antigravity: dejarlo como nota al pie casi invisible
+    # escondía las tres opciones que más gente busca primero. Aquí se enseña como
+    # sección de verdad, y elegir una imprime cómo activarla — no intenta "cargarla".
+    from . import mcp_clientes
+
+    filas += ["", tui.negrita("MCP — tu editor/cliente ya trae su propio cerebro")]
+    items_mcp = []
+    claves_mcp = list(mcp_clientes.CLIENTES.items())
+    for clave, info in claves_mcp:
+        verificado = "✓" if info.get("verificado") else "sin verificar aquí"
+        items_mcp.append((str(n), f"{info['nombre']}  ({verificado})"))
+        opciones[str(n)] = f"_mcp:{clave}"
+        n += 1
+    filas += tui.tabla(items_mcp)
+
     filas += ["", tui.negrita("otro")]
     filas += tui.tabla([(str(n), "buscar entre 207 proveedores, o escribir uno a mano")])
     opciones[str(n)] = "_personalizado"
@@ -141,8 +158,8 @@ def _elegir_cerebro_guiado() -> str | None:
     filas.append("0  cancelar")
 
     print(tui.caja(filas, titulo="elige un cerebro"))
-    print(tui.atenuado("  (Cursor/Claude Code/Codex usan tu MCP, no un cerebro de "
-                       "/modelo: `genai mcp clientes`)"))
+    print(tui.atenuado("  (ChatGPT Plus/Pro → Codex CLI · Claude Pro/Max → Claude Code: "
+                       "ambos por MCP, arriba)"))
     try:
         eleccion = input(tui.negrita("  → ")).strip()
     except EOFError:
@@ -153,6 +170,22 @@ def _elegir_cerebro_guiado() -> str | None:
         print(tui.aviso(f"  «{eleccion}» no es ninguna de las opciones de la lista"))
         return None
     nombre = opciones[eleccion]
+
+    if nombre.startswith("_mcp:"):
+        clave = nombre[len("_mcp:"):]
+        info = mcp_clientes.CLIENTES[clave]
+        print()
+        print(tui.caja([
+            f"Esto NO se carga aquí: el que genera sigue siendo {info['nombre']}, con "
+            "SU propia suscripción — Mekro-Genai solo le presta las herramientas.",
+            "",
+            (f"verificado: {info['verificado']}" if info.get("verificado")
+             else f"sin verificar todavía: {info.get('instrucciones', '')}"),
+            "",
+            f"en OTRA terminal: genai mcp instalar {clave}",
+        ], titulo=info["nombre"]))
+        return None
+
     if nombre == "_personalizado":
         print(tui.atenuado("  `genai proveedores <texto>` (en otra terminal) busca "
                            "entre los 207; aquí escribe el nombre ya elegido."))
@@ -409,7 +442,8 @@ def cmd_chat(a) -> int:
             if linea == "/ayuda":
                 print(tui.caja(tui.tabla([
                     (f"/modo <{'|'.join(MODOS)}>", "cambia la política de permiso"),
-                    ("/modelo", "menú guiado para elegir cerebro (local, BYOK, suscripción)"),
+                    ("/modelo", "menú guiado: local, BYOK, suscripción o MCP (Cursor, "
+                     "ChatGPT, Claude, Antigravity...)"),
                     ("/modelo <nombre>", "cambia directo, sin menú (ej.: nube:gemini)"),
                     ("/nueva", "otra sesión, misma terminal y cerebro"),
                     ("/sesion", "vueltas y tokens gastados hasta ahora"),

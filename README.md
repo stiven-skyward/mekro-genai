@@ -89,12 +89,19 @@ directo en el encargo, sin gastar una vuelta entera en pedirle al cerebro que ll
 `nube:proveedor/modelo`: local (con su info de Modo Mesh), los 8 proveedores BYOK de
 fábrica —marcando cuáles ya tienen clave puesta y cuáles no—, las dos suscripciones
 directas con su estado real (`genai copilot entrar` / `genai google entrar` si hace
-falta entrar primero), y una opción para escribir cualquier otro nombre a mano o buscar
-entre los 207 del catálogo. Cambia de cerebro SIN perder el historial de la
-conversación — mezclar local, BYOK y suscripción en una sola sesión es más útil con 207
-proveedores que con uno solo. (Cursor/Claude Code/Codex no salen en este menú: no son
-un cerebro que `/modelo` pueda cargar, usan las herramientas de Mekro-Genai con el suyo
-propio vía MCP — `genai mcp clientes`.)
+falta entrar primero), **los cinco clientes MCP** (Claude Code, Codex CLI —ChatGPT
+Plus/Pro—, Cursor, Google Antigravity, Kimi Code), y una opción para escribir cualquier
+otro nombre a mano o buscar entre los 207 del catálogo. Cambia de cerebro SIN perder el
+historial de la conversación.
+
+Elegir un cliente MCP no lo «carga» —no puede: el que genera sigue siendo ESE cliente,
+con su propia suscripción, no Mekro-Genai— sino que enseña el estado real y el comando
+exacto para activarlo en otra terminal (`genai mcp instalar <cliente>`). Es justo donde
+viven ChatGPT Plus/Pro y Claude Pro/Max: ninguna suscripción de OpenAI o Anthropic se
+puede usar como cerebro directo de Mekro-Genai (están ligadas a su propio cliente
+oficial), pero SÍ se puede usar esa suscripción prestándole las herramientas de
+Mekro-Genai a Codex CLI o a Claude Code respectivamente — ver
+[docs/nube.md](docs/nube.md) para la distinción completa.
 
 Tanto `chat` como `tarea` comparten la misma estética de terminal (`genai/tui.py`,
 biblioteca estándar, sin dependencias): la llamada a una herramienta se enseña ANTES de
