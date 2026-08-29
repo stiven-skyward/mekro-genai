@@ -38,6 +38,43 @@ c(len(todas) == 2, "las dos aparecen en el listado")
 c(all("viva" in s and "rancia" in s for s in todas),
   "y el listado dice de cada una si está viva y si está rancia, sin tener que abrirla")
 
+# ── escritura atómica: un lector no puede ver un fichero de sesión a medias ──
+# El fallo real que esto reproduce: `_guardar()` hacía `write_text()` a secas
+# (trunca a 0 bytes, LUEGO escribe), y `listar()` DESCARTA cualquier sesión cuya
+# lectura falle —un `GET /sesiones/<id>` real podía devolver 404 en ese instante.
+# Con `os.replace()` atómico, un `listar()` concurrente tiene que ver SIEMPRE el
+# fichero viejo entero o el nuevo entero. Se estresa de verdad con un hilo
+# escribiendo sin parar mientras el principal lee sin parar — no una prueba de
+# temporización con sleep(), que la habría dejado pasar igual que antes.
+import threading  # noqa: E402
+
+s_estres = sesiones.crear("estrés de escritura", raiz=raiz)
+parar_escritura = threading.Event()
+
+
+def _escribir_sin_parar():
+    v = 0
+    while not parar_escritura.is_set():
+        sesiones.latir(s_estres["id"], raiz=raiz, vueltas=v)
+        v += 1
+
+
+hilo_escritor = threading.Thread(target=_escribir_sin_parar, daemon=True)
+hilo_escritor.start()
+lecturas_malas = 0
+for _ in range(400):
+    encontrada = next((x for x in sesiones.listar(raiz=raiz) if x["id"] == s_estres["id"]),
+                      None)
+    if encontrada is None or "vueltas" not in encontrada:
+        lecturas_malas += 1
+parar_escritura.set()
+hilo_escritor.join(timeout=5)
+c(lecturas_malas == 0,
+  f"{lecturas_malas} de 400 lecturas concurrentes vieron la sesión a medio "
+  "escribir o desaparecida — con escritura atómica tienen que ser 0")
+c(not list(raiz.glob("*.tmp-*")),
+  "y no queda ningún fichero temporal suelto: el rename limpia tras de sí")
+
 # ── el candado ─────────────────────────────────────────────────────────────
 s, q = sesiones.tomar(a["id"], raiz=raiz)
 c(s and s["duenyo"] == os.getpid(), "tomar una sesión la marca con el PID de quien la coge")

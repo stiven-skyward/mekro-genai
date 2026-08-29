@@ -1,0 +1,156 @@
+{
+  "cuando": "2026-08-29_1631",
+  "nivel": "n0",
+  "cerebro": "eco",
+  "modo": "lista",
+  "topes": {
+    "tope_vueltas": 24,
+    "tope_tokens": 6000,
+    "tope_segundos": 1800
+  },
+  "tareas": [
+    {
+      "id": "atomo",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 124,
+      "tokens_entrada": 9772,
+      "cache": {
+        "leidos": 0,
+        "totales": 0
+      },
+      "poda": {
+        "antes": 442,
+        "despues": 442
+      },
+      "segundos": 0.0,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-atomo-mbba8190/caja"
+    },
+    {
+      "id": "crear",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 153,
+      "tokens_entrada": 9798,
+      "cache": {
+        "leidos": 0,
+        "totales": 0
+      },
+      "poda": {
+        "antes": 373,
+        "despues": 373
+      },
+      "segundos": 0.0,
+      "verificador": "4/4 asertos ✓",
+      "trabajo": "/tmp/banco-crear-zprjeehi/caja"
+    },
+    {
+      "id": "humo",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 134,
+      "tokens_entrada": 12242,
+      "cache": {
+        "leidos": 0,
+        "totales": 0
+      },
+      "poda": {
+        "antes": 516,
+        "despues": 516
+      },
+      "segundos": 0.1,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-humo-a5ktklf6/caja"
+    },
+    {
+      "id": "rastro",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 4,
+      "intervenciones": 0,
+      "tokens_salida": 102,
+      "tokens_entrada": 9584,
+      "cache": {
+        "leidos": 0,
+        "totales": 0
+      },
+      "poda": {
+        "antes": 238,
+        "despues": 238
+      },
+      "segundos": 0.0,
+      "verificador": "2/2 asertos ✓",
+      "trabajo": "/tmp/banco-rastro-i1ogeq7z/caja"
+    },
+    {
+      "id": "simbolo",
+      "paso": true,
+      "motivo": "fin",
+      "auxiliar": {
+        "vueltas": 0,
+        "tokens": 0,
+        "segundos": 0.0,
+        "cerebros": []
+      },
+      "motivo_extra": "",
+      "vueltas": 5,
+      "intervenciones": 0,
+      "tokens_salida": 133,
+      "tokens_entrada": 12184,
+      "cache": {
+        "leidos": 0,
+        "totales": 0
+      },
+      "poda": {
+        "antes": 306,
+        "despues": 306
+      },
+      "segundos": 0.0,
+      "verificador": "3/3 asertos ✓",
+      "trabajo": "/tmp/banco-simbolo-pqx_u1hy/caja"
+    }
+  ],
+  "resumen": {
+    "tareas_pct": 100.0,
+    "tokens_media": 129.2,
+    "entrada_media": 10716.0,
+    "cache_pct": 0.0,
+    "segundos_media": 0.0,
+    "intervenciones": 0
+  }
+}

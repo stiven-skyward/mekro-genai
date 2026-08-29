@@ -59,13 +59,25 @@ def _leer(f: Path) -> dict:
         return {}
 
 
+def _escribir_atomico(f: Path, datos: dict) -> None:
+    # temporal + rename: atómico en POSIX y en Windows. Un `write_text()` a secas
+    # trunca el fichero a 0 bytes y LUEGO escribe — un `listar()` concurrente (otro
+    # hilo del servidor, atendiendo un GET mientras esto escribe) puede leer justo
+    # en ese hueco, ver un JSON vacío o a medias, y DESCARTAR la sesión entera
+    # (`if not s.get("id"): continue` en `listar()`): un GET /sesiones/<id> real
+    # puede devolver 404 en ese instante. Encontrado reproduciendo de verdad un
+    # fallo intermitente de tests/test_servidor_ui.py (2 de 15 carreras).
+    tmp = f.with_suffix(f".tmp-{os.getpid()}-{uuid.uuid4().hex[:8]}")
+    tmp.write_text(json.dumps(datos, ensure_ascii=False, indent=1), encoding="utf-8")
+    os.replace(tmp, f)
+
+
 def crear(titulo: str = "", raiz=None, meta: dict | None = None) -> dict:
     ident = uuid.uuid4().hex[:12]
     d = {"id": ident, "titulo": titulo.strip() or "(sin título)",
          "creada": time.time(), "latido": time.time(), "estado": "nueva",
          "duenyo": 0, "tocados": [], "vueltas": 0, "meta": meta or {}}
-    (_dir(raiz) / f"{ident}.json").write_text(json.dumps(d, ensure_ascii=False, indent=1),
-                                              encoding="utf-8")
+    _escribir_atomico(_dir(raiz) / f"{ident}.json", d)
     return d
 
 
@@ -82,8 +94,7 @@ def listar(raiz=None) -> list[dict]:
 
 
 def _guardar(s: dict, raiz=None) -> None:
-    (_dir(raiz) / f"{s['id']}.json").write_text(
-        json.dumps(s, ensure_ascii=False, indent=1), encoding="utf-8")
+    _escribir_atomico(_dir(raiz) / f"{s['id']}.json", s)
 
 
 def tomar(ident: str, raiz=None) -> tuple[dict | None, str]:
