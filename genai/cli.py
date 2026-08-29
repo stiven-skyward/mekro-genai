@@ -93,6 +93,88 @@ def _expandir_menciones(texto: str) -> tuple[str, list[str]]:
     return resto + "\n\n" + "\n\n".join(adjuntos), rutas
 
 
+def _elegir_cerebro_guiado() -> str | None:
+    """El menú que `/modelo` sin argumento abre: un listado numerado en vez de
+    exigir de memoria el nombre exacto («nube:proveedor/modelo»). Por cada
+    proveedor BYOK se enseña si YA tiene clave puesta —para que la elección sea
+    informada, no una apuesta—, y las dos suscripciones traen su propio estado
+    real (`copilot.estado()`/`google_cuenta.estado()`), no un genérico "disponible".
+    Devuelve el nombre a pasarle a `cargar()`, o `None` si se cancela."""
+    from . import copilot, google_cuenta
+    from .cerebro.nube import PROVEEDORES, claves
+
+    cl = claves()
+    opciones: dict[str, str] = {}
+    filas: list[str] = [tui.negrita("local — sin nube, sin coste, sin clave")]
+    filas += tui.tabla([("1", "gguf (por defecto) · Qwen3.8-27B en CPU")])
+    opciones["1"] = "gguf"
+
+    filas += ["", tui.negrita("BYOK — tu clave de API, pagas por token")]
+    items = []
+    n = 2
+    for prov in sorted(PROVEEDORES):
+        configurado = bool(cl.get(prov, {}).get("clave"))
+        marca = tui.exito("configurado") if configurado else tui.atenuado("sin clave")
+        items.append((str(n), f"{prov}  ({marca})"))
+        opciones[str(n)] = f"nube:{prov}"
+        n += 1
+    filas += tui.tabla(items)
+
+    def _corto(estado: str, tope: int = 35) -> str:
+        # `estado()` puede traer un error de la API entero (Google, con licencia de
+        # Code Assist denegada, devuelve el JSON del 403 completo) — bueno para un
+        # log, ilegible metido en una fila de menú.
+        return estado if len(estado) <= tope else estado[:tope].rstrip() + "…"
+
+    filas += ["", tui.negrita("suscripción — Mekro-Genai usa tu cuenta, no una clave")]
+    filas += tui.tabla([
+        (str(n), f"copilot (GitHub) · {_corto(copilot.estado())}"),
+        (str(n + 1), f"google (Code Assist) · {_corto(google_cuenta.estado())}"),
+    ])
+    opciones[str(n)], opciones[str(n + 1)] = "nube:copilot", "nube:google"
+    n += 2
+
+    filas += ["", tui.negrita("otro")]
+    filas += tui.tabla([(str(n), "buscar entre 207 proveedores, o escribir uno a mano")])
+    opciones[str(n)] = "_personalizado"
+    filas.append("")
+    filas.append("0  cancelar")
+
+    print(tui.caja(filas, titulo="elige un cerebro"))
+    print(tui.atenuado("  (Cursor/Claude Code/Codex usan tu MCP, no un cerebro de "
+                       "/modelo: `genai mcp clientes`)"))
+    try:
+        eleccion = input(tui.negrita("  → ")).strip()
+    except EOFError:
+        return None
+    if eleccion in ("", "0"):
+        return None
+    if eleccion not in opciones:
+        print(tui.aviso(f"  «{eleccion}» no es ninguna de las opciones de la lista"))
+        return None
+    nombre = opciones[eleccion]
+    if nombre == "_personalizado":
+        print(tui.atenuado("  `genai proveedores <texto>` (en otra terminal) busca "
+                           "entre los 207; aquí escribe el nombre ya elegido."))
+        try:
+            nombre = input(tui.negrita(
+                "  nombre (ej.: nube:groq/llama-3.3-70b-versatile): ")).strip()
+        except EOFError:
+            return None
+    return nombre or None
+
+
+def _info_tras_cambio(nombre_pedido: str) -> None:
+    """Lo que el usuario pidió explícitamente: no solo cambiar de cerebro, sino
+    enseñar qué más hay configurable para el camino elegido — la malla para el
+    local, nada de más para BYOK (ya se ve el coste solo, por turno)."""
+    if nombre_pedido == "gguf":
+        print(tui.atenuado(
+            "  local: sin coste, sin red. Modo Mesh disponible si arrancaste con "
+            "--malla (`genai malla servir` en otra terminal dona cómputo; "
+            "`genai malla cuenta` ve el saldo) — ver docs/malla.md."))
+
+
 def _con_latido(cerebro: object) -> None:
     """Envuelve `cerebro.generar` para que el hueco de silencio ANTES del primer
     token —cargar el modelo, prefillar el contexto, un `<think>` de varios minutos—
@@ -327,7 +409,8 @@ def cmd_chat(a) -> int:
             if linea == "/ayuda":
                 print(tui.caja(tui.tabla([
                     (f"/modo <{'|'.join(MODOS)}>", "cambia la política de permiso"),
-                    ("/modelo <nombre>", "cambia de cerebro sin perder el historial"),
+                    ("/modelo", "menú guiado para elegir cerebro (local, BYOK, suscripción)"),
+                    ("/modelo <nombre>", "cambia directo, sin menú (ej.: nube:gemini)"),
                     ("/nueva", "otra sesión, misma terminal y cerebro"),
                     ("/sesion", "vueltas y tokens gastados hasta ahora"),
                     ("/deshacer", "restaura los ficheros a antes del último mensaje"),
@@ -335,16 +418,23 @@ def cmd_chat(a) -> int:
                     ("/salir", "termina (o Ctrl-D)"),
                 ]), titulo="comandos"))
                 continue
-            if linea.startswith("/modelo"):
+            if linea == "/modelo" or linea.startswith("/modelo "):
                 partes = linea.split(maxsplit=1)
-                if len(partes) != 2:
-                    print(tui.aviso("  uso: /modelo <nombre>  (ej.: /modelo nube:gemini, "
-                                    "/modelo gguf, /modelo eco)"))
-                    continue
+                if len(partes) == 2:
+                    pedido = partes[1].strip()
+                else:
+                    # sin argumento: el menú guiado, no exigir de memoria
+                    # «nube:proveedor/modelo» — lo que pidió el usuario explícitamente.
+                    pedido = _elegir_cerebro_guiado()
+                    if pedido is None:
+                        continue
                 try:
-                    nuevo = cargar(partes[1].strip())
+                    nuevo = cargar(pedido)
                 except SystemExit as e:
-                    print(tui.fallo(f"  no se pudo cargar «{partes[1].strip()}»: {e}"))
+                    # el propio SystemExit de cargar()/CerebroNube ya dice qué hacer
+                    # («Ejecuta `genai copilot entrar`», «pon tu clave en ...») — no
+                    # hace falta un mensaje aparte de ayuda, solo enseñarlo bien.
+                    print(tui.fallo(f"  no se pudo cargar «{pedido}»: {e}"))
                     continue
                 if hasattr(sesion.cerebro, "cerrar"):
                     sesion.cerebro.cerrar()
@@ -357,6 +447,7 @@ def cmd_chat(a) -> int:
                 # sin perder los mensajes de antes es justo lo que unifica los tres
                 # caminos de docs/nube.md en una sola sesión.
                 print(tui.exito(f"  cerebro → {nuevo.nombre} (el historial sigue igual)"))
+                _info_tras_cambio(pedido)
                 continue
             if linea == "/deshacer":
                 from . import deshacer

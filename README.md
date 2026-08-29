@@ -85,6 +85,17 @@ abre otra sesión sin cerrar la terminal, `/deshacer` restaura ficheros (ver aba
 directo en el encargo, sin gastar una vuelta entera en pedirle al cerebro que llame a
 `leer` y esperar otra generación para que lo use.
 
+**`/modelo`, sin nombre, abre un menú guiado** en vez de exigir de memoria
+`nube:proveedor/modelo`: local (con su info de Modo Mesh), los 8 proveedores BYOK de
+fábrica —marcando cuáles ya tienen clave puesta y cuáles no—, las dos suscripciones
+directas con su estado real (`genai copilot entrar` / `genai google entrar` si hace
+falta entrar primero), y una opción para escribir cualquier otro nombre a mano o buscar
+entre los 207 del catálogo. Cambia de cerebro SIN perder el historial de la
+conversación — mezclar local, BYOK y suscripción en una sola sesión es más útil con 207
+proveedores que con uno solo. (Cursor/Claude Code/Codex no salen en este menú: no son
+un cerebro que `/modelo` pueda cargar, usan las herramientas de Mekro-Genai con el suyo
+propio vía MCP — `genai mcp clientes`.)
+
 Tanto `chat` como `tarea` comparten la misma estética de terminal (`genai/tui.py`,
 biblioteca estándar, sin dependencias): la llamada a una herramienta se enseña ANTES de
 ejecutarse (`● editar(...)`), el resultado después con ✓/✗, y `editar`/`escribir`

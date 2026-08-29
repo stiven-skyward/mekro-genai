@@ -117,4 +117,47 @@ c(r7.returncode == 0, "pedir un cerebro que no carga no tumba la conversación")
 c("no se pudo cargar" in r7.stdout,
   "se avisa del fallo y se sigue con el cerebro de antes, en vez de morir a medias")
 
+# ── /modelo SIN argumento: el menú guiado ───────────────────────────────────
+# los 8 de fábrica, en orden alfabético: 2=anthropic 3=deepseek 4=gemini 5=groq
+# 6=kimi 7=openai 8=openrouter 9=xai — luego 10=copilot 11=google 12=personalizado
+claves_menu = tmp / "claves_menu.json"
+claves_menu.write_text(json.dumps({"gemini": {"clave": "clave-de-prueba"}}),
+                       encoding="utf-8")
+
+
+def _chat_menu(entrada: str) -> subprocess.CompletedProcess:
+    entorno = {**os.environ, "MG_COLOR": "0", "PYTHONPATH": str(RAIZ),
+              "MG_CLAVES": str(claves_menu)}
+    return subprocess.run(
+        [sys.executable, "-m", "genai", "chat", "--cerebro", "eco",
+         "--guion", str(guion), "--modo", "lista"],
+        cwd=tmp, input=entrada, capture_output=True, text=True, timeout=30,
+        env=entorno)
+
+
+r8 = _chat_menu("/modelo\n0\n/salir\n")
+c(r8.returncode == 0, "abrir el menú guiado y cancelar con 0 sale limpio")
+c("elige un cerebro" in r8.stdout, "el menú se muestra de verdad")
+c("configurado" in r8.stdout and "sin clave" in r8.stdout,
+  "y distingue, proveedor por proveedor, cuáles ya tienen clave puesta")
+
+r9 = _chat_menu("/modelo\n4\n/salir\n")
+c(r9.returncode == 0, "elegir por número un proveedor YA configurado (4=gemini) funciona")
+c("cerebro → nube:gemini" in r9.stdout,
+  "y cambia de verdad al cerebro que corresponde a ese número")
+
+r10 = _chat_menu("/modelo\n3\n/salir\n")
+c(r10.returncode == 0, "elegir un proveedor SIN clave (3=deepseek) no revienta la conversación")
+c("no se pudo cargar" in r10.stdout,
+  "y se enseña el mensaje de cargar() —dónde poner la clave— tal cual, sin duplicar "
+  "esa ayuda en el propio menú")
+
+r11 = _chat_menu("/modelo\n12\nnombre-que-no-existe\n/salir\n")
+c(r11.returncode == 0, "la opción «otro» (12) pide un nombre a mano sin reventar")
+c("no se pudo cargar" in r11.stdout, "y lo intenta cargar igual, fallando limpio si no existe")
+
+r12 = _chat_menu("/modelo\n99\n/salir\n")
+c(r12.returncode == 0, "un número que no es ninguna opción de la lista no revienta")
+c("no es ninguna de las opciones" in r12.stdout, "y lo dice explícitamente")
+
 raise SystemExit(c.fin())
