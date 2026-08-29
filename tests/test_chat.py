@@ -133,9 +133,22 @@ claves_menu.write_text(json.dumps({"gemini": {"clave": "clave-de-prueba"}}),
                        encoding="utf-8")
 
 
+# el menú de /modelo, al elegir un cliente MCP, ejecuta de verdad
+# `mcp_clientes.instalar()` —esa es justo la mejora: que Mekro-Genai se
+# encargue de la instalación en vez de solo indicarla—. Si esta MISMA máquina
+# de desarrollo tiene `claude`/`cursor-agent` en el PATH (los tiene: aquí
+# vive la sesión real de Claude Code), una prueba ingenua tocaría el
+# ~/.claude.json DE VERDAD. Se filtra esa carpeta del PATH del subproceso
+# para que detectado() dé False y el camino sea el mismo que ve un usuario
+# que todavía no instaló ningún cliente — real, no un mock, y sin riesgo.
+_path_sin_clientes = os.pathsep.join(
+    p for p in os.environ.get("PATH", "").split(os.pathsep)
+    if p and p not in (str(Path.home() / ".local" / "bin"),))
+
+
 def _chat_menu(entrada: str) -> subprocess.CompletedProcess:
     entorno = {**os.environ, "MG_COLOR": "0", "PYTHONPATH": str(RAIZ),
-              "MG_CLAVES": str(claves_menu)}
+              "MG_CLAVES": str(claves_menu), "PATH": _path_sin_clientes}
     return subprocess.run(
         [sys.executable, "-m", "genai", "chat", "--cerebro", "eco",
          "--guion", str(guion), "--modo", "lista"],
@@ -154,11 +167,23 @@ c(r9.returncode == 0, "elegir por número un proveedor YA configurado (4=gemini)
 c("cerebro → nube:gemini" in r9.stdout,
   "y cambia de verdad al cerebro que corresponde a ese número")
 
-r10 = _chat_menu("/modelo\n3\n/salir\n")
-c(r10.returncode == 0, "elegir un proveedor SIN clave (3=deepseek) no revienta la conversación")
-c("no se pudo cargar" in r10.stdout,
-  "y se enseña el mensaje de cargar() —dónde poner la clave— tal cual, sin duplicar "
-  "esa ayuda en el propio menú")
+# elegir un proveedor SIN clave ahora la PIDE ahí mismo —«que Mekro-Genai se
+# encargue de todo» incluye configurar, no solo indicar dónde hacerlo a mano—.
+# Declinar (línea vacía) no debe cambiar nada ni reventar:
+r10 = _chat_menu("/modelo\n3\n\n/salir\n")
+c(r10.returncode == 0, "declinar poner la clave (línea vacía) no revienta la conversación")
+c("nada que guardar" in r10.stdout, "y se avisa de que no se guardó ni se cambió nada")
+c("cerebro → nube:deepseek" not in r10.stdout, "sin clave, no llega a cambiar de cerebro")
+
+# y SÍ ponerla la guarda de verdad y completa el cambio, en el mismo paso:
+r10b = _chat_menu("/modelo\n3\nclave-nueva-deepseek-xyz\n/salir\n")
+c(r10b.returncode == 0, "poner una clave nueva en el momento no revienta la conversación")
+c("clave de deepseek guardada" in r10b.stdout, "se confirma que se guardó")
+c("cerebro → nube:deepseek" in r10b.stdout,
+  "y el cambio de cerebro se completa con la clave recién puesta, sin un segundo paso")
+_tras_clave = json.loads(claves_menu.read_text(encoding="utf-8"))
+c(_tras_clave.get("deepseek", {}).get("clave") == "clave-nueva-deepseek-xyz",
+  "la clave quedó guardada de verdad en el fichero, no solo usada en memoria")
 
 r11 = _chat_menu(f"/modelo\n{_num_personalizado}\nnombre-que-no-existe\n/salir\n")
 c(r11.returncode == 0, "la opción «otro» pide un nombre a mano sin reventar")
@@ -169,6 +194,10 @@ c(r12.returncode == 0, "un número que no es ninguna opción de la lista no revi
 c("no es ninguna de las opciones" in r12.stdout, "y lo dice explícitamente")
 
 # ── MCP en el propio menú: Cursor, Claude Code, Codex (ChatGPT), Antigravity ──
+# el PATH del subproceso está filtrado (ver _chat_menu): ni «claude» ni
+# «cursor-agent» —SÍ instalados en esta máquina de desarrollo— se detectan aquí,
+# así que `mcp_clientes.instalar()` corre de verdad pero cae en el aviso de
+# "binario no encontrado" en vez de tocar ninguna configuración real.
 c(_MCP_CLIENTES, "hay al menos un cliente MCP registrado para esta prueba")
 _clave_mcp, _info_mcp = next(iter(_MCP_CLIENTES.items()))
 r13 = _chat_menu(f"/modelo\n{_primer_mcp}\n/salir\n")
@@ -176,8 +205,9 @@ c(r13.returncode == 0, "elegir un cliente MCP desde el menú no revienta la conv
 c(_info_mcp["nombre"] in r13.stdout,
   "se enseña de verdad qué cliente es —Cursor, Claude Code, Codex/ChatGPT Plus/Pro, "
   "Antigravity, Kimi Code, según cuál sea el primero registrado— no una opción muda")
-c("genai mcp instalar" in r13.stdout,
-  "con el comando exacto para activarlo EN OTRA terminal")
+c("no encuentro" in r13.stdout or "no se pudo" in r13.stdout,
+  "y de verdad INTENTÓ instalarlo —no solo indicó el comando—: sin el binario en "
+  "el PATH, mcp_clientes.instalar() lo dice tal cual, en vez de fingir éxito")
 c("cerebro →" not in r13.stdout,
   "y NO intenta cargarlo como si fuera un cerebro de chat: el que genera sigue "
   "siendo el cliente externo con su propia suscripción, esto solo informa")

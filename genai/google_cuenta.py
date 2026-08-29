@@ -166,7 +166,8 @@ AMBITOS = ("https://www.googleapis.com/auth/cloud-platform "
 AUTORIZAR = "https://accounts.google.com/o/oauth2/v2/auth"
 CANJE = "https://oauth2.googleapis.com/token"
 ASIST = "https://cloudcode-pa.googleapis.com/v1internal"
-FICHERO = Path.home() / ".config" / "genai" / "google.json"
+FICHERO = Path(os.environ.get("MG_GOOGLE",
+                              Path.home() / ".config" / "genai" / "google.json"))
 
 
 def _post(url: str, datos: dict, cabeceras: dict | None = None, json_cuerpo=None) -> dict:

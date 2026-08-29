@@ -95,11 +95,16 @@ otro nombre a mano o buscar entre los 207 del catálogo. Cambia de cerebro SIN p
 historial de la conversación.
 
 Elegir un cliente MCP no lo «carga» —no puede: el que genera sigue siendo ESE cliente,
-con su propia suscripción, no Mekro-Genai— sino que enseña el estado real y el comando
-exacto para activarlo en otra terminal (`genai mcp instalar <cliente>`). Es justo donde
-viven ChatGPT Plus/Pro y Claude Pro/Max: ninguna suscripción de OpenAI o Anthropic se
-puede usar como cerebro directo de Mekro-Genai (están ligadas a su propio cliente
-oficial), pero SÍ se puede usar esa suscripción prestándole las herramientas de
+con su propia suscripción, no Mekro-Genai—, pero Mekro-Genai SÍ instala la integración
+ahí mismo (`mcp_clientes.instalar()`, lo mismo que hace `genai mcp instalar <cliente>`,
+sin tener que abrir otra terminal a escribirlo) para Claude Code, Codex CLI y Cursor;
+Antigravity y Kimi Code, sin instalador automático todavía, muestran las instrucciones
+exactas. Elegir un proveedor BYOK sin clave configurada la pide ahí mismo (oculta al
+escribirla) y la guarda, en vez de mandar a editar `claves.json` a mano — misma idea:
+que Mekro-Genai haga la parte que de verdad puede hacer, no solo la explique. Es justo
+donde viven ChatGPT Plus/Pro y Claude Pro/Max: ninguna suscripción de OpenAI o
+Anthropic se puede usar como cerebro directo de Mekro-Genai (están ligadas a su propio
+cliente oficial), pero SÍ se puede usar esa suscripción prestándole las herramientas de
 Mekro-Genai a Codex CLI o a Claude Code respectivamente — ver
 [docs/nube.md](docs/nube.md) para la distinción completa.
 

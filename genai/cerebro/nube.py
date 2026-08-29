@@ -85,6 +85,26 @@ def claves() -> dict:
     return json.loads(CLAVES.read_text(encoding="utf-8"))
 
 
+def guardar_clave(proveedor: str, valor: str) -> None:
+    """Guarda o actualiza la clave de UN proveedor, completando su entrada —nunca
+    pisándola entera: puede tener `modelo`, `cabeceras` u otras claves puestas a
+    mano—. Antes esta lógica solo vivía dentro del manejador HTTP de servidor.py;
+    factorizada aquí la puede usar también quien pide la clave desde `/modelo`
+    (cli.py) sin duplicar el read-modify-write."""
+    CLAVES.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        datos = json.loads(CLAVES.read_text(encoding="utf-8")) if CLAVES.is_file() else {}
+    except ValueError:
+        raise SystemExit(f"{CLAVES} existe pero no es JSON válido; arréglalo a mano")
+    datos.setdefault(proveedor, {})
+    if isinstance(datos[proveedor], dict):
+        datos[proveedor]["clave"] = valor
+    else:
+        datos[proveedor] = {"clave": valor}
+    CLAVES.write_text(json.dumps(datos, indent=1, ensure_ascii=False), encoding="utf-8")
+    os.chmod(CLAVES, 0o600)
+
+
 def proveedores_configurados() -> list[str]:
     return sorted(k for k, v in claves().items() if isinstance(v, dict) and v.get("clave"))
 

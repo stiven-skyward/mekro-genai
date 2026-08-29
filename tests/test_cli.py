@@ -10,10 +10,13 @@ volver a colarse.
 """
 import contextlib
 import io
+import os
+import tempfile
+from pathlib import Path
 
 from _util import Cuenta
 
-from genai.cli import _expandir_menciones, _mostrar_costo
+from genai.cli import _elegir_cerebro_guiado, _expandir_menciones, _mostrar_costo
 
 c = Cuenta("cli")
 
@@ -65,5 +68,58 @@ c(rutas == [] and texto == "sin ninguna mención aquí",
 texto2, rutas2 = _expandir_menciones("mira @/ruta/que/no/existe/de/verdad")
 c(rutas2 == [] and "@/ruta/que/no/existe/de/verdad" in texto2,
   "una @mención que no es un fichero real se deja tal cual, no se rompe ni se inventa")
+
+# ── _elegir_cerebro_guiado(): MCP se instala DE VERDAD, sin tocar ningún binario real ──
+# Aislado de la máquina real: MG_CLAVES a un fichero de prueba (no las claves reales
+# de este equipo) y mcp_clientes.instalar() sustituido por uno falso —esto NUNCA debe
+# ejecutar un `claude mcp add` de verdad contra la config real de quien corre la prueba.
+tmp_cli = Path(tempfile.mkdtemp(prefix="cli-"))
+os.environ["MG_CLAVES"] = str(tmp_cli / "claves.json")
+# el menú también calcula copilot.estado()/google_cuenta.estado() SIEMPRE, aunque el
+# usuario vaya a elegir otra cosa — sin aislar esto, una sesión de Google real y
+# válida en esta máquina dispararía un refresco de token de verdad (red) solo por
+# construir el menú.
+os.environ["MG_COPILOT"] = str(tmp_cli / "copilot.json")
+os.environ["MG_GOOGLE"] = str(tmp_cli / "google.json")
+
+import genai.mcp_clientes as _mcp_mod  # noqa: E402
+from genai.cerebro.nube import PROVEEDORES as _PROV  # noqa: E402
+
+_primer_mcp = 2 + len(_PROV) + 2   # mismo cálculo que usa el propio menú
+_instalador_real = _mcp_mod.instalar
+_llamadas: list[str] = []
+
+
+def _instalador_falso(clave: str, nombre: str = "mekro-genai"):
+    _llamadas.append(clave)
+    return True, "instalado (simulado, para la prueba)"
+
+
+def _input_falso_fabrica(respuestas: list[str]):
+    it = iter(respuestas)
+    return lambda _prompt="": next(it)
+
+
+import builtins  # noqa: E402
+
+_input_real = builtins.input
+_mcp_mod.instalar = _instalador_falso
+try:
+    builtins.input = _input_falso_fabrica([str(_primer_mcp)])
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        resultado = _elegir_cerebro_guiado()
+finally:
+    builtins.input = _input_real
+    _mcp_mod.instalar = _instalador_real
+
+c(resultado is None,
+  "elegir un cliente MCP no devuelve un nombre de cerebro: no es un cerebro que "
+  "/modelo pueda cargar")
+c(_llamadas == [next(iter(_mcp_mod.CLIENTES))],
+  "y SÍ llamó a mcp_clientes.instalar() de verdad —una vez, con la clave del "
+  "cliente elegido— en vez de solo imprimir el comando para que el usuario lo "
+  "corra él mismo: «que Mekro-Genai se encargue de todo»")
+c("instalado (simulado" in buf.getvalue(), "y el resultado real se le enseña al usuario")
 
 raise SystemExit(c.fin())

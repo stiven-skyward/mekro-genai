@@ -20,6 +20,7 @@ programa obtuvo en tu nombre: mezclarlas haría que borrar una borrase la otra.
 from __future__ import annotations
 
 import json
+import os
 import time
 import urllib.error
 import urllib.parse
@@ -33,7 +34,8 @@ DEVICE = "https://github.com/login/device/code"
 TOKEN = "https://github.com/login/oauth/access_token"
 CANJE = "https://api.github.com/copilot_internal/v2/token"
 API = "https://api.githubcopilot.com"
-FICHERO = Path.home() / ".config" / "genai" / "copilot.json"
+FICHERO = Path(os.environ.get("MG_COPILOT",
+                              Path.home() / ".config" / "genai" / "copilot.json"))
 AGENTE = "GitHubCopilotChat/0.26.7"
 
 

@@ -175,15 +175,23 @@ def _elegir_cerebro_guiado() -> str | None:
         clave = nombre[len("_mcp:"):]
         info = mcp_clientes.CLIENTES[clave]
         print()
-        print(tui.caja([
-            f"Esto NO se carga aquí: el que genera sigue siendo {info['nombre']}, con "
-            "SU propia suscripción — Mekro-Genai solo le presta las herramientas.",
-            "",
-            (f"verificado: {info['verificado']}" if info.get("verificado")
-             else f"sin verificar todavía: {info.get('instrucciones', '')}"),
-            "",
-            f"en OTRA terminal: genai mcp instalar {clave}",
-        ], titulo=info["nombre"]))
+        print(tui.atenuado(
+            f"  el que genera sigue siendo {info['nombre']}, con SU propia "
+            "suscripción — Mekro-Genai solo le presta las herramientas."))
+        # «que Mekro-Genai se encargue de todo»: para los tres clientes con
+        # comando/instalador de verdad (claude-code, codex, cursor) se instala
+        # AQUÍ MISMO, no se manda a abrir otra terminal para escribir lo mismo
+        # que ya se sabe escribir. Antigravity/Kimi Code siguen sin automatizar
+        # porque `mcp_clientes.instalar()` tampoco sabe hacerlo todavía —ni la
+        # ruta exacta de su configuración se ha verificado— y fabricar un sitio
+        # donde escribir sin haberlo comprobado sería peor que no escribir nada.
+        ok, msg = mcp_clientes.instalar(clave)
+        if ok:
+            print(tui.exito(f"  {info['nombre']}: {msg}"))
+            print(tui.atenuado(f"  listo — abre {info['nombre']} normalmente, ya "
+                               "ve las herramientas de Mekro-Genai."))
+        else:
+            print(tui.aviso(f"  {info['nombre']}: {msg}"))
         return None
 
     if nombre == "_personalizado":
@@ -194,6 +202,29 @@ def _elegir_cerebro_guiado() -> str | None:
                 "  nombre (ej.: nube:groq/llama-3.3-70b-versatile): ")).strip()
         except EOFError:
             return None
+
+    # BYOK sin clave: se pide y se guarda AQUÍ, no se manda a editar un JSON a
+    # mano — mismo espíritu que instalar el MCP en el sitio: «que Mekro-Genai se
+    # encargue de todo» incluye lo que de verdad puede hacer solo. Copilot y
+    # Google quedan fuera a propósito: usan sesión (OAuth/device flow), no una
+    # clave que se pueda pegar aquí.
+    if nombre.startswith("nube:"):
+        prov = nombre[len("nube:"):].split("/", 1)[0]
+        if prov in PROVEEDORES and not cl.get(prov, {}).get("clave"):
+            print(tui.atenuado(f"  «{prov}» todavía no tiene clave puesta."))
+            import getpass
+            try:
+                clave_nueva = getpass.getpass(
+                    f"  pega tu clave de {prov} (no se ve al escribir): ").strip()
+            except (EOFError, KeyboardInterrupt):
+                clave_nueva = ""
+            if not clave_nueva:
+                print(tui.aviso("  nada que guardar; cancelado"))
+                return None
+            from .cerebro.nube import CLAVES, guardar_clave
+            guardar_clave(prov, clave_nueva)
+            print(tui.exito(f"  clave de {prov} guardada en {CLAVES} (permisos 600)"))
+
     return nombre or None
 
 

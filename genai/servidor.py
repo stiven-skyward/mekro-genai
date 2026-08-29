@@ -266,7 +266,7 @@ class _Manejador(BaseHTTPRequestHandler):
         return self._responder(404, {"error": f"no hay ruta {r.path}"})
 
     def _guardar_clave(self, cuerpo: dict):
-        from .cerebro.nube import CLAVES
+        from .cerebro.nube import guardar_clave
 
         proveedor = (cuerpo.get("proveedor") or "").strip()
         valor = (cuerpo.get("clave") or "").strip()
@@ -277,23 +277,13 @@ class _Manejador(BaseHTTPRequestHandler):
         # entorno que GET /claves ya honraba: una prueba que quisiera aislarse no
         # podía, y acababa tocando el fichero REAL de secretos del usuario. Eso
         # además corrió carrera de verdad con `scripts/guardian.py` (que ejecuta la
-        # misma suite cada 15 min) la primera vez que se probó en frío.
-        f = CLAVES
-        f.parent.mkdir(parents=True, exist_ok=True)
+        # misma suite cada 15 min) la primera vez que se probó en frío. El
+        # read-modify-write vive ahora en `cerebro.nube.guardar_clave()`, para que
+        # `/modelo` (cli.py) lo use también sin duplicarlo.
         try:
-            datos = json.loads(f.read_text(encoding="utf-8")) if f.is_file() else {}
-        except ValueError:
-            return self._responder(500, {"error": f"{f} existe pero no es JSON "
-                                                  f"válido; arréglalo a mano"})
-        # se COMPLETA la entrada del proveedor, no se pisa entera: puede tener
-        # `modelo`, `cabeceras` u otras claves puestas a mano
-        datos.setdefault(proveedor, {})
-        if isinstance(datos[proveedor], dict):
-            datos[proveedor]["clave"] = valor
-        else:
-            datos[proveedor] = {"clave": valor}
-        f.write_text(json.dumps(datos, indent=1, ensure_ascii=False), encoding="utf-8")
-        os.chmod(f, 0o600)
+            guardar_clave(proveedor, valor)
+        except SystemExit as e:
+            return self._responder(500, {"error": str(e)})
         return self._responder(200, {"ok": True})
 
 
