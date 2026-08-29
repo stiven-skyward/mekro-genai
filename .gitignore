@@ -24,3 +24,4 @@ lista.jsonl
 eventos.jsonl
 .genai/podado/
 .cursor/
+.agents/
