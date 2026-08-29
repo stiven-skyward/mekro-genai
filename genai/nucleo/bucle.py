@@ -26,6 +26,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Callable
 
+from .. import tui
 from ..cerebro.base import Uso
 from ..ahorro import podar
 
@@ -87,7 +88,7 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
             sesion.usuario(f"[AVISO DE FONDO] {aviso}")
             traza.append({"vuelta": vuelta, "aviso_fondo": aviso})
             if traza_por_pantalla:
-                print(f"  ·· {aviso}")
+                print(tui.atenuado(f"  ·· {aviso}"))
 
         # El conteo EXACTO de lo que el modelo verá: mensajes montados MÁS las firmas
         # de herramientas, tokenizados de verdad. C72 murió dos veces en el mismo token
@@ -124,7 +125,7 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
                 sesion.cerebro.olvidar()   # la caché vieja no casa con la vida nueva
             traza.append({"vuelta": vuelta, "renacimiento": ahorro})
             if traza_por_pantalla and ahorro:
-                print(f"  ·· renacimiento: {ahorro} caracteres resumidos")
+                print(tui.atenuado(f"  ·· renacimiento: {ahorro} caracteres resumidos"))
 
         # 1024 y no el 512 por defecto: C24 midió una llamada truncada por el tope en
         # mitad del tool_call (rojo, vuelta 3: 512 tokens justos de think más llamada),
@@ -142,10 +143,14 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
             return _fin("interrumpido", ultimo_texto, sesion, traza)
 
         if traza_por_pantalla:
-            print(f"[{vuelta}] {r.uso.tokens_salida} tok · {r.uso.segundos:.1f} s"
-                  + (f" · {len(r.llamadas)} llamadas" if r.llamadas else ""))
-            if r.texto:
-                print("  " + r.texto[:400].replace("\n", "\n  "))
+            print(tui.atenuado(
+                f"[{vuelta}] {r.uso.tokens_salida} tok · {r.uso.segundos:.1f} s"
+                + (f" · {len(r.llamadas)} llamadas" if r.llamadas else "")))
+            if r.texto and r.llamadas:
+                # con llamadas de por medio esto es el razonamiento de paso, no la
+                # respuesta final — se enseña recortado y sin markdown para no
+                # confundirlo con el texto de cierre del turno
+                print(tui.atenuado("  " + r.texto[:400].replace("\n", "\n  ")))
 
         # Formato roto: se le devuelve la queja concreta y se reintenta.
         _, _, quejas = analizar_llamadas(_recomponer(r))
@@ -170,7 +175,7 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
                                "YA la llamada a herramienta o la respuesta final.")
                 traza.append({"vuelta": vuelta, "cortado": "tope_tokens sin llamadas"})
                 if traza_por_pantalla:
-                    print("  ·· turno cortado sin llamadas: se le pide continuar")
+                    print(tui.atenuado("  ·· turno cortado sin llamadas: se le pide continuar"))
                 continue
             return _fin("fin", ultimo_texto, sesion, traza)
 
@@ -179,13 +184,18 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
                 sesion.observacion(ll.id, f"no existe la herramienta «{ll.nombre}»")
                 continue
             h = registro[ll.nombre]
+            # la intención se enseña ANTES de decidir: Claude Code y OpenCode pintan
+            # la tarjeta de la llamada aunque acabe vetada o denegada — es lo que se
+            # PIDIÓ, y eso importa tanto como lo que se permitió.
+            if traza_por_pantalla:
+                print(tui.linea_herramienta(ll.firma()))
             d = politica.decidir(h, ll.argumentos, preguntar)
             if not d.permitido:
                 sesion.intervenciones += 1
                 sesion.observacion(ll.id, f"DENEGADO: {d.motivo}")
                 traza.append({"vuelta": vuelta, "llamada": ll.firma(), "denegado": d.motivo})
                 if traza_por_pantalla:
-                    print(f"  ✗ {ll.firma()} → {d.motivo}")
+                    print(tui.linea_resultado(False, f"DENEGADO: {d.motivo}"))
                 continue
             t1 = time.time()
             res = registro.invocar(ll.nombre, ll.argumentos)
@@ -210,7 +220,11 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
             traza.append({"vuelta": vuelta, "llamada": ll.firma(),
                           "ok": res.ok, "segundos": round(seg, 2)})
             if traza_por_pantalla:
-                print(f"  {'✓' if res.ok else '✗'} {ll.firma()}  ({seg:.1f} s)")
+                resumen = (res.salida.splitlines() or [""])[0]
+                print(tui.linea_resultado(res.ok, resumen, seg))
+                datos = res.datos or {}
+                if res.ok and ll.nombre in ("editar", "escribir") and "despues" in datos:
+                    print(tui.diff(datos.get("antes", ""), datos["despues"]))
 
     return _fin("tope_vueltas", ultimo_texto, sesion, traza)
 

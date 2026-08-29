@@ -3,6 +3,7 @@
     genai tarea "arregla el bug de suma.py"     un encargo en el directorio actual
     genai tarea "..." --modo todo               sin preguntar (cuidado)
     genai tarea "..." --cerebro eco              el arnés sin modelo (pruebas)
+    genai chat                                   conversación continua (Claude Code/OpenCode)
     genai version                                qué hay instalado y qué cerebro ve
     genai cerebros                               tres caminos para traer un cerebro de nube
     genai proveedores [texto]                    207 proveedores BYOK + los 8 de fábrica
@@ -30,10 +31,19 @@ import json
 import os
 from pathlib import Path
 
+try:
+    import readline  # noqa: F401 — su sola importación activa historial y edición
+                     # (flechas, Ctrl-R) en todo `input()` de este proceso, en Linux
+                     # y macOS. No existe en el Python de base de Windows, y aquí eso
+                     # no importa: el propio README exige WSL para este arnés.
+except ImportError:
+    pass
+
+from . import tui
 from .cerebro import cargar
 from .herramientas import estandar
 from .memoria import HERRAMIENTAS as HERRAMIENTAS_HOLO
-from .nucleo import Politica, Sesion, preguntar_por_consola, turno
+from .nucleo import MODOS, Politica, Sesion, preguntar_por_consola, turno
 
 SISTEMA = """Eres Mekro-Genai, un agente de ingeniería que trabaja en el repositorio {raiz}.
 
@@ -46,7 +56,7 @@ Cada vuelta tuya cuesta segundos de cómputo local. Por eso:
 Si algo te bloquea, dilo y para. Inventar un resultado cuesta más que no tenerlo."""
 
 
-# ── `genai tarea` ────────────────────────────────────────────────────────────
+# ── lo común entre `genai tarea` y `genai chat` ──────────────────────────────
 def _registro_para(a) -> object:
     registro = estandar(incluir_peligrosas=a.modo != "plan",
                         web=not a.sin_web, malla=a.malla)
@@ -59,7 +69,11 @@ def _registro_para(a) -> object:
     return registro
 
 
-def cmd_tarea(a) -> int:
+def _preparar_sesion(a, titulo: str):
+    """Cerebro, registro multi-sesión y candado — lo que `tarea` y `chat` necesitan
+    por igual antes de poder correr un `turno()`. Devuelve `None` si algo lo impide
+    (el porqué ya se imprimió); si no, `(cerebro, sesion, reg, registro, ultima, _S)`.
+    """
     os.environ["MG_CEREBRO"] = a.cerebro        # lo heredan los roles auxiliares
     # modo híbrido: el principal sigue siendo el de --cerebro; los auxiliares, otro.
     for rol, valor in (("subagente", a.cerebro_subagente or a.hibrido),
@@ -84,10 +98,10 @@ def cmd_tarea(a) -> int:
     # convertiría esto en un turno de espera, que es lo contrario de lo que se busca.
     from . import sesiones as _S
     reg = (next((x for x in _S.listar() if x["id"] == a.sesion), None) if a.sesion
-           else (None if a.continuar else _S.crear(a.encargo[:60])))
+           else (None if a.continuar else _S.crear(titulo[:60])))
     if a.sesion and not reg:
         print(f"no existe la sesión «{a.sesion}». Mira `genai sesiones`.")
-        return 2
+        return None
 
     ultima = Path(".genai") / "ultima.json"
     if a.continuar:
@@ -95,7 +109,7 @@ def cmd_tarea(a) -> int:
         # re-prefilla la transcripción UNA vez; después, append-exacto normal.
         if not ultima.exists():
             print(f"no hay sesión que continuar en {ultima}: lanza una tarea primero.")
-            return 2
+            return None
         sesion = Sesion.de_dict(json.loads(ultima.read_text(encoding="utf-8")), cerebro)
         print(f"continuando la sesión {sesion.id} ({sesion.vueltas} vueltas previas, "
               f"{len(sesion.mensajes)} mensajes)")
@@ -109,9 +123,7 @@ def cmd_tarea(a) -> int:
     else:
         sesion = Sesion(sistema=SISTEMA.format(raiz=Path.cwd()), cerebro=cerebro,
                         id=reg["id"])
-    politica = Politica(modo=a.modo)
-    print(f"cerebro {cerebro.nombre} · modo {a.modo} · topes: {a.vueltas} vueltas, "
-          f"{a.tokens} tokens, {a.segundos} s")
+
     # streaming (M5.5): a 2,9 tok/s, ver avanzar el texto ES la experiencia. El
     # cerebro entrega deltas decodificables; aquí solo se pintan según llegan.
     if hasattr(cerebro, "al_token") and not a.sin_streaming:
@@ -120,9 +132,26 @@ def cmd_tarea(a) -> int:
     tomada, queja = _S.tomar(reg["id"])
     if not tomada:
         print(queja)
-        return 2
+        return None
 
-    registro = _registro_para(a)
+    return cerebro, sesion, reg, _registro_para(a), ultima, _S
+
+
+def _guardar_sesion(sesion: Sesion, ultima: Path) -> None:
+    ultima.parent.mkdir(exist_ok=True)
+    ultima.write_text(json.dumps(sesion.a_dict(), ensure_ascii=False, indent=1),
+                      encoding="utf-8")
+
+
+# ── `genai tarea` ────────────────────────────────────────────────────────────
+def cmd_tarea(a) -> int:
+    prep = _preparar_sesion(a, a.encargo)
+    if prep is None:
+        return 2
+    cerebro, sesion, reg, registro, ultima, _S = prep
+    print(tui.banner("Mekro-Genai", [
+        f"cerebro {tui.resalte(cerebro.nombre)} · modo {a.modo}",
+        f"topes: {a.vueltas} vueltas · {a.tokens} tokens · {a.segundos} s"]))
 
     def _correr(encargo: str, modo: str):
         return turno(sesion, registro, Politica(modo=modo), encargo,
@@ -136,7 +165,7 @@ def cmd_tarea(a) -> int:
         if a.modo == "plan" and r.motivo == "fin":
             # plan conversacional (M5.5): proponer → aprobar → ejecutar, en la MISMA
             # sesión (el append-exacto hace barata la continuación).
-            print(f"\n{r.texto}\n")
+            print(f"\n{tui.markdown_ligero(r.texto)}\n")
             try:
                 resp = input("¿ejecutar el plan? [s/N] ").strip().lower()
             except EOFError:
@@ -160,14 +189,93 @@ def cmd_tarea(a) -> int:
     if hasattr(sesion.cerebro, "cerrar"):
         sesion.cerebro.cerrar()
 
-    ultima.parent.mkdir(exist_ok=True)
-    ultima.write_text(json.dumps(sesion.a_dict(), ensure_ascii=False, indent=1),
-                      encoding="utf-8")
-    print(f"\n{r.texto}\n── {r.motivo} · {r.vueltas} vueltas · "
-          f"{r.uso.tokens_salida} tok salida / {r.uso.tokens_entrada} entrada · "
-          f"{r.uso.segundos:.1f} s · {r.intervenciones} intervenciones")
-    print(f"   sesión guardada en {ultima} (retoma con --continuar)")
+    _guardar_sesion(sesion, ultima)
+    print(f"\n{tui.markdown_ligero(r.texto)}")
+    print(tui.resumen_final(r.motivo, r.vueltas, r.uso.tokens_salida,
+                            r.uso.tokens_entrada, r.uso.segundos, r.intervenciones))
+    print(tui.atenuado(f"   sesión guardada en {ultima} (retoma con --continuar)"))
     return 0 if r.motivo == "fin" else 1
+
+
+# ── `genai chat` — la conversación continua que a esto le faltaba ───────────
+def cmd_chat(a) -> int:
+    """Claude Code y OpenCode se sienten un lugar de trabajo, no un comando que se
+    invoca, porque son eso: una conversación que sigue viva mientras la terminal
+    sigue abierta. `genai tarea` es un turno por proceso; esto es la misma `Sesion`
+    en memoria a lo largo de muchos mensajes, con el contexto append-exacto haciendo
+    barato cada uno nuevo — la arquitectura que META.md pide para el cerebro local
+    resulta ser también la que hace un REPL barato de sostener."""
+    prep = _preparar_sesion(a, "sesión interactiva")
+    if prep is None:
+        return 2
+    cerebro, sesion, reg, registro, ultima, _S = prep
+    modo = a.modo
+
+    print(tui.banner("Mekro-Genai · chat", [
+        f"cerebro {tui.resalte(cerebro.nombre)} · modo {modo} · sesión {sesion.id}",
+        "escribe tu encargo · /ayuda para los comandos · /salir o Ctrl-D para terminar"]))
+
+    try:
+        while True:
+            try:
+                linea = input(tui.negrita("\n› ")).strip()
+            except (EOFError, KeyboardInterrupt):
+                print()
+                break
+            if not linea:
+                continue
+            if linea in ("/salir", "/exit", "/quit"):
+                break
+            if linea == "/ayuda":
+                print(tui.caja([
+                    f"/modo <{'|'.join(MODOS)}>  cambia la política de permiso",
+                    "/nueva                         otra sesión, misma terminal y cerebro",
+                    "/sesion                        vueltas y tokens gastados hasta ahora",
+                    "/salir                         termina (o Ctrl-D)"], titulo="comandos"))
+                continue
+            if linea.startswith("/modo"):
+                partes = linea.split(maxsplit=1)
+                if len(partes) == 2 and partes[1] in MODOS:
+                    modo = partes[1]
+                    print(tui.atenuado(f"  modo → {modo}"))
+                else:
+                    print(tui.aviso(f"  modos válidos: {', '.join(MODOS)}"))
+                continue
+            if linea == "/sesion":
+                print(tui.atenuado(
+                    f"  {sesion.id} · {sesion.vueltas} vueltas · "
+                    f"{sesion.uso.tokens_salida} tok salida / "
+                    f"{sesion.uso.tokens_entrada} entrada"))
+                continue
+            if linea == "/nueva":
+                _S.soltar(reg["id"])
+                reg = _S.crear("sesión interactiva")
+                sesion = Sesion(sistema=SISTEMA.format(raiz=Path.cwd()), cerebro=cerebro,
+                                id=reg["id"])
+                tomada, queja = _S.tomar(reg["id"])
+                if not tomada:
+                    print(tui.fallo(f"  {queja}"))
+                    return 2
+                print(tui.atenuado(f"  nueva sesión {sesion.id}"))
+                continue
+
+            r = turno(sesion, registro, Politica(modo=modo), linea,
+                     tope_vueltas=a.vueltas, tope_tokens=a.tokens,
+                     tope_segundos=a.segundos,
+                     preguntar=preguntar_por_consola if modo == "preguntar" else None,
+                     traza_por_pantalla=not a.callado)
+            print(f"\n{tui.markdown_ligero(r.texto)}")
+            print(tui.resumen_final(r.motivo, r.vueltas, r.uso.tokens_salida,
+                                    r.uso.tokens_entrada, r.uso.segundos, r.intervenciones))
+            _guardar_sesion(sesion, ultima)
+    finally:
+        _S.latir(reg["id"], vueltas=sesion.vueltas)
+        _S.soltar(reg["id"])
+        if hasattr(sesion.cerebro, "cerrar"):
+            sesion.cerebro.cerrar()
+
+    print(tui.atenuado(f"sesión guardada en {ultima} (retoma con `genai tarea --continuar`)"))
+    return 0
 
 
 def cmd_version(_a) -> int:
@@ -450,39 +558,48 @@ def main(argv: list[str] | None = None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="orden")
 
+    def _flags_encargo(sp) -> None:
+        """Comunes a `tarea` (un turno por proceso) y `chat` (muchos, en el
+        mismo): qué cerebro, qué política de permiso, qué topes."""
+        sp.add_argument("--cerebro", default="gguf",
+                        help="gguf (local, defecto) · eco (pruebas) · "
+                             "nube:PROVEEDOR[/MODELO] con TU clave (docs/nube.md)")
+        sp.add_argument("--modo", default="preguntar", choices=MODOS)
+        sp.add_argument("--vueltas", type=int, default=16)
+        sp.add_argument("--tokens", type=int, default=4000)
+        sp.add_argument("--segundos", type=int, default=3600)
+        sp.add_argument("--continuar", action="store_true",
+                        help="retomar la última sesión de este directorio "
+                             "(.genai/ultima.json)")
+        sp.add_argument("--cerebro-subagente", default="",
+                        help="modo híbrido: cerebro para los subagentes de exploración")
+        sp.add_argument("--cerebro-resumidor", default="",
+                        help="modo híbrido: cerebro para el resumen del renacimiento")
+        sp.add_argument("--hibrido", default="",
+                        help="atajo: PROVEEDOR de nube para TODOS los roles auxiliares, "
+                             "conservando el cerebro principal local "
+                             "(ej.: --hibrido nube:gemini)")
+        sp.add_argument("--malla", action="store_true",
+                        help="modo Mesh: permite delegar tareas a pares (docs/malla.md)")
+        sp.add_argument("--sin-streaming", action="store_true",
+                        help="no pintar el texto según se genera")
+        sp.add_argument("--sin-web", action="store_true",
+                        help="quitar el acceso a la web (viene encendido; nunca alcanza "
+                             "esta máquina ni esta red)")
+        sp.add_argument("--sesion", default="",
+                        help="id de una sesión existente (`genai sesiones`); si no se "
+                             "da, se abre una nueva. Varios agentes pueden trabajar a "
+                             "la vez en el mismo proyecto, cada uno con la suya")
+        sp.add_argument("--guion", default="",
+                        help="JSON con el guion, solo para --cerebro eco")
+        sp.add_argument("--callado", action="store_true", help="sin traza por pantalla")
+
     t = sub.add_parser("tarea", help="un encargo agéntico en el directorio actual")
     t.add_argument("encargo")
-    t.add_argument("--cerebro", default="gguf",
-                   help="gguf (local, defecto) · eco (pruebas) · "
-                        "nube:PROVEEDOR[/MODELO] con TU clave (docs/nube.md)")
-    t.add_argument("--modo", default="preguntar",
-                   choices=("plan", "preguntar", "lista", "todo"))
-    t.add_argument("--vueltas", type=int, default=16)
-    t.add_argument("--tokens", type=int, default=4000)
-    t.add_argument("--segundos", type=int, default=3600)
-    t.add_argument("--continuar", action="store_true",
-                   help="retomar la última sesión de este directorio (.genai/ultima.json)")
-    t.add_argument("--cerebro-subagente", default="",
-                   help="modo híbrido: cerebro para los subagentes de exploración")
-    t.add_argument("--cerebro-resumidor", default="",
-                   help="modo híbrido: cerebro para el resumen del renacimiento")
-    t.add_argument("--hibrido", default="",
-                   help="atajo: PROVEEDOR de nube para TODOS los roles auxiliares, "
-                        "conservando el cerebro principal local (ej.: --hibrido nube:gemini)")
-    t.add_argument("--malla", action="store_true",
-                   help="modo Mesh: permite delegar tareas a pares (docs/malla.md)")
-    t.add_argument("--sin-streaming", action="store_true",
-                   help="no pintar el texto según se genera")
-    t.add_argument("--sin-web", action="store_true",
-                   help="quitar el acceso a la web (viene encendido; nunca alcanza "
-                        "esta máquina ni esta red)")
-    t.add_argument("--sesion", default="",
-                   help="id de una sesión existente (`genai sesiones`); si no se da, "
-                        "se abre una nueva. Varios agentes pueden trabajar a la vez en "
-                        "el mismo proyecto, cada uno con la suya")
-    t.add_argument("--guion", default="",
-                   help="JSON con el guion, solo para --cerebro eco")
-    t.add_argument("--callado", action="store_true", help="sin traza por pantalla")
+    _flags_encargo(t)
+
+    ch = sub.add_parser("chat", help="conversación continua (estilo Claude Code/OpenCode)")
+    _flags_encargo(ch)
 
     sub.add_parser("version", help="qué hay instalado y qué cerebro ve")
 
@@ -515,6 +632,8 @@ def main(argv: list[str] | None = None) -> int:
     a = ap.parse_args(argv)
     if a.orden == "tarea":
         return cmd_tarea(a)
+    if a.orden == "chat":
+        return cmd_chat(a)
     if a.orden == "version":
         return cmd_version(a)
     if a.orden == "malla":

@@ -44,11 +44,16 @@ def leer(ruta: str, desde: int = 1, lineas: int = 400) -> Resultado:
 def escribir(ruta: str, contenido: str) -> Resultado:
     p = Path(ruta)
     existia = p.exists()
+    antes = p.read_text(encoding="utf-8", errors="ignore") if existia else ""
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(contenido, encoding="utf-8")
     verbo = "sobrescrito" if existia else "creado"
+    # antes/despues van en `datos` —«para el arnés, no para el modelo»— para que la
+    # CLI pueda enseñar un diff de verdad sin que el texto completo del fichero
+    # entre nunca en la transcripción que ve el cerebro.
     return Resultado(True, f"{verbo} {ruta} ({len(contenido.splitlines())} líneas)",
-                     {"ruta": str(p), "creado": not existia})
+                     {"ruta": str(p), "creado": not existia,
+                      "antes": antes, "despues": contenido})
 
 
 def editar(ruta: str, cambios: list) -> Resultado:
@@ -81,7 +86,8 @@ def editar(ruta: str, cambios: list) -> Resultado:
     delta = len(texto.splitlines()) - len(original.splitlines())
     return Resultado(True, f"{ruta}: {len(cambios)} cambios aplicados "
                            f"({delta:+d} líneas)\n" + "\n".join(aplicados),
-                     {"ruta": str(p), "cambios": len(cambios)})
+                     {"ruta": str(p), "cambios": len(cambios),
+                      "antes": original, "despues": texto})
 
 
 HERRAMIENTAS = [

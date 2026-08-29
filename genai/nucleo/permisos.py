@@ -164,12 +164,48 @@ class Politica:
         return Decision(True, f"los {len(trozos)} trozos casan con la lista blanca")
 
 
+def _vista_previa_edicion(herramienta, argumentos: dict) -> str | None:
+    """Diff ANTES de aprobar —lo que Claude Code enseña en su propio modal de
+    permiso—, calculado en memoria y sin tocar disco: si algo falla (ambiguo, ruta
+    inexistente) se calla y se cae al recuadro de argumentos normal; la validación de
+    verdad la sigue haciendo `editar()`/`escribir()` cuando de verdad se ejecute."""
+    from .. import tui
+    try:
+        from pathlib import Path
+        ruta = Path(str(argumentos.get("ruta", "")))
+        if herramienta.nombre == "escribir":
+            antes = ruta.read_text(encoding="utf-8", errors="ignore") if ruta.exists() else ""
+            return tui.diff(antes, str(argumentos.get("contenido", "")))
+        if herramienta.nombre == "editar" and ruta.exists():
+            original = ruta.read_text(encoding="utf-8")
+            texto = original
+            for c in argumentos.get("cambios", []):
+                viejo, nuevo = c.get("buscar", ""), c.get("poner", "")
+                if texto.count(viejo) == 1:
+                    texto = texto.replace(viejo, nuevo, 1)
+            return tui.diff(original, texto)
+    except Exception:  # noqa: BLE001 — esto es solo una vista previa, no la edición
+        return None
+    return None
+
+
 def preguntar_por_consola(herramienta, argumentos: dict) -> Decision:
     import json
-    print(f"\n⚠ {herramienta.nombre} quiere ejecutar:")
-    print("  " + json.dumps(argumentos, ensure_ascii=False, indent=2).replace("\n", "\n  "))
+
+    from .. import tui
+
+    lineas = [f"{tui.resalte(herramienta.nombre)} quiere ejecutar:"]
+    previa = (_vista_previa_edicion(herramienta, argumentos)
+             if herramienta.nombre in ("editar", "escribir") else None)
+    if previa:
+        lineas += previa.split("\n")
+    else:
+        cuerpo = json.dumps(argumentos, ensure_ascii=False, indent=2)
+        lineas += ["  " + l for l in cuerpo.splitlines()]
+    print()
+    print(tui.caja(lineas, titulo="permiso"))
     try:
-        r = input("  ¿permitir? [s/N] ").strip().lower()
+        r = input(f"  {tui.negrita('¿permitir?')} [s/N] ").strip().lower()
     except EOFError:
         return Decision(False, "sin terminal para preguntar")
     return Decision(r in ("s", "si", "sí", "y"), "decidido por el humano")

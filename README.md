@@ -55,10 +55,33 @@ genai version                                  # qué hay instalado y qué cereb
 genai tarea "arregla el bug de suma.py"        # un encargo en el directorio actual
 genai tarea "..." --modo todo --vueltas 8      # sin preguntar, con topes propios
 genai tarea "..." --cerebro eco                # el arnés sin modelo (pruebas)
+genai chat                                     # conversación continua (ver abajo)
 ```
 
 El modo por defecto es `preguntar`: lo peligroso se consulta por consola. Los topes
 (vueltas, tokens, segundos) existen porque cada vuelta cuesta segundos de CPU reales.
+
+## La terminal — `genai chat` y la estética de las llamadas
+
+`genai tarea` es un turno por proceso: bueno para scripts y para el banco, pero no una
+conversación. `genai chat` sí lo es — la **misma** `Sesion` en memoria a lo largo de
+muchos mensajes, con el contexto append-exacto haciendo barato cada uno nuevo:
+
+```bash
+genai chat                          # conversación continua, el cerebro por defecto
+genai chat --cerebro nube:gemini    # o cualquier otro --cerebro/--modo de `tarea`
+```
+
+Comandos dentro de la conversación: `/modo <plan|preguntar|lista|todo>` cambia la
+política de permiso sin salir, `/sesion` enseña vueltas y tokens gastados, `/nueva`
+abre otra sesión sin cerrar la terminal, `/salir` (o Ctrl-D) termina.
+
+Tanto `chat` como `tarea` comparten la misma estética de terminal (`genai/tui.py`,
+biblioteca estándar, sin dependencias): la llamada a una herramienta se enseña ANTES de
+ejecutarse (`● editar(...)`), el resultado después con ✓/✗, y `editar`/`escribir`
+muestran el **diff real** —tanto al pedir permiso como al aplicarlo— en vez de un
+volcado de argumentos. Los colores se apagan solos si la salida no es una terminal
+(`NO_COLOR`, `TERM=dumb`, o forzar con `MG_COLOR=0/1`).
 
 ## Interfaz gráfica — `genai ui`
 
