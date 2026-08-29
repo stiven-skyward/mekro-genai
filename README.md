@@ -74,7 +74,10 @@ genai chat --cerebro nube:gemini    # o cualquier otro --cerebro/--modo de `tare
 
 Comandos dentro de la conversación: `/modo <plan|preguntar|lista|todo>` cambia la
 política de permiso sin salir, `/sesion` enseña vueltas y tokens gastados, `/nueva`
-abre otra sesión sin cerrar la terminal, `/salir` (o Ctrl-D) termina.
+abre otra sesión sin cerrar la terminal, `/deshacer` restaura ficheros (ver abajo),
+`/salir` (o Ctrl-D) termina. `@ruta/al/fichero` en cualquier mensaje mete su contenido
+directo en el encargo, sin gastar una vuelta entera en pedirle al cerebro que llame a
+`leer` y esperar otra generación para que lo use.
 
 Tanto `chat` como `tarea` comparten la misma estética de terminal (`genai/tui.py`,
 biblioteca estándar, sin dependencias): la llamada a una herramienta se enseña ANTES de
@@ -82,6 +85,24 @@ ejecutarse (`● editar(...)`), el resultado después con ✓/✗, y `editar`/`e
 muestran el **diff real** —tanto al pedir permiso como al aplicarlo— en vez de un
 volcado de argumentos. Los colores se apagan solos si la salida no es una terminal
 (`NO_COLOR`, `TERM=dumb`, o forzar con `MG_COLOR=0/1`).
+
+### Lo que un cerebro que no se puede reintentar necesita, y Claude Code/OpenCode no
+
+Su tesis es un modelo de nube rápido y barato de reintentar; la de aquí es la contraria
+(ver arriba). Tres cosas se siguen de eso, y no tendrían sentido en un arnés cuyo cerebro
+tarda milisegundos:
+
+- **`genai deshacer [sesión]`** (o `/deshacer` en el chat): cada turno que toca ficheros
+  guarda solo, sin que nadie lo pida, el contenido de ANTES en `.genai/deshacer/`.
+  Deshacer una edición mala es instantáneo; regenerarla cuesta la vuelta entera otra
+  vez —minutos reales—. Un fichero que no existía se restaura borrándolo, no dejando
+  uno vacío. Repetir `/deshacer` camina hacia atrás, mensaje a mensaje.
+- **El latido**: mientras el modelo carga, prefilla el contexto o piensa en silencio
+  antes del primer carácter, la terminal muestra `·· generando… N s` en vez de parecer
+  colgada. Se apaga solo si la salida no es una terminal real.
+- **Aviso al terminar** (campanita de terminal siempre; notificación de escritorio si
+  `notify-send`/`osascript` existen) cuando un turno pasa de 15 s — quien se fue a hacer
+  otra cosa mientras 16 hilos trabajaban no tiene que volver a mirar la pantalla.
 
 ## Interfaz gráfica — `genai ui`
 

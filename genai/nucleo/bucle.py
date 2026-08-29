@@ -26,7 +26,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Callable
 
-from .. import tui
+from .. import deshacer, tui
 from ..cerebro.base import Uso
 from ..ahorro import podar
 
@@ -69,6 +69,10 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
     t0 = time.time()
     traza: list[dict] = []
     ultimo_texto = ""
+    # deshacer.py: el contenido de un fichero justo ANTES de que este turno lo toque
+    # por primera vez —no antes de cada llamada suelta—, para que «deshaz lo que
+    # acabo de pedir» sea la unidad, no «deshaz la tercera de las cinco ediciones».
+    punto_control: dict[str, str | None] = {}
 
     for vuelta in range(1, tope_vueltas + 1):
         # think selectivo (C79→C80): el razonamiento vive donde se forma el criterio
@@ -77,9 +81,9 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
         if pensar_vueltas and hasattr(sesion.cerebro, "pensar"):
             sesion.cerebro.pensar = vuelta <= pensar_vueltas
         if sesion.uso.tokens_salida >= tope_tokens:
-            return _fin("tope_tokens", ultimo_texto, sesion, traza)
+            return _fin("tope_tokens", ultimo_texto, sesion, traza, peticion, punto_control)
         if time.time() - t0 > tope_segundos:
-            return _fin("tope_segundos", ultimo_texto, sesion, traza)
+            return _fin("tope_segundos", ultimo_texto, sesion, traza, peticion, punto_control)
 
         # los avisos de fondo llegan al EMPEZAR la vuelta: un agente síncrono no tiene
         # interrupciones, tiene vueltas (M5.3). Cada aviso se entrega una sola vez.
@@ -140,7 +144,7 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
         if r.motivo_parada == "interrumpido":
             # Ctrl-C a mitad de generación (M5.5): lo generado queda en la sesión,
             # el turno cierra con su motivo, y --continuar retoma donde se cortó.
-            return _fin("interrumpido", ultimo_texto, sesion, traza)
+            return _fin("interrumpido", ultimo_texto, sesion, traza, peticion, punto_control)
 
         if traza_por_pantalla:
             print(tui.atenuado(
@@ -177,7 +181,7 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
                 if traza_por_pantalla:
                     print(tui.atenuado("  ·· turno cortado sin llamadas: se le pide continuar"))
                 continue
-            return _fin("fin", ultimo_texto, sesion, traza)
+            return _fin("fin", ultimo_texto, sesion, traza, peticion, punto_control)
 
         for ll in r.llamadas:
             if ll.nombre not in registro:
@@ -214,19 +218,27 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
             # aceptan ahí— así que viaja en un mensaje de usuario propio, justo
             # detrás. Un adjunto que el proveedor tira en silencio es peor que no
             # mandarlo: el modelo respondería con seguridad sobre algo que no vio.
-            adj = (res.datos or {}).get("adjunto")
+            datos = res.datos or {}
+            adj = datos.get("adjunto")
             if adj:
                 sesion.adjuntar(adj)
+            if res.ok and ll.nombre in ("editar", "escribir") and "despues" in datos:
+                ruta = datos.get("ruta")
+                # solo el PRIMER toque de este turno a esta ruta cuenta como punto de
+                # control: si el mismo turno la edita dos veces, deshacer tiene que
+                # devolver el estado de ANTES DEL TURNO, no el de la edición anterior.
+                if ruta and ruta not in punto_control:
+                    existia = not datos.get("creado", False)
+                    punto_control[ruta] = datos.get("antes", "") if existia else None
             traza.append({"vuelta": vuelta, "llamada": ll.firma(),
                           "ok": res.ok, "segundos": round(seg, 2)})
             if traza_por_pantalla:
                 resumen = (res.salida.splitlines() or [""])[0]
                 print(tui.linea_resultado(res.ok, resumen, seg))
-                datos = res.datos or {}
                 if res.ok and ll.nombre in ("editar", "escribir") and "despues" in datos:
                     print(tui.diff(datos.get("antes", ""), datos["despues"]))
 
-    return _fin("tope_vueltas", ultimo_texto, sesion, traza)
+    return _fin("tope_vueltas", ultimo_texto, sesion, traza, peticion, punto_control)
 
 
 def _recomponer(respuesta) -> str:
@@ -237,6 +249,11 @@ def _recomponer(respuesta) -> str:
     return "\n".join(p for p in partes if p)
 
 
-def _fin(motivo: str, texto: str, sesion: Sesion, traza: list[dict]) -> Resultado:
+def _fin(motivo: str, texto: str, sesion: Sesion, traza: list[dict],
+        peticion: str, punto_control: dict[str, str | None]) -> Resultado:
+    # el punto de control se guarda pase lo que pase —hasta un `tope_segundos` a
+    # medias puede haber tocado ficheros, y ESOS son justo los que más interesa poder
+    # deshacer sin gastar otra vuelta entera en pedirlo de nuevo.
+    deshacer.guardar(sesion.id, peticion, punto_control)
     return Resultado(motivo=motivo, texto=texto, vueltas=sesion.vueltas,
                      uso=sesion.uso, intervenciones=sesion.intervenciones, traza=traza)

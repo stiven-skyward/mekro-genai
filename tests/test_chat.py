@@ -72,4 +72,34 @@ c(all(not s.get("en_curso") for s in sesiones.listar()),
   "tras las tres conversaciones, NINGUNA sesión quedó marcada «en curso»: /salir, "
   "un /modo inválido y el EOF sueltan el candado por igual")
 
+# ── @fichero: el contenido llega al mensaje SIN gastar un turno en `leer` ───
+adjunto = tmp / "notas.txt"
+adjunto.write_text("contenido de prueba único 7f3a", encoding="utf-8")
+r4 = _chat(f"resume @{adjunto}\n/salir\n")
+c(r4.returncode == 0, "un mensaje con @fichero también sale limpio")
+c(f"@{adjunto} adjuntado" in r4.stdout, "la terminal confirma qué fichero adjuntó")
+
+ultima4 = json.loads((tmp / ".genai" / "ultima.json").read_text(encoding="utf-8"))
+mensaje_usuario = next(m["contenido"] for m in ultima4["mensajes"] if m["rol"] == "usuario")
+c("contenido de prueba único 7f3a" in mensaje_usuario,
+  "el CONTENIDO del fichero quedó dentro del mensaje real que vio el cerebro — no "
+  "una promesa de que se leyó, sino el texto de verdad en la transcripción guardada")
+
+# ── /deshacer: un punto de control real, restaurado desde dentro del chat ───
+objetivo = tmp / "editable.txt"
+objetivo.write_text("antes\n", encoding="utf-8")
+guion_editar = tmp / "guion_editar.json"
+guion_editar.write_text(json.dumps([
+    "<tool_call>\n" + json.dumps({"name": "editar", "arguments": {
+        "ruta": str(objetivo),
+        "cambios": [{"buscar": "antes", "poner": "despues"}]}}) + "\n</tool_call>",
+    "cambiado.",
+]), encoding="utf-8")
+r5 = _chat("cambia el fichero\n/deshacer\n/salir\n", extra=["--guion", str(guion_editar)])
+c(r5.returncode == 0, "una conversación con edición + /deshacer sale limpia")
+c(objetivo.read_text() == "antes\n",
+  "/deshacer devolvió el fichero a su contenido de antes del mensaje, desde dentro "
+  "del propio REPL — sin gastar otra vuelta del cerebro en pedirlo de nuevo")
+c("deshecho:" in r5.stdout, "y la terminal confirma qué se deshizo")
+
 raise SystemExit(c.fin())

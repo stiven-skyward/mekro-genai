@@ -90,4 +90,30 @@ c("`" not in render, "y el código en línea también")
 
 os.environ.pop("MG_COLOR", None)
 
+# ── Heartbeat: sin terminal real, no hace NADA (ni un hilo, ni un carácter) ─
+import io
+from contextlib import redirect_stdout
+
+latido = tui.Heartbeat("probando")
+buf = io.StringIO()
+with redirect_stdout(buf):
+    latido.iniciar()   # sys.stdout.isatty() es False bajo una prueba: no debe arrancar hilo
+    latido.parar()
+c(buf.getvalue() == "", "sin TTY, Heartbeat no imprime nada — ni al iniciar ni al parar")
+latido.parar()   # una segunda parada sin haber arrancado tampoco debe reventar
+c(True, "parar() dos veces seguidas no revienta")
+
+# ── avisar_fin(): campanita solo por encima del umbral, y nunca revienta ────
+buf2 = io.StringIO()
+with redirect_stdout(buf2):
+    tui.avisar_fin(1.0, "turno corto")
+c("\a" not in buf2.getvalue(), "un turno corto (bajo el umbral) no suena campanita")
+
+buf3 = io.StringIO()
+with redirect_stdout(buf3):
+    tui.avisar_fin(tui.UMBRAL_AVISO + 1, "turno largo de prueba")
+c("\a" in buf3.getvalue(), "un turno largo sí suena la campanita")
+c(True, "y el intento de notificación de escritorio (notify-send/osascript, "
+        "ninguno instalado aquí) no rompe nada: es best-effort de verdad")
+
 raise SystemExit(c.fin())

@@ -29,6 +29,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import threading
 from pathlib import Path
 
 try:
@@ -54,6 +56,72 @@ Cada vuelta tuya cuesta segundos de cómputo local. Por eso:
 - Cuando la tarea esté hecha y verificada, responde SIN llamar a ninguna herramienta.
 
 Si algo te bloquea, dilo y para. Inventar un resultado cuesta más que no tenerlo."""
+
+
+_MENCION = re.compile(r"(?<!\S)@(\S+)")
+_TOPE_MENCION = 200_000
+
+
+def _expandir_menciones(texto: str) -> tuple[str, list[str]]:
+    """`@ruta/al/fichero` en un encargo mete el contenido directamente en el mensaje
+    —una vuelta menos que pedirle al cerebro que llame a `leer`, espere el resultado
+    y recién entonces conteste. Con un cerebro que cuesta minutos por vuelta esto no
+    es comodidad: es la diferencia entre uno y dos turnos completos de CPU real."""
+    adjuntos: list[str] = []
+    rutas: list[str] = []
+
+    def _sub(m: re.Match) -> str:
+        ruta = Path(m.group(1))
+        if not ruta.is_file():
+            return m.group(0)
+        try:
+            contenido = ruta.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            return m.group(0)
+        if len(contenido) > _TOPE_MENCION:
+            recortado = len(contenido) - _TOPE_MENCION
+            contenido = (contenido[:_TOPE_MENCION] +
+                        f"\n\n[… {recortado} caracteres omitidos: demasiado grande "
+                        "para adjuntar entero; pide el resto con `leer` acotado …]")
+        adjuntos.append(f"--- {ruta} ---\n{contenido}")
+        rutas.append(str(ruta))
+        return str(ruta)
+
+    resto = _MENCION.sub(_sub, texto)
+    if not adjuntos:
+        return texto, []
+    return resto + "\n\n" + "\n\n".join(adjuntos), rutas
+
+
+def _con_latido(cerebro: object) -> None:
+    """Envuelve `cerebro.generar` para que el hueco de silencio ANTES del primer
+    token —cargar el modelo, prefillar el contexto, un `<think>` de varios minutos—
+    lleve un latido en pantalla en vez de parecer un proceso colgado. Se envuelve
+    aquí, en la CLI, para no meter hilos ni relojes dentro de `bucle.py`: éste sigue
+    sin saber nada de latidos, solo llama a `cerebro.generar` como siempre."""
+    generar_real = cerebro.generar
+
+    def generar_con_latido(*args, **kw):
+        latido = tui.Heartbeat()
+        al_token_previo = getattr(cerebro, "al_token", None)
+        if al_token_previo:
+            primero = threading.Event()
+
+            def _con_parada(trozo, _prev=al_token_previo, _lat=latido, _p=primero):
+                if not _p.is_set():
+                    _p.set()
+                    _lat.parar()
+                _prev(trozo)
+            cerebro.al_token = _con_parada
+        latido.iniciar()
+        try:
+            return generar_real(*args, **kw)
+        finally:
+            latido.parar()
+            if al_token_previo:
+                cerebro.al_token = al_token_previo
+
+    cerebro.generar = generar_con_latido
 
 
 # ── lo común entre `genai tarea` y `genai chat` ──────────────────────────────
@@ -129,6 +197,9 @@ def _preparar_sesion(a, titulo: str):
     if hasattr(cerebro, "al_token") and not a.sin_streaming:
         cerebro.al_token = lambda trozo: print(trozo, end="", flush=True)
 
+    if not a.callado:
+        _con_latido(cerebro)
+
     tomada, queja = _S.tomar(reg["id"])
     if not tomada:
         print(queja)
@@ -160,8 +231,17 @@ def cmd_tarea(a) -> int:
                      preguntar=preguntar_por_consola if modo == "preguntar" else None,
                      traza_por_pantalla=not a.callado)
 
+    encargo, adjuntos = _expandir_menciones(a.encargo)
+    for ruta in adjuntos:
+        print(tui.atenuado(f"  · @{ruta} adjuntado directo (sin gastar un turno en "
+                           "pedir `leer`)"))
+    # sesion.uso es ACUMULADO de toda la sesión (importa con --continuar, que puede
+    # arrancar con horas ya gastadas): el aviso de «turno largo» tiene que medir
+    # SOLO lo que costó ESTA invocación, no arrastrar lo de antes.
+    segundos_antes = sesion.uso.segundos
+
     try:
-        r = _correr(a.encargo, a.modo)
+        r = _correr(encargo, a.modo)
         if a.modo == "plan" and r.motivo == "fin":
             # plan conversacional (M5.5): proponer → aprobar → ejecutar, en la MISMA
             # sesión (el append-exacto hace barata la continuación).
@@ -190,6 +270,7 @@ def cmd_tarea(a) -> int:
         sesion.cerebro.cerrar()
 
     _guardar_sesion(sesion, ultima)
+    tui.avisar_fin(r.uso.segundos - segundos_antes, r.texto[:120] or f"terminó: {r.motivo}")
     print(f"\n{tui.markdown_ligero(r.texto)}")
     print(tui.resumen_final(r.motivo, r.vueltas, r.uso.tokens_salida,
                             r.uso.tokens_entrada, r.uso.segundos, r.intervenciones))
@@ -231,7 +312,19 @@ def cmd_chat(a) -> int:
                     f"/modo <{'|'.join(MODOS)}>  cambia la política de permiso",
                     "/nueva                         otra sesión, misma terminal y cerebro",
                     "/sesion                        vueltas y tokens gastados hasta ahora",
+                    "/deshacer                      restaura los ficheros a antes del último mensaje",
+                    "@ruta/al/fichero               mételo en el mensaje sin gastar un turno en leerlo",
                     "/salir                         termina (o Ctrl-D)"], titulo="comandos"))
+                continue
+            if linea == "/deshacer":
+                from . import deshacer
+                ok, mensaje, restaurados = deshacer.deshacer_ultimo(sesion.id)
+                if not ok:
+                    print(tui.aviso(f"  {mensaje}"))
+                else:
+                    print(tui.exito(f"  deshecho: {mensaje[:60]!r}" if mensaje else "  deshecho"))
+                    for r in restaurados:
+                        print(f"    ↺ {r}")
                 continue
             if linea.startswith("/modo"):
                 partes = linea.split(maxsplit=1)
@@ -259,11 +352,17 @@ def cmd_chat(a) -> int:
                 print(tui.atenuado(f"  nueva sesión {sesion.id}"))
                 continue
 
-            r = turno(sesion, registro, Politica(modo=modo), linea,
+            encargo, adjuntos = _expandir_menciones(linea)
+            for ruta in adjuntos:
+                print(tui.atenuado(f"  · @{ruta} adjuntado directo (sin gastar un "
+                                   "turno en pedir `leer`)"))
+            segundos_antes = sesion.uso.segundos   # delta de ESTE mensaje, no del chat entero
+            r = turno(sesion, registro, Politica(modo=modo), encargo,
                      tope_vueltas=a.vueltas, tope_tokens=a.tokens,
                      tope_segundos=a.segundos,
                      preguntar=preguntar_por_consola if modo == "preguntar" else None,
                      traza_por_pantalla=not a.callado)
+            tui.avisar_fin(r.uso.segundos - segundos_antes, r.texto[:120] or "listo")
             print(f"\n{tui.markdown_ligero(r.texto)}")
             print(tui.resumen_final(r.motivo, r.vueltas, r.uso.tokens_salida,
                                     r.uso.tokens_entrada, r.uso.segundos, r.intervenciones))
@@ -529,6 +628,32 @@ def cmd_mcp(args: list[str]) -> int:
     return 0
 
 
+# ── `genai deshacer` ─────────────────────────────────────────────────────────
+def cmd_deshacer(args: list[str]) -> int:
+    """Restaura los ficheros al estado de ANTES del último turno de una sesión —el
+    checkpoint que `bucle.py` guarda solo, sin que nadie lo pida (ver deshacer.py).
+    Sin argumentos usa la sesión de `.genai/ultima.json` de este directorio."""
+    from . import deshacer
+
+    sesion_id = args[0] if args else ""
+    if not sesion_id:
+        ultima = Path(".genai") / "ultima.json"
+        if not ultima.exists():
+            print("no hay ninguna sesión reciente en este directorio; da el id a "
+                  "mano: `genai deshacer <id>` (`genai sesiones` para verlos).")
+            return 2
+        sesion_id = json.loads(ultima.read_text(encoding="utf-8"))["id"]
+
+    ok, mensaje, restaurados = deshacer.deshacer_ultimo(sesion_id)
+    if not ok:
+        print(tui.aviso(mensaje))
+        return 1
+    print(tui.exito(f"deshecho: {mensaje[:80]!r}" if mensaje else "deshecho"))
+    for r in restaurados:
+        print(f"  ↺ {r}")
+    return 0
+
+
 def cmd_ui(puerto: int, abrir_navegador: bool) -> int:
     """`genai ui` — la interfaz gráfica: una página servida por `genai/servidor.py`
     (`genai sesiones servir` es el mismo servidor; esto solo añade abrir el
@@ -603,6 +728,11 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser("version", help="qué hay instalado y qué cerebro ve")
 
+    de = sub.add_parser("deshacer",
+                        help="restaura los ficheros al estado de antes del último turno")
+    de.add_argument("sesion", nargs="?", default="",
+                    help="id de sesión (por defecto, la última usada en este directorio)")
+
     m = sub.add_parser("malla", help="modo Mesh: donar cómputo o ver la cuenta")
     m.add_argument("resto", nargs=argparse.REMAINDER,
                    help="servir [--puerto N --hilos N] | cuenta")
@@ -634,6 +764,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_tarea(a)
     if a.orden == "chat":
         return cmd_chat(a)
+    if a.orden == "deshacer":
+        return cmd_deshacer([a.sesion] if a.sesion else [])
     if a.orden == "version":
         return cmd_version(a)
     if a.orden == "malla":

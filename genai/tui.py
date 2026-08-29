@@ -18,9 +18,13 @@ comportamiento para pruebas o para quien prefiera lo plano siempre.
 from __future__ import annotations
 
 import difflib
+import json
 import os
 import re
+import subprocess
 import sys
+import threading
+import time
 
 _RESET = "\033[0m"
 _CODIGOS = {
@@ -149,6 +153,75 @@ def markdown_ligero(texto: str) -> str:
             l = l[:len(l) - len(despojada)] + atenuado("•") + despojada[1:]
         salida.append(l)
     return "\n".join(salida)
+
+
+# ── el latido ────────────────────────────────────────────────────────────────
+class Heartbeat:
+    """El hueco de silencio real de un cerebro local —cargar 9 GB, prefillar el
+    contexto, un `<think>` de varios minutos antes del primer carácter— se ve
+    IDÉNTICO a un proceso colgado si no hay nada en pantalla. Claude Code y OpenCode
+    no necesitan esto: su prefill es sub-segundo. Aquí es la diferencia entre saber
+    que sigue vivo y preguntarse si hay que matarlo con Ctrl-C."""
+
+    def __init__(self, etiqueta: str = "generando"):
+        self._etiqueta = etiqueta
+        self._parar = threading.Event()
+        self._hilo: threading.Thread | None = None
+        self._t0 = 0.0
+
+    def iniciar(self) -> None:
+        try:
+            en_terminal = sys.stdout.isatty()
+        except Exception:
+            en_terminal = False
+        if not en_terminal or self._hilo is not None:
+            return
+        self._t0 = time.monotonic()
+        self._parar.clear()
+
+        def _tick() -> None:
+            while not self._parar.wait(0.5):
+                seg = time.monotonic() - self._t0
+                print(f"\r{atenuado(f'  ·· {self._etiqueta}… {seg:,.0f} s')}",
+                     end="", flush=True)
+
+        self._hilo = threading.Thread(target=_tick, daemon=True)
+        self._hilo.start()
+
+    def parar(self) -> None:
+        if self._hilo is None:
+            return
+        self._parar.set()
+        self._hilo.join(timeout=1)
+        self._hilo = None
+        print("\r" + " " * 60 + "\r", end="", flush=True)
+
+
+UMBRAL_AVISO = 15.0   # segundos: por debajo, un aviso es más ruido que ayuda
+
+
+def avisar_fin(segundos: float, resumen: str) -> None:
+    """Campanita de terminal + notificación de escritorio, best-effort, cuando el
+    turno fue LARGO — quien se fue a hacer otra cosa mientras el cerebro local
+    trabajaba necesita que algo le avise, no que vuelva a mirar la terminal cada
+    rato. La campanita (`\\a`) es lo único universal: sobrevive a SSH, tmux y WSL sin
+    depender de ningún daemon; la notificación es una capa extra que se calla sola
+    si `notify-send`/`osascript` no existen."""
+    if segundos < UMBRAL_AVISO:
+        return
+    try:
+        sys.stdout.write("\a")
+        sys.stdout.flush()
+    except Exception:
+        pass
+    for cmd in (["notify-send", "Mekro-Genai", resumen],
+               ["osascript", "-e",
+                f'display notification {json.dumps(resumen)} with title "Mekro-Genai"']):
+        try:
+            subprocess.run(cmd, capture_output=True, timeout=2)
+            return
+        except (OSError, subprocess.SubprocessError):
+            continue
 
 
 def resumen_final(motivo: str, vueltas: int, tok_salida: int, tok_entrada: int,
