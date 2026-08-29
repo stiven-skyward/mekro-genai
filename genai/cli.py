@@ -310,7 +310,8 @@ def cmd_chat(a) -> int:
 
     print(tui.banner("Mekro-Genai · chat", [
         f"cerebro {tui.resalte(cerebro.nombre)} · modo {modo} · sesión {sesion.id}",
-        "escribe tu encargo · /ayuda para los comandos · /salir o Ctrl-D para terminar"]))
+        "escribe tu encargo · /ayuda para los comandos",
+        "/salir o Ctrl-D para terminar"]))
 
     try:
         while True:
@@ -324,15 +325,15 @@ def cmd_chat(a) -> int:
             if linea in ("/salir", "/exit", "/quit"):
                 break
             if linea == "/ayuda":
-                print(tui.caja([
-                    f"/modo <{'|'.join(MODOS)}>  cambia la política de permiso",
-                    "/modelo <nombre>               cambia de cerebro SIN perder el historial "
-                    "(local, nube:proveedor/modelo, eco…)",
-                    "/nueva                         otra sesión, misma terminal y cerebro",
-                    "/sesion                        vueltas y tokens gastados hasta ahora",
-                    "/deshacer                      restaura los ficheros a antes del último mensaje",
-                    "@ruta/al/fichero               mételo en el mensaje sin gastar un turno en leerlo",
-                    "/salir                         termina (o Ctrl-D)"], titulo="comandos"))
+                print(tui.caja(tui.tabla([
+                    (f"/modo <{'|'.join(MODOS)}>", "cambia la política de permiso"),
+                    ("/modelo <nombre>", "cambia de cerebro sin perder el historial"),
+                    ("/nueva", "otra sesión, misma terminal y cerebro"),
+                    ("/sesion", "vueltas y tokens gastados hasta ahora"),
+                    ("/deshacer", "restaura los ficheros a antes del último mensaje"),
+                    ("@ruta/al/fichero", "mételo en el mensaje sin gastar un turno en leerlo"),
+                    ("/salir", "termina (o Ctrl-D)"),
+                ]), titulo="comandos"))
                 continue
             if linea.startswith("/modelo"):
                 partes = linea.split(maxsplit=1)

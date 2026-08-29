@@ -21,8 +21,10 @@ import difflib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import textwrap
 import threading
 import time
 
@@ -69,23 +71,71 @@ def ancho_visible(s: str) -> int:
 
 
 # ── cajas ─────────────────────────────────────────────────────────────────────
+def _ancho_terminal() -> int:
+    # 80 de suelo: el ancho por defecto más común de cualquier consola (incluida la
+    # mayoría de configuraciones de Windows) cuando no se puede preguntar de verdad
+    # —salida redirigida, o la terminal no responde el ioctl—.
+    return shutil.get_terminal_size(fallback=(80, 24)).columns
+
+
 def caja(lineas: list[str], titulo: str = "") -> str:
     """Un recuadro de esquinas redondeadas — la misma firma visual que el modal de
     permiso de Claude Code y la ventana de bienvenida de OpenCode. Los bordes son
-    caracteres Unicode, no ANSI: se ven igual con o sin color."""
-    interior = max([ancho_visible(l) for l in lineas] + [ancho_visible(titulo)] + [10])
-    interior = min(interior, 96)
+    caracteres Unicode, no ANSI: se ven igual con o sin color.
+
+    Una línea más ancha que la terminal real ROMPE el recuadro entero —el borde de
+    cierre acaba en la fila de abajo, desalineado—, así que aquí se envuelve por
+    palabras a lo que quepa antes de calcular nada más. El envoltorio actúa sobre el
+    texto SIN color: las pocas líneas que de verdad desbordan hoy son texto plano de
+    ayuda, no código coloreado, y perder el color de una línea que se parte es mejor
+    que un recuadro que ya no lo es."""
+    disponible = max(20, _ancho_terminal() - 4)
+    expandidas: list[str] = []
+    for l in lineas:
+        if ancho_visible(l) <= disponible:
+            expandidas.append(l)
+        else:
+            sin_color = _ESCAPE.sub("", l)
+            expandidas.extend(textwrap.wrap(sin_color, disponible) or [""])
+
+    # el título necesita, además de su propio ancho, sitio para al menos un guion
+    # de relleno detrás — sin este +2, un título que es la línea más larga de la
+    # caja deja el borde de arriba UN CARÁCTER más corto que las filas de abajo.
+    minimo_titulo = ancho_visible(titulo) + 2 if titulo else 0
+    interior = max([ancho_visible(l) for l in expandidas] + [minimo_titulo] + [10])
+    interior = min(interior, disponible)
     if titulo:
-        relleno = "─" * max(1, interior + 2 - ancho_visible(titulo) - 4)
+        relleno = "─" * max(1, interior - ancho_visible(titulo) - 1)
         sup = f"╭─ {negrita(titulo)} {relleno}╮"
     else:
         sup = "╭" + "─" * (interior + 2) + "╮"
     filas = []
-    for l in lineas:
-        pad = " " * (interior - ancho_visible(l))
+    for l in expandidas:
+        pad = " " * max(0, interior - ancho_visible(l))
         filas.append(f"│ {l}{pad} │")
     inf = "╰" + "─" * (interior + 2) + "╯"
     return "\n".join([sup, *filas, inf])
+
+
+def tabla(filas: list[tuple[str, str]]) -> list[str]:
+    """Dos columnas alineadas por el ancho REAL de la primera —nunca espacios
+    contados a mano, que es como una descripción larga acaba desbordando la
+    terminal sin que nadie lo note hasta que se ve roto en una consola distinta.
+
+    Si una descripción no cabe en una sola línea, se envuelve con SANGRÍA
+    COLGANTE bajo la propia columna de descripción —no bajo el margen izquierdo—:
+    dejar que `caja()` envolviera esto a ciegas alineaba la continuación como si
+    fuera una fila nueva, deshaciendo la tabla entera."""
+    ancho = max((ancho_visible(a) for a, _ in filas), default=0)
+    disponible = max(16, _ancho_terminal() - 4 - ancho - 2)
+    salida = []
+    for a, b in filas:
+        primera_col = f"{a}{' ' * (ancho - ancho_visible(a))}  "
+        envueltas = textwrap.wrap(b, disponible) or [""]
+        salida.append(primera_col + envueltas[0])
+        sangria = " " * ancho_visible(primera_col)
+        salida.extend(sangria + cont for cont in envueltas[1:])
+    return salida
 
 
 def banner(titulo: str, lineas: list[str]) -> str:
@@ -95,7 +145,17 @@ def banner(titulo: str, lineas: list[str]) -> str:
 # ── llamadas a herramienta ──────────────────────────────────────────────────────
 def linea_herramienta(firma: str) -> str:
     """Se imprime ANTES de ejecutar: la intención, no el resultado — lo que Claude
-    Code marca con «●» y OpenCode con su propio glifo de turno."""
+    Code marca con «●» y OpenCode con su propio glifo de turno.
+
+    `Llamada.firma()` corta a los 120 caracteres porque eso también alimenta
+    registros y trazas donde el detalle vale la pena; en pantalla, con la terminal
+    real de por medio, 120 caracteres siguen desbordando cualquier consola de 80
+    columnas (el caso más común). Aquí se recorta OTRA VEZ, más corto, solo para
+    lo que se ve en vivo — el registro que ya se guardó con la firma completa no
+    se toca."""
+    disponible = max(20, _ancho_terminal() - 2)   # "● " ocupa 2 columnas
+    if ancho_visible(firma) > disponible:
+        firma = firma[:disponible - 1] + "…"
     return f"{resalte('●')} {firma}"
 
 
@@ -103,10 +163,21 @@ def linea_resultado(ok: bool, resumen: str, segundos: float | None = None) -> st
     marca = exito("✓") if ok else fallo("✗")
     cola = f"  ({segundos:.1f} s)" if segundos is not None else ""
     primera, _, resto = resumen.partition("\n")
+    # la primera línea de una salida real (ruta larga, línea de `bash`, resumen de
+    # `git`) puede ser tan larga como la propia firma de la llamada — mismo recorte
+    # que linea_herramienta(), por la misma razón: en pantalla manda la terminal
+    # real, no un tope fijo pensado para el registro guardado en disco.
+    disponible = max(20, _ancho_terminal() - 6 - ancho_visible(cola))
+    if ancho_visible(primera) > disponible:
+        primera = primera[:disponible - 1] + "…"
     cuerpo = atenuado(primera) if ok else primera
     if resto:
         cuerpo += "\n" + "\n".join(atenuado("  " + l) for l in resto.splitlines())
-    return f"  ⎿ {marca} {cuerpo}{cola}"
+    # «└», del mismo bloque Unicode que los bordes de caja (muy soportado en
+    # cualquier fuente de terminal) — antes iba «⎿», el símbolo de odontología
+    # (U+23BF, bloque «Miscellaneous Technical»): casi ninguna fuente de consola lo
+    # trae, y en Windows en particular se ve como un cuadro vacío.
+    return f"  └ {marca} {cuerpo}{cola}"
 
 
 # ── diffs ────────────────────────────────────────────────────────────────────

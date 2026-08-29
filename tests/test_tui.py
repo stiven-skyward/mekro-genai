@@ -63,6 +63,30 @@ c(len(anchos) == 1, "todas las filas de la caja miden lo mismo visiblemente")
 
 con_titulo = tui.caja(["x"], titulo="permiso")
 c("permiso" in con_titulo, "el título va incrustado en el borde superior")
+c(len({tui.ancho_visible(l) for l in con_titulo.split("\n")}) == 1,
+  "y el borde CON título mide exactamente igual que las filas de abajo — el bug "
+  "real: un título que es la línea más larga dejaba el borde de arriba un "
+  "carácter más corto, porque el relleno de guiones no reservaba sitio para sí "
+  "mismo antes de calcular cuánto haría falta")
+
+titulo_largo = tui.caja(["x"], titulo="un título bastante más largo que el contenido")
+c(len({tui.ancho_visible(l) for l in titulo_largo.split("\n")}) == 1,
+  "y sigue midiendo igual incluso cuando el título ES la línea más larga de todas "
+  "—el caso límite exacto que rompía antes—")
+
+# ── linea_herramienta()/linea_resultado(): tampoco desbordan la terminal ────
+os.environ["COLUMNS"] = "80"
+firma_larga = "editar(" + "x" * 200 + ")"
+c(tui.ancho_visible(tui.linea_herramienta(firma_larga)) <= 80,
+  "una firma de 200+ caracteres (un `editar` con muchos cambios, por ejemplo) NO "
+  "desborda una terminal de 80 columnas, aunque firma() la deje pasar hasta 120")
+c("…" in tui.linea_herramienta(firma_larga),
+  "y el recorte lo dice, no lo hace en silencio")
+
+salida_larga = "x" * 200
+c(tui.ancho_visible(tui.linea_resultado(True, salida_larga, 1.2)) <= 80,
+  "y una primera línea de salida real (ruta larga, línea de bash) tampoco desborda")
+os.environ.pop("COLUMNS", None)
 
 # ── diff(): unified diff, sin las cabeceras ---/+++/@@ ──────────────────────
 os.environ["MG_COLOR"] = "0"
@@ -115,5 +139,40 @@ with redirect_stdout(buf3):
 c("\a" in buf3.getvalue(), "un turno largo sí suena la campanita")
 c(True, "y el intento de notificación de escritorio (notify-send/osascript, "
         "ninguno instalado aquí) no rompe nada: es best-effort de verdad")
+
+# ── caja(): NUNCA más ancha que la terminal real — el bug que reportó el usuario ──
+_col_vieja = os.environ.get("COLUMNS")
+try:
+    os.environ["COLUMNS"] = "40"
+    larga = "esta línea es bastante más larga que cuarenta columnas de ancho, de sobra"
+    recuadro = tui.caja([larga])
+    anchos = {len(l) for l in recuadro.split("\n")}
+    c(len(anchos) == 1, "con terminal angosta, TODAS las filas miden exactamente igual")
+    c(next(iter(anchos)) <= 40,
+      "y ninguna fila —ni con una línea que antes desbordaba— pasa del ancho real "
+      "de la terminal: esto es justo lo que rompía el /ayuda en una consola de 80 "
+      "columnas (81 de ancho real contra 80 disponibles)")
+    c(len(recuadro.split("\n")) > 3, "la línea larga se partió en varias filas, no "
+                                     "se dejó desbordar ni se cortó en silencio")
+finally:
+    if _col_vieja is None:
+        os.environ.pop("COLUMNS", None)
+    else:
+        os.environ["COLUMNS"] = _col_vieja
+
+# ── tabla(): alineación por ancho REAL, no espacios contados a mano ─────────
+filas = tui.tabla([("/x", "una"), ("/comando-largo", "otra")])
+c(filas[0].index("una") == filas[1].index("otra"),
+  "la columna de descripción empieza en la MISMA posición en ambas filas, "
+  "calculada del comando más largo — no de contar espacios en el código fuente")
+
+# ── linea_resultado(): sin el símbolo de odontología (casi ninguna fuente lo trae) ──
+os.environ["MG_COLOR"] = "0"
+c("⎿" not in tui.linea_resultado(True, "algo"),
+  "el conector de resultado ya NO es el símbolo de odontología (U+23BF)")
+c("└" in tui.linea_resultado(True, "algo"),
+  "sino uno del bloque de caracteres de caja — el mismo que ya usan los bordes, "
+  "así que si esos se ven bien, este también")
+os.environ.pop("MG_COLOR", None)
 
 raise SystemExit(c.fin())
