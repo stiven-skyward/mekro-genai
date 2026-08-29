@@ -48,6 +48,12 @@ Y dentro de esa terminal Linux, exactamente los mismos pasos de arriba (`git clo
 `pip install -e .`, `genai ...`). PowerShell es solo la puerta a WSL, no el sitio donde
 corre nada.
 
+**`windows\mekro-genai-wsl.cmd`** hace ese salto por ti: lanza `genai` dentro de WSL con
+un doble clic (o desde PowerShell, `.\windows\mekro-genai-wsl.cmd chat`, `... tarea "..."`,
+`... ui`) sin tener que abrir la terminal de Linux a mano cada vez. Necesita `pip
+install -e .` ya hecho dentro de esa distro — verificado con el binario `genai` real,
+instalado tal cual documenta este README.
+
 ## Uso
 
 ```bash
