@@ -11,6 +11,7 @@ llamaba a `res.recortado()` y nada más—, y el filtro de herramientas es una p
 propia de MCP (el esquema de cada herramienta se reenvía en CADA vuelta del cliente que
 llama, se use o no).
 """
+import contextlib
 import io
 import json
 import os
@@ -167,5 +168,29 @@ if d is None:
     os.environ.pop("MG_MCP_HERRAMIENTAS", None)
 else:
     os.environ["MG_MCP_HERRAMIENTAS"] = d
+
+# ── trazar: el servidor era completamente mudo; con esto se ve, y NUNCA por stdout ──
+srv_callado = ServidorMCP()
+buf_err = io.StringIO()
+with contextlib.redirect_stderr(buf_err):
+    r = _hablar(srv_callado, {"jsonrpc": "2.0", "id": 9, "method": "tools/call",
+                              "params": {"name": "leer", "arguments": {"ruta": "META.md"}}})
+c(buf_err.getvalue() == "", "sin `trazar`, ni una línea en stderr — el defecto de "
+                           "siempre para los tres clientes ya registrados")
+c(not r[0]["result"]["isError"], "y la llamada funciona igual sin traza")
+
+srv_trazado = ServidorMCP(trazar=True)
+buf_err2 = io.StringIO()
+with contextlib.redirect_stderr(buf_err2):
+    r2 = _hablar(srv_trazado, {"jsonrpc": "2.0", "id": 10, "method": "tools/call",
+                               "params": {"name": "leer", "arguments": {"ruta": "META.md"}}})
+traza = buf_err2.getvalue()
+c("leer(" in traza, "con trazar=True, la llamada SÍ se ve en stderr")
+c("✓" in traza, "con la marca de resultado, no solo el nombre")
+# si la traza se hubiera colado por stdout en vez de stderr, `_hablar()` habría
+# reventado al parsear una línea que no es JSON — que NO reviente ya es la prueba
+c(len(r2) == 1 and not r2[0]["result"]["isError"],
+  "la respuesta JSON-RPC por stdout sigue siendo válida y única: la traza fue "
+  "SOLO a stderr, no contaminó el protocolo")
 
 raise SystemExit(c.fin())

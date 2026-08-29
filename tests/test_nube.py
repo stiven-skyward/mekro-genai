@@ -95,4 +95,36 @@ c(limpio["properties"]["x"]["type"] == "string", "y lo que sí entiende se conse
 c("falsa-gemini" not in g.nombre and "falsa-gemini" not in repr(g.nombre),
   "la clave jamás aparece en el nombre que va al registro")
 
+# ── .precio: BYOK sí lo trae si el catálogo lo conoce; suscripción, NUNCA ───
+from genai import catalogo                             # noqa: E402
+
+_cache_vieja = catalogo.CACHE
+tmp_cat = tmp / "modelos.json"
+catalogo.CACHE = tmp_cat
+try:
+    tmp_cat.write_text(json.dumps({
+        "deepseek": {"models": {"deepseek-chat": {"cost": {"input": 3, "output": 12}}}}}),
+        encoding="utf-8")
+    op = CerebroNube("deepseek")
+    c(op.precio == {"input": 3, "output": 12},
+      "BYOK con un modelo que el catálogo conoce trae el precio real")
+
+    tmp_cat.write_text(json.dumps({"deepseek": {"models": {}}}), encoding="utf-8")
+    op2 = CerebroNube("deepseek")
+    c(op2.precio is None,
+      "y si el catálogo no tiene ESE modelo, precio es None — nunca una cifra inventada")
+
+    import genai.copilot as _cop_mod                    # noqa: E402
+    _cop_original = _cop_mod.config
+    _cop_mod.config = lambda: {"dialecto": "openai", "url": "https://x", "clave": "tok-falso"}
+    try:
+        cop = CerebroNube("copilot")
+        c(cop.precio is None,
+          "una suscripción (Copilot) NUNCA muestra precio: no hay coste por token "
+          "que el usuario esté pagando de verdad, y mostrarlo sería engañoso")
+    finally:
+        _cop_mod.config = _cop_original
+finally:
+    catalogo.CACHE = _cache_vieja
+
 raise SystemExit(c.fin())

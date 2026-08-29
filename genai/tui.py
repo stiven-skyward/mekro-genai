@@ -224,6 +224,22 @@ def avisar_fin(segundos: float, resumen: str) -> None:
             continue
 
 
+def linea_costo(tok_entrada: int, tok_salida: int, precio: dict | None,
+                ahorro_cache: float = 0.0) -> str | None:
+    """Coste real en USD, SOLO cuando el catálogo conoce el precio del modelo (BYOK).
+    `None` para local, suscripción, o un proveedor que models.dev no cataloga —nunca
+    una cifra inventada donde no hay dato: la regla del proyecto es cifra medida o
+    silencio, nunca una aproximación disfrazada de medición."""
+    if not precio:
+        return None
+    costo = (tok_entrada / 1_000_000) * precio.get("input", 0) \
+           + (tok_salida / 1_000_000) * precio.get("output", 0)
+    partes = [f"${costo:.4f}"]
+    if ahorro_cache > 0:
+        partes.append(f"caché: {ahorro_cache * 100:.0f}% de la entrada")
+    return atenuado("   " + " · ".join(partes))
+
+
 def resumen_final(motivo: str, vueltas: int, tok_salida: int, tok_entrada: int,
                   segundos: float, intervenciones: int) -> str:
     partes = [f"{atenuado('──')} {motivo} · {vueltas} vueltas · "

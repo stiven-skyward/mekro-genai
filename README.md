@@ -104,6 +104,32 @@ tarda milisegundos:
   `notify-send`/`osascript` existen) cuando un turno pasa de 15 s — quien se fue a hacer
   otra cosa mientras 16 hilos trabajaban no tiene que volver a mirar la pantalla.
 
+### Lo que BYOK, suscripción y MCP necesitan, y el local no
+
+Local no tiene coste por token ni un cliente externo mirando; nube y MCP sí. Tres cosas
+más, con la misma disciplina de «cifra medida o silencio, nunca una aproximación»:
+
+- **Coste real en $** tras cada turno con `--cerebro nube:...`: `catalogo.py` ya trae el
+  precio de 7.483 modelos de models.dev (`cost.input`/`cost.output`, USD por millón de
+  tokens) — antes descargado y sin usar. Ahora se calcula y se enseña, junto al % de la
+  entrada que vino de caché de prefijo (`CerebroNube.ahorro_cache`, que tampoco se
+  mostraba en ningún sitio). Si el catálogo no conoce el modelo, o el cerebro es local o
+  de **suscripción** (Copilot, Google Code Assist — ahí no hay coste por token real que
+  tasar), no se enseña nada: no se inventa una cifra donde no hay dato.
+- **`--tope-costo USD`**: para el turno si el gasto estimado llega a eso — el mismo
+  «presupuesto como código» de siempre (`--vueltas`, `--tokens`, `--segundos`), llevado a
+  dinero de verdad. Sin efecto en local o suscripción, por la misma razón de arriba.
+- **`/modelo <nombre>`** en `genai chat`: cambia de cerebro EN MEDIO de la conversación,
+  sin perder ni un mensaje del historial — de local a `nube:gemini` para un paso puntual,
+  o al revés, o a una suscripción. Con 207 proveedores + suscripciones + local
+  disponibles, mezclarlos en una sola sesión es más valioso que en un arnés de un solo
+  proveedor.
+- **`genai mcp --trazar`**: el servidor MCP era completamente mudo —ni un `print`—
+  mientras Claude Code, Codex o Cursor lo usaban. Con esta bandera (opt-in; la invocación
+  normal de los tres clientes no cambia) la actividad se ve por stderr con la MISMA
+  estética del bucle interactivo (`● herramienta(args)` → `✓/✗`), sin tocar nunca stdout
+  —el canal JSON-RPC del protocolo—.
+
 ## Interfaz gráfica — `genai ui`
 
 ```bash

@@ -371,4 +371,32 @@ c(r_i.motivo == "interrumpido", "el Ctrl-C cierra el turno con su motivo, sin mo
 c(any(m.rol == "asistente" and "iba diciendo" in m.contenido for m in s_i.mensajes),
   "lo generado hasta el corte queda en la sesión (y --continuar lo retoma)")
 
+# ── tope_costo: solo frena si el cerebro EXPONE `.precio` (BYOK) ────────────
+from genai.cerebro.eco import CerebroEco   # noqa: E402
+
+
+class _ConPrecio(CerebroEco):
+    """Un precio absurdo a propósito: cualquier tope pequeño salta en la vuelta 2,
+    sin depender de cuántos tokens exactos gaste el preámbulo de herramientas."""
+    precio = {"input": 1_000_000, "output": 1_000_000}
+
+
+guion_costo = [llamada("bash", comando="echo hola"), "no debería llegar aquí"]
+
+s_costo = Sesion(sistema="pruebas", cerebro=_ConPrecio(guion=guion_costo))
+r_costo = turno(s_costo, estandar(), Politica(modo="todo"), "haz algo caro",
+                tope_costo=0.01, traza_por_pantalla=False)
+c(r_costo.motivo == "tope_costo",
+  "con .precio caro, el turno para por COSTE, no por vueltas ni tokens de salida")
+c(r_costo.vueltas == 1,
+  "se corta ANTES de la segunda generación: el coste acumulado ya superaba el tope "
+  "en el chequeo de inicio de vuelta, sin gastar otra generación de más")
+
+s_sin_precio = Sesion(sistema="pruebas", cerebro=cargar("eco", guion=guion_costo))
+r_sin_precio = turno(s_sin_precio, estandar(), Politica(modo="todo"), "haz algo barato",
+                     tope_costo=0.01, traza_por_pantalla=False)
+c(r_sin_precio.motivo == "fin",
+  "sin `.precio` (local, eco, o BYOK sin dato de catálogo) --tope-costo no hace NADA: "
+  "no hay coste real que tasar, y no se inventa uno")
+
 raise SystemExit(c.fin())

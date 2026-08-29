@@ -29,7 +29,7 @@ import urllib.request
 from pathlib import Path
 
 FUENTE = "https://models.dev/api.json"
-CACHE = Path.home() / ".config" / "genai" / "modelos.json"
+CACHE = Path(os.environ.get("MG_CATALOGO", Path.home() / ".config" / "genai" / "modelos.json"))
 FRESCO = 7 * 24 * 3600          # una semana; el catálogo no cambia cada hora
 AGENTE = "Mozilla/5.0 (compatible; Mekro-Genai)"
 
@@ -135,6 +135,29 @@ def resolver(proveedor: str) -> tuple[dict, str]:
              "modelo": modelos[0] if modelos else "",
              "env": (p.get("env") or [None])[0],
              "nombre": p.get("name", proveedor), "modelos": modelos}, queja)
+
+
+# Los ocho de fábrica (nube.py::PROVEEDORES) usan un nombre propio que no siempre
+# coincide con la clave de models.dev — «gemini» es Google AI Studio, pero el catálogo
+# lo archiva bajo «google»; «kimi» es Moonshot, archivado como «moonshotai».
+_ALIAS_CATALOGO = {"gemini": "google", "kimi": "moonshotai"}
+
+
+def precio(proveedor: str, modelo: str) -> dict | None:
+    """USD por millón de tokens: `{"input", "output"}` y, si el proveedor lo publica,
+    `"cache_read"`/`"cache_write"`. `None` si no se conoce —nunca una cifra inventada:
+    mejor no enseñar coste que enseñar uno que no es. No pide red: si el catálogo no
+    está en caché, no hay precio, y punto (misma regla que el resto de este módulo)."""
+    if not CACHE.is_file():
+        return None
+    try:
+        cat = json.loads(CACHE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    entrada = cat.get(_ALIAS_CATALOGO.get(proveedor, proveedor))
+    if not entrada:
+        return None
+    return (entrada.get("models") or {}).get(modelo, {}).get("cost") or None
 
 
 def buscar(texto: str, tope: int = 25) -> list[tuple[str, str, str]]:

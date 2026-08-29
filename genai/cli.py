@@ -214,6 +214,21 @@ def _guardar_sesion(sesion: Sesion, ultima: Path) -> None:
                       encoding="utf-8")
 
 
+def _mostrar_costo(cerebro: object, r) -> None:
+    """Solo imprime algo si `cerebro.precio` existe: BYOK con un modelo que el
+    catálogo cataloga. Local y suscripción se callan — no tienen coste por token
+    que enseñar, y este proyecto no aproxima donde no puede medir."""
+    precio = getattr(cerebro, "precio", None)
+    if not precio:
+        return
+    # `ahorro_cache` es una @property en CerebroNube, no un método — sin esto revienta
+    # con "'float' object is not callable" en la primera carrera BYOK de verdad.
+    ahorro = getattr(cerebro, "ahorro_cache", 0.0)
+    linea = tui.linea_costo(r.uso.tokens_entrada, r.uso.tokens_salida, precio, ahorro)
+    if linea:
+        print(linea)
+
+
 # ── `genai tarea` ────────────────────────────────────────────────────────────
 def cmd_tarea(a) -> int:
     prep = _preparar_sesion(a, a.encargo)
@@ -227,7 +242,7 @@ def cmd_tarea(a) -> int:
     def _correr(encargo: str, modo: str):
         return turno(sesion, registro, Politica(modo=modo), encargo,
                      tope_vueltas=a.vueltas, tope_tokens=a.tokens,
-                     tope_segundos=a.segundos,
+                     tope_segundos=a.segundos, tope_costo=a.tope_costo,
                      preguntar=preguntar_por_consola if modo == "preguntar" else None,
                      traza_por_pantalla=not a.callado)
 
@@ -274,6 +289,7 @@ def cmd_tarea(a) -> int:
     print(f"\n{tui.markdown_ligero(r.texto)}")
     print(tui.resumen_final(r.motivo, r.vueltas, r.uso.tokens_salida,
                             r.uso.tokens_entrada, r.uso.segundos, r.intervenciones))
+    _mostrar_costo(sesion.cerebro, r)
     print(tui.atenuado(f"   sesión guardada en {ultima} (retoma con --continuar)"))
     return 0 if r.motivo == "fin" else 1
 
@@ -310,11 +326,36 @@ def cmd_chat(a) -> int:
             if linea == "/ayuda":
                 print(tui.caja([
                     f"/modo <{'|'.join(MODOS)}>  cambia la política de permiso",
+                    "/modelo <nombre>               cambia de cerebro SIN perder el historial "
+                    "(local, nube:proveedor/modelo, eco…)",
                     "/nueva                         otra sesión, misma terminal y cerebro",
                     "/sesion                        vueltas y tokens gastados hasta ahora",
                     "/deshacer                      restaura los ficheros a antes del último mensaje",
                     "@ruta/al/fichero               mételo en el mensaje sin gastar un turno en leerlo",
                     "/salir                         termina (o Ctrl-D)"], titulo="comandos"))
+                continue
+            if linea.startswith("/modelo"):
+                partes = linea.split(maxsplit=1)
+                if len(partes) != 2:
+                    print(tui.aviso("  uso: /modelo <nombre>  (ej.: /modelo nube:gemini, "
+                                    "/modelo gguf, /modelo eco)"))
+                    continue
+                try:
+                    nuevo = cargar(partes[1].strip())
+                except SystemExit as e:
+                    print(tui.fallo(f"  no se pudo cargar «{partes[1].strip()}»: {e}"))
+                    continue
+                if hasattr(sesion.cerebro, "cerrar"):
+                    sesion.cerebro.cerrar()
+                if hasattr(nuevo, "al_token") and not a.sin_streaming:
+                    nuevo.al_token = lambda trozo: print(trozo, end="", flush=True)
+                _con_latido(nuevo)
+                sesion.cerebro = nuevo
+                # el HISTORIAL sigue intacto: solo cambia quién genera la próxima
+                # respuesta. Cambiar de local a BYOK a media conversación —o volver—
+                # sin perder los mensajes de antes es justo lo que unifica los tres
+                # caminos de docs/nube.md en una sola sesión.
+                print(tui.exito(f"  cerebro → {nuevo.nombre} (el historial sigue igual)"))
                 continue
             if linea == "/deshacer":
                 from . import deshacer
@@ -359,13 +400,14 @@ def cmd_chat(a) -> int:
             segundos_antes = sesion.uso.segundos   # delta de ESTE mensaje, no del chat entero
             r = turno(sesion, registro, Politica(modo=modo), encargo,
                      tope_vueltas=a.vueltas, tope_tokens=a.tokens,
-                     tope_segundos=a.segundos,
+                     tope_segundos=a.segundos, tope_costo=a.tope_costo,
                      preguntar=preguntar_por_consola if modo == "preguntar" else None,
                      traza_por_pantalla=not a.callado)
             tui.avisar_fin(r.uso.segundos - segundos_antes, r.texto[:120] or "listo")
             print(f"\n{tui.markdown_ligero(r.texto)}")
             print(tui.resumen_final(r.motivo, r.vueltas, r.uso.tokens_salida,
                                     r.uso.tokens_entrada, r.uso.segundos, r.intervenciones))
+            _mostrar_costo(sesion.cerebro, r)
             _guardar_sesion(sesion, ultima)
     finally:
         _S.latir(reg["id"], vueltas=sesion.vueltas)
@@ -620,11 +662,13 @@ def cmd_mcp(args: list[str]) -> int:
         return cmd_mcp_instalar(args[1] if len(args) > 1 else "")
     if sub == "quitar":
         return cmd_mcp_quitar(args[1] if len(args) > 1 else "")
-    # Bare `genai mcp`: SERVIR, sin traza por stdio. Es lo que Claude Code, Codex y
-    # Cursor ya tienen registrado (`python3 -m genai.cli mcp`, sin más argumentos) —
-    # cambiar este defecto rompería las tres integraciones probadas con cuenta real.
+    # Bare `genai mcp` (sin argumentos): comportamiento EXACTO de siempre — es lo que
+    # Claude Code, Codex y Cursor ya tienen registrado. `--trazar` es opt-in y solo
+    # existe para quien arranca el servidor a mano en una terminal para depurar: la
+    # traza va a stderr, nunca a stdout (el canal JSON-RPC), así que no puede
+    # interferir con ningún cliente real que sí pase por aquí.
     from .mcp import servir
-    servir()
+    servir(trazar="--trazar" in args)
     return 0
 
 
@@ -693,6 +737,10 @@ def main(argv: list[str] | None = None) -> int:
         sp.add_argument("--vueltas", type=int, default=16)
         sp.add_argument("--tokens", type=int, default=4000)
         sp.add_argument("--segundos", type=int, default=3600)
+        sp.add_argument("--tope-costo", type=float, default=None,
+                        help="para BYOK: para el turno si el gasto estimado (USD, "
+                             "según precio del catálogo) llega a esto; sin efecto en "
+                             "local o suscripción, que no tienen coste por token")
         sp.add_argument("--continuar", action="store_true",
                         help="retomar la última sesión de este directorio "
                              "(.genai/ultima.json)")

@@ -110,6 +110,10 @@ class CerebroNube:
                  contexto_max: int = 200000, temperatura: float = 0.0):
         cfg = claves().get(proveedor) or {}
         base = PROVEEDORES.get(proveedor)
+        # una suscripción (Copilot, Google vía Code Assist) no cobra por token al
+        # usuario — ya paga una cuota fija—, así que un coste en $ ahí sería una
+        # cifra real pero ENGAÑOSA. Se calla en vez de mentir con un número exacto.
+        es_suscripcion = False
         # Los ocho de fábrica MANDAN: son los que tienen medición detrás (caché, firmas
         # de pensamiento, PDF) y el catálogo no sabe nada de eso. Solo si el nombre no
         # está aquí ni escrito a mano se busca entre los 207 de models.dev.
@@ -128,12 +132,14 @@ class CerebroNube:
                    "clave": tok, "modelo": modelo or "gemini-2.5-pro",
                    "proyecto_asist": pid, "cachear": False, **cfg}
             base = {}
+            es_suscripcion = True
         if proveedor == "copilot" and not cfg.get("clave"):
             # Copilot no usa una clave que escribas: usa tu SESIÓN de GitHub, y su
             # token caduca en minutos, así que se pide fresco en cada arranque.
             from ..copilot import config as _copiloto
             cfg = {**_copiloto(), **cfg}
             base = {}
+            es_suscripcion = True
         if base is None and not cfg.get("url"):
             from ..catalogo import resolver
             base, queja = resolver(proveedor)
@@ -174,6 +180,13 @@ class CerebroNube:
         # qué proveedor es, por nombre. `buscar_web` lo usa para que la búsqueda salga
         # por el proveedor que ya se está pagando y no por otro.
         self.proveedor = proveedor
+        # None si es suscripción (no hay coste por token que enseñar) o si el
+        # catálogo no conoce el precio de este modelo — nunca una cifra inventada.
+        if es_suscripcion:
+            self.precio = None
+        else:
+            from .. import catalogo
+            self.precio = catalogo.precio(proveedor, self.modelo)
         # Si va por Code Assist, aquí está el proyecto; si no, cadena vacía.
         self.asist = cfg.get("proyecto_asist", "")
         self._cache_g = None          # caché explícita viva, solo dialecto gemini

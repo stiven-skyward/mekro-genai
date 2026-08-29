@@ -137,4 +137,26 @@ c("openai" not in _visitas,
 c({"openai", "anthropic", "gemini"} <= set(PROVEEDORES),
   "y los tres con medición real siguen ahí")
 
+# ── precio(): el dato ya descargado que nadie usaba ─────────────────────────
+catalogo.CACHE = tmp / "modelos.json"
+catalogo.CACHE.write_text(json.dumps({
+    "google": {"models": {"gemini-3.7-flash": {"cost": {"input": 0.1, "output": 0.4}}}},
+    "moonshotai": {"models": {"kimi-k2": {"cost": {"input": 1, "output": 3}}}},
+    "anthropic": {"models": {}},
+}), encoding="utf-8")
+c(catalogo.precio("google", "gemini-3.7-flash") == {"input": 0.1, "output": 0.4},
+  "precio() encuentra el modelo cuando el nombre de proveedor coincide tal cual")
+c(catalogo.precio("gemini", "gemini-3.7-flash") == {"input": 0.1, "output": 0.4},
+  "y también con el alias de fábrica: «gemini» es «google» en models.dev")
+c(catalogo.precio("kimi", "kimi-k2") == {"input": 1, "output": 3},
+  "«kimi» es «moonshotai» en models.dev")
+c(catalogo.precio("anthropic", "modelo-que-no-existe") is None,
+  "un modelo que el proveedor no tiene listado da None, no una cifra a medias")
+c(catalogo.precio("proveedor-inventado", "x") is None,
+  "un proveedor que el catálogo no conoce en absoluto también da None")
+
+catalogo.CACHE = tmp / "no-existe.json"
+c(catalogo.precio("google", "gemini-3.7-flash") is None,
+  "sin caché en disco, None — precio() nunca dispara una descarga por su cuenta")
+
 raise SystemExit(c.fin())

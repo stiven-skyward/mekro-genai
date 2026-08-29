@@ -102,4 +102,19 @@ c(objetivo.read_text() == "antes\n",
   "del propio REPL — sin gastar otra vuelta del cerebro en pedirlo de nuevo")
 c("deshecho:" in r5.stdout, "y la terminal confirma qué se deshizo")
 
+# ── /modelo: cambiar de cerebro SIN perder el historial ─────────────────────
+r6 = _chat("hola\n/modelo eco\n/sesion\n/salir\n")
+c(r6.returncode == 0, "cambiar de cerebro con /modelo sale limpio")
+c("cerebro → eco" in r6.stdout, "/modelo confirma a qué cerebro cambió")
+c("el historial sigue igual" in r6.stdout,
+  "y lo dice explícitamente: cambiar de cerebro no reinicia la conversación")
+c("1 vueltas" in r6.stdout.split("cerebro → eco", 1)[1],
+  "/sesion DESPUÉS del cambio sigue contando la vuelta gastada ANTES de cambiar — "
+  "es la misma Sesion, no una nueva con el contador a cero")
+
+r7 = _chat("hola\n/modelo proveedor-que-no-existe\n/salir\n")
+c(r7.returncode == 0, "pedir un cerebro que no carga no tumba la conversación")
+c("no se pudo cargar" in r7.stdout,
+  "se avisa del fallo y se sigue con el cerebro de antes, en vez de morir a medias")
+
 raise SystemExit(c.fin())

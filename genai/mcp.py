@@ -102,7 +102,8 @@ class ServidorMCP:
 
     def __init__(self, registro: Registro | None = None,
                  politica: Politica | None = None, raiz: Path | None = None,
-                 poda: bool | None = None, filtro_herramientas: set[str] | None = None):
+                 poda: bool | None = None, filtro_herramientas: set[str] | None = None,
+                 trazar: bool | None = None):
         self.raiz = raiz or Path.cwd()
         base = registro or estandar(cerebro=None)
         # El filtro recorta el impuesto fijo por vuelta (medido: 7.603 caracteres de
@@ -129,6 +130,15 @@ class ServidorMCP:
             poda = os.environ.get("MG_MCP_PODA", "1").strip().lower() not in (
                 "0", "no", "false")
         self.poda = poda
+        # El servidor MCP era completamente mudo: ni un print, ni un log, mientras
+        # Claude Code/Codex/Cursor lo usaban. stdout es el canal JSON-RPC —no se
+        # puede tocar—, así que la traza va a STDERR con la MISMA estética que el
+        # bucle interactivo (tui.py): quien corre `genai mcp` a mano en una terminal
+        # ve exactamente qué está pidiendo el cliente, no una caja negra.
+        if trazar is None:
+            trazar = os.environ.get("MG_MCP_TRAZA", "0").strip().lower() not in (
+                "0", "no", "false")
+        self.trazar = trazar
         self._vivo = True
 
     # ── protocolo ──────────────────────────────────────────────────────────
@@ -143,6 +153,11 @@ class ServidorMCP:
     def _llamar(self, nombre: str, argumentos: dict) -> dict:
         """Invoca una herramienta pasando por la MISMA política que el bucle normal.
         Un cliente MCP no es más de fiar que el propio agente."""
+        if self.trazar:
+            from . import tui
+            from .cerebro.base import Llamada
+            print(tui.linea_herramienta(Llamada(nombre, argumentos or {}).firma()),
+                 file=sys.stderr, flush=True)
         if nombre not in self.registro:
             return {"content": [{"type": "text",
                                  "text": f"no existe la herramienta «{nombre}»"}],
@@ -150,9 +165,17 @@ class ServidorMCP:
         h = self.registro[nombre]
         d = self.politica.decidir(h, argumentos or {})
         if not d.permitido:
+            if self.trazar:
+                print(tui.linea_resultado(False, f"DENEGADO: {d.motivo}"),
+                     file=sys.stderr, flush=True)
             return {"content": [{"type": "text",
                                  "text": f"DENEGADO: {d.motivo}"}], "isError": True}
+        t0 = time.time()
         res = self.registro.invocar(nombre, argumentos or {})
+        if self.trazar:
+            resumen = (res.salida.splitlines() or [""])[0]
+            print(tui.linea_resultado(res.ok, resumen, time.time() - t0),
+                 file=sys.stderr, flush=True)
         # Poda en el origen (docs/ahorro.md): lo que se devuelve aquí lo reenvía el
         # cliente MCP en cada vuelta siguiente de SU conversación, y este servidor no
         # puede compactarlo después. Medido sobre un `grep` real de este repositorio:
@@ -215,5 +238,5 @@ class ServidorMCP:
         self._vivo = False
 
 
-def servir(raiz: Path | None = None) -> None:
-    ServidorMCP(raiz=raiz).atender()
+def servir(raiz: Path | None = None, trazar: bool | None = None) -> None:
+    ServidorMCP(raiz=raiz, trazar=trazar).atender()

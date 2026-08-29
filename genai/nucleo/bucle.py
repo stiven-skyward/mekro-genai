@@ -59,7 +59,8 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
           peticion: str, *, tope_vueltas: int = 24, tope_tokens: int = 6000,
           poda: bool = _env_si("MG_PODA", True),
           pensar_vueltas: int = 0,
-          tope_segundos: int = 1800, preguntar: Callable | None = None,
+          tope_segundos: int = 1800, tope_costo: float | None = None,
+          preguntar: Callable | None = None,
           traza_por_pantalla: bool = True) -> Resultado:
     """Un encargo del usuario hasta que el cerebro deja de pedir herramientas."""
     from ..cerebro.plantilla import analizar_llamadas   # tarde: evita importar de más
@@ -84,6 +85,15 @@ def turno(sesion: Sesion, registro: Registro, politica: Politica,
             return _fin("tope_tokens", ultimo_texto, sesion, traza, peticion, punto_control)
         if time.time() - t0 > tope_segundos:
             return _fin("tope_segundos", ultimo_texto, sesion, traza, peticion, punto_control)
+        # BYOK: un cerebro de nube expone `.precio` (USD/millón de tokens) cuando el
+        # catálogo lo conoce; uno local o de suscripción no lo tiene, y el tope
+        # simplemente no aplica —no hay forma honesta de tasarlo en dólares.
+        precio = getattr(sesion.cerebro, "precio", None)
+        if tope_costo is not None and precio:
+            costo = (sesion.uso.tokens_entrada / 1_000_000) * precio.get("input", 0) \
+                   + (sesion.uso.tokens_salida / 1_000_000) * precio.get("output", 0)
+            if costo >= tope_costo:
+                return _fin("tope_costo", ultimo_texto, sesion, traza, peticion, punto_control)
 
         # los avisos de fondo llegan al EMPEZAR la vuelta: un agente síncrono no tiene
         # interrupciones, tiene vueltas (M5.3). Cada aviso se entrega una sola vez.
