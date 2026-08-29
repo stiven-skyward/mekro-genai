@@ -108,7 +108,7 @@ try:
     builtins.input = _input_falso_fabrica([str(_primer_mcp)])
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
-        resultado = _elegir_cerebro_guiado()
+        resultado = _elegir_cerebro_guiado("eco")
 finally:
     builtins.input = _input_real
     _mcp_mod.instalar = _instalador_real

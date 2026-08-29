@@ -93,7 +93,7 @@ def _expandir_menciones(texto: str) -> tuple[str, list[str]]:
     return resto + "\n\n" + "\n\n".join(adjuntos), rutas
 
 
-def _elegir_cerebro_guiado() -> str | None:
+def _elegir_cerebro_guiado(cerebro_actual: str) -> str | None:
     """El menú que `/modelo` sin argumento abre: un listado numerado en vez de
     exigir de memoria el nombre exacto («nube:proveedor/modelo»). Por cada
     proveedor BYOK se enseña si YA tiene clave puesta —para que la elección sea
@@ -194,10 +194,15 @@ def _elegir_cerebro_guiado() -> str | None:
         cuerpo = msg if msg.startswith(info["nombre"]) else f"{info['nombre']}: {msg}"
         if ok:
             print(tui.exito(f"  {cuerpo}"))
-            print(tui.atenuado(f"  listo — abre {info['nombre']} normalmente, ya "
-                               "ve las herramientas de Mekro-Genai."))
+            print(tui.atenuado(f"  listo — {info['nombre']} es OTRA aplicación: ábrela "
+                               "tú cuando quieras, ella sola verá las herramientas."))
         else:
             print(tui.aviso(f"  {cuerpo}"))
+        # esto NO cambió el cerebro: la conversación de aquí sigue exactamente donde
+        # estaba, con el mismo cerebro de antes — sin este aviso, quien esperaba que
+        # "elegir algo en el menú" hiciera algo más visible cree que se quedó colgado.
+        print(tui.atenuado(f"  sigues hablando con «{cerebro_actual}» — escribe tu "
+                           "próximo mensaje cuando quieras."))
         return None
 
     if nombre == "_personalizado":
@@ -496,7 +501,7 @@ def cmd_chat(a) -> int:
                 else:
                     # sin argumento: el menú guiado, no exigir de memoria
                     # «nube:proveedor/modelo» — lo que pidió el usuario explícitamente.
-                    pedido = _elegir_cerebro_guiado()
+                    pedido = _elegir_cerebro_guiado(sesion.cerebro.nombre)
                     if pedido is None:
                         continue
                 try:
