@@ -1,0 +1,105 @@
+{
+  "id": "C87",
+  "pregunta": "¿dominan las 48 capas GatedDeltaNet el coste por token de la generación local, frente a las 16 de atención?",
+  "fase": "cerrado",
+  "abierto": "2026-08-30 03:09",
+  "revision": {
+    "cuando": "2026-08-30 03:09",
+    "texto": "decodificación especulativa ya descartada por otro camino (motor.py, techo 0,33 tok/s, C-series en META.md) — no es la misma hipótesis, no hay solapamiento"
+  },
+  "prediccion": {
+    "cuando": "2026-08-30 03:11",
+    "metrica": "caida_pct",
+    "espero": "<15",
+    "porque": "si las 48 capas GatedDeltaNet (coste O(1) por capa) dominan el tiempo de decodificacion, alargar el contexto 20x solo encarece las 16 capas de atencion -una fraccion del total-, asi que la caida en tok/s de decodificacion pura debe ser pequena"
+  },
+  "sonda": {
+    "cuando": "2026-08-30 03:31",
+    "comando": "python3 scripts/sonda_C87_gdn.py",
+    "codigo": 0,
+    "segundos": 189.5,
+    "cifras": {
+      "tps_decode_corto": 3.0332,
+      "tps_decode_largo": 3.1047,
+      "caida_pct": -2.36,
+      "prefill_corto_s": 37.12,
+      "prefill_largo_s": 123.2
+    },
+    "salida_cola": "cargando el cerebro gguf...\ncalentamiento (para que el mmap del modelo no contamine la 1a medida)...\nmidiendo con contexto CORTO (~150 palabras)...\n  prefill 37.12 s · decode 3.033 tok/s · 14 tokens generados\nmidiendo con contexto LARGO (~550 palabras)...\n  prefill 123.20 s · decode 3.105 tok/s · 14 tokens generados\nCIFRA tps_decode_corto 3.0332\nCIFRA tps_decode_largo 3.1047\nCIFRA caida_pct -2.36\nCIFRA prefill_corto_s 37.12\nCIFRA prefill_largo_s 123.20"
+  },
+  "medicion": {
+    "cuando": "2026-08-30 03:52",
+    "comando": "python3 scripts/medir_C87_gdn.py",
+    "codigo": 0,
+    "segundos": 691.9,
+    "cifras": {
+      "entrada_tok_p0": 171.0,
+      "tps_decode_p0": 3.186,
+      "tps_prefill_p0": 4.8191,
+      "entrada_tok_p1": 421.0,
+      "tps_decode_p1": 2.969,
+      "tps_prefill_p1": 4.7489,
+      "entrada_tok_p2": 821.0,
+      "tps_decode_p2": 3.0514,
+      "tps_prefill_p2": 4.6736,
+      "entrada_tok_p3": 1621.0,
+      "tps_decode_p3": 3.0105,
+      "tps_prefill_p3": 4.7077,
+      "caida_pct": 5.51,
+      "pendiente_tps_por_tok": -7.2e-05,
+      "caida_prefill_pct": 2.31
+    },
+    "salida_cola": "cargando el cerebro gguf...\ncalentamiento...\nmidiendo con ~150 palabras de contexto...\n  171 tok entrada · prefill 35.5 s (4.82 tok/s) · decode 3.186 tok/s\nmidiendo con ~400 palabras de contexto...\n  421 tok entrada · prefill 88.7 s (4.75 tok/s) · decode 2.969 tok/s\nmidiendo con ~800 palabras de contexto...\n  821 tok entrada · prefill 175.7 s (4.67 tok/s) · decode 3.051 tok/s\nmidiendo con ~1600 palabras de contexto...\n  1621 tok entrada · prefill 344.3 s (4.71 tok/s) · decode 3.010 tok/s\nCIFRA entrada_tok_p0 171\nCIFRA tps_decode_p0 3.1860\nCIFRA tps_prefill_p0 4.8191\nCIFRA entrada_tok_p1 421\nCIFRA tps_decode_p1 2.9690\nCIFRA tps_prefill_p1 4.7489\nCIFRA entrada_tok_p2 821\nCIFRA tps_decode_p2 3.0514\nCIFRA tps_prefill_p2 4.6736\nCIFRA entrada_tok_p3 1621\nCIFRA tps_decode_p3 3.0105\nCIFRA tps_prefill_p3 4.7077\nCIFRA caida_pct 5.51\nCIFRA pendiente_tps_por_tok -0.000072\nCIFRA caida_prefill_pct 2.31"
+  },
+  "veredicto": {
+    "cuando": "2026-08-30 03:52",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "caida_pct",
+    "valor": 5.51,
+    "espero": "<15"
+  },
+  "leccion": "confirmado con medicion de verdad (4 puntos, 171 a 1621 tokens, ~9,5x de rango): decode tok/s se mantiene plano (3,19 / 2,97 / 3,05 / 3,01 tok/s), pendiente -0,000072 tok/s por token de contexto, caida_pct=5,51 frente a umbral <15. Las 48 capas GatedDeltaNet (coste O(1) por capa) dominan el tiempo de decodificacion sobre las 16 de atencion (coste O(contexto)) en todo el rango probado -> un kernel fundido cache-residente para GatedDeltaNet queda justificado por cifra, no por intuicion, como la palanca de optimizacion de decodificacion con mas margen real en esta maquina. Hallazgo lateral confirmado y ACOTADO: el prefill es casi tan lento como el decode (4,7-4,8 tok/s vs ~3 tok/s) pero SU PROPIO ancho de banda es estable con el contexto (caida_prefill_pct=2,31) -> no es un problema de escalado, es que el prefill de estas capas recurrentes simplemente no es mucho mas rapido que la decodificacion secuencial, a diferencia de un transformer denso donde el prefill paralelo suele ser ordenes de magnitud mas rapido. Esto abre una SEGUNDA via de optimizacion (kernel de prefill para GatedDeltaNet) ademas de la de decodificacion, pendiente de investigar aparte.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-30 03:09",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-30 03:09",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-30 03:09",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-30 03:09",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-30 03:09",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-30 03:09",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-30 03:11",
+      "que": "predicho caida_pct <15"
+    },
+    {
+      "cuando": "2026-08-30 03:31",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-30 03:52",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-30 03:52",
+      "que": "veredicto: CONFIRMA (caida_pct=5.51)"
+    }
+  ]
+}
