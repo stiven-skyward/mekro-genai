@@ -1,0 +1,89 @@
+{
+  "id": "C88",
+  "pregunta": "¿fundir en un solo bucle los pasos de la recurrencia GatedDeltaNet (por capa, por token) ahorra tiempo real frente a despacharlos como pasos separados que releen/reescriben el mismo buffer de estado?",
+  "fase": "cerrado",
+  "abierto": "2026-08-30 04:06",
+  "revision": {
+    "cuando": "2026-08-30 04:06",
+    "texto": "el 10-50x citado en la literatura de fusion de kernels gated-delta-rule es de GPU (coste de LANZAR kernels CUDA separados), no aplica directo a CPU: ggml despacha operaciones en su propio grafo con un pool de hilos reusado, sin el mismo coste de lanzamiento -> la ganancia real en CPU puede ser mucho mas modesta y hay que medirla, no asumirla"
+  },
+  "prediccion": {
+    "cuando": "2026-08-30 04:06",
+    "metrica": "ganancia",
+    "espero": ">=1.15",
+    "porque": "aun sin el 10-50x de GPU (que no aplica a CPU), separar 6-8 pasos de una recurrencia obliga a releer/reescribir un buffer de ~1-3 MB varias veces en vez de una, y eso deberia notarse en el ancho de banda de L2/L3 aunque sea modesto -- si ni siquiera llega a 1.15x, fundir no vale el riesgo de escribir C nuevo"
+  },
+  "sonda": {
+    "cuando": "2026-08-30 04:09",
+    "comando": "bash -c gcc -O3 -march=native -ffast-math -funroll-loops -o /tmp/sonda_C88_bin scripts/sonda_C88_fusion.c -lm && /tmp/sonda_C88_bin",
+    "codigo": 0,
+    "segundos": 4.0,
+    "cifras": {
+      "t_sin_fundir_s": 3.2268,
+      "t_fundido_s": 0.6615,
+      "ganancia": 4.8781
+    },
+    "salida_cola": "estado por capa: 3.15 MB · 48 capas x 200 tokens x 6 pasos\ndiferencia numerica entre caminos (debe ser ~0): 0.000000e+00\nCIFRA t_sin_fundir_s 3.2268\nCIFRA t_fundido_s 0.6615\nCIFRA ganancia 4.8781"
+  },
+  "medicion": {
+    "cuando": "2026-08-30 04:12",
+    "comando": "bash scripts/medir_C88_fusion.sh",
+    "codigo": 0,
+    "segundos": 19.7,
+    "cifras": {
+      "ganancia_media": 4.922,
+      "ganancia_min": 4.8825,
+      "ganancia_max": 4.9626,
+      "ganancia_desv": 0.0263,
+      "ganancia": 4.922
+    },
+    "salida_cola": "=== 5 repeticiones, estado real (48x128x128 = 3,15 MB) ===\n  repeticion 1: ganancia=4.9626\n  repeticion 2: ganancia=4.9330\n  repeticion 3: ganancia=4.9105\n  repeticion 4: ganancia=4.9213\n  repeticion 5: ganancia=4.8825\nCIFRA ganancia_media 4.9220\nCIFRA ganancia_min 4.8825\nCIFRA ganancia_max 4.9626\nCIFRA ganancia_desv 0.0263\nCIFRA ganancia 4.9220"
+  },
+  "veredicto": {
+    "cuando": "2026-08-30 04:12",
+    "confirma": true,
+    "fuente": "medicion",
+    "metrica": "ganancia",
+    "valor": 4.922,
+    "espero": ">=1.15"
+  },
+  "leccion": "confirmado con medicion de verdad (5 repeticiones, desv=0,026): fundir 6 pasos de una recurrencia en un bucle, sobre un estado del tamano real del modelo (48x128x128=3,15MB), da ganancia=4,92x frente a hacerlo como pasos separados que releen/reescriben el buffer completo -> supera con margen amplio el umbral >=1,15 predicho. CORRECCION previa importante: la propuesta original (C87) asumia que el estado de las 48 capas cabria TODO en cache durante la generacion -> FALSO con las dimensiones reales (144MB fp32 / 72MB bf16 contra 32MB de L3 medidos con lscpu). Lo que sobrevive es mas modesto: fundir DENTRO de cada capa, no las 48 a la vez. LECCION METODOLOGICA CARA, aparte de la cifra: la primera compilacion (-O2 -march=native, sin mas) dio ganancia=0,35 -> REFUTABA la hipotesis. Con -O3 -ffast-math -funroll-loops (banderas razonables para un kernel de produccion, del mismo tipo que ya usa llama.cpp) el resultado se invirtio a 4,92x. La ganancia de fusionar en C NO es automatica: depende por completo de que el compilador consiga vectorizar la cadena de dependencia secuencial de los pasos fundidos, y con -O2 no lo consiguio. Cualquier kernel real necesita verificar la vectorizacion real (asm o -fopt-info-vec), no asumir que escribir el bucle ya basta.",
+  "bitacora": [
+    {
+      "cuando": "2026-08-30 04:06",
+      "que": "abierto"
+    },
+    {
+      "cuando": "2026-08-30 04:06",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-30 04:06",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-30 04:06",
+      "que": "revisado"
+    },
+    {
+      "cuando": "2026-08-30 04:06",
+      "que": "predicho ganancia >=1.15"
+    },
+    {
+      "cuando": "2026-08-30 04:09",
+      "que": "sonda: código 0"
+    },
+    {
+      "cuando": "2026-08-30 04:10",
+      "que": "medido: código 1"
+    },
+    {
+      "cuando": "2026-08-30 04:12",
+      "que": "medido: código 0"
+    },
+    {
+      "cuando": "2026-08-30 04:12",
+      "que": "veredicto: CONFIRMA (ganancia=4.922)"
+    }
+  ]
+}
